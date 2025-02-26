@@ -1,6 +1,19 @@
+---
+import { Picture } from 'astro:assets';
+import featuredImg from '../../public/images/nextshow.jpg';
+---
+
 <section class="w-full py-16 bg-black text-white text-center">
-    <h2 class="text-3xl md:text-4xl font-bold">NO TE LO PIERDAS</h2>
-    <img src="/images/nextshow-banner.jpg" alt="next live show" class="size-auto p-4 rounded-lg shadow-lg" />
+    <h2 class="text-3xl md:text-4xl font-bold mb-4">UPCOMING NEXT:</h2>
+
+    <Picture
+        src={featuredImg}
+        alt="Lo que se viene"
+        sizes="(max-width: 767px) 100vw, 50vw"
+        formats={['webp', 'avif', 'jpg']}
+        widths={[480, 768, 1024]}
+        class="w-full h-auto"
+    />
     <div class="text-base md:text-lg font-small space-y-1 pb-4">
         <p>Con tu compra accedés al sorteo de</p>
         <p>una entrada para</p>
