@@ -1,0 +1,16 @@
+shows:
+  - ciudad: 'Buenos Aires'
+    lugar: 'Teatro Vorterix'
+    fecha: 'Viernes 11 de Abril - 20:00hs'
+    linkCompra: 'https://www.allaccess.com.ar/event/oeisis-tributo-a-oasis-knebworth-night'
+    
+  - ciudad: 'Santa Fe'
+    lugar: 'PROXIMAMENTE'
+    fecha: 'PROXIMAMENTE'
+    linkCompra: ''
+    
+  - ciudad: 'Rosario'
+    lugar: 'PROXIMAMENTE'
+    fecha: 'PROXIMAMENTE'
+    linkCompra: ''
+
