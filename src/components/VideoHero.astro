@@ -1,17 +1,44 @@
-<section class="relative w-full h-[33vh] min-h-[200px] max-h-[400px] flex items-center justify-center bg-gray-900">
-    <!-- Video Placeholder (Imagen estática) -->
-    <div class="absolute inset-0 flex items-center justify-center bg-gray-900">
-        <p class="text-xl md:text-2xl lg:text-3xl">[Aquí irá el video]</p>
-    </div>
+---
 
+---
+
+<section class="relative w-full h-[33vh] min-h-[500px] max-h-[600px] flex items-center justify-center bg-gray-900">
     <!-- Video de fondo -->
-    <!-- <video autoplay loop muted playsinline class="absolute w-full h-full object-cover">
-        <source src="/videos/banda-loop.mp4" type="video/mp4" />
-        Tu navegador no soporta videos en HTML5.
-    </video> -->
+    <div class="absolute inset-0 w-full h-full overflow-hidden">
+        <video autoplay loop muted playsinline class="absolute w-full h-full object-cover parallax-video">
+            <source src="/videos/hero.mp4" type="video/mp4" />
+            Tu navegador no soporta videos en HTML5.
+        </video>
+    </div>
 
     <!-- Logo en el centro -->
-    <div class="relative flex items-center justify-center bg-black bg-opacity-30">
-        <img src="/images/logo.png" alt="Logo de la Banda" class="w-48 md:w-64 lg:w-80" />
-    </div>
+    <!-- <div class="relative flex items-center justify-center bg-black bg-opacity-30">
+        <Image src={bandLogo} alt="Logo de la Banda" class="w-48 md:w-64 lg:w-80" />
+    </div> -->
 </section>
+<style>
+    .parallax-video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: translateY(0); /* Inicialmente en su posición */
+        will-change: transform; /* Optimización para animaciones */
+    }
+</style>
+<script>
+    // Selecciona el video
+    const video = document.querySelector('.parallax-video');
+
+    // Función para mover el video
+    const handleScroll = () => {
+        const scrollPosition = window.scrollY; // Obtén la posición del scroll
+        const speed = 0.5; // Ajusta la velocidad del parallax (0.5 = 50% de la velocidad del scroll)
+        video.style.transform = `translateY(${scrollPosition * speed}px)`;
+    };
+
+    // Escucha el evento de scroll
+    window.addEventListener('scroll', handleScroll);
+</script>
