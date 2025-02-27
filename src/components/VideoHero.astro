@@ -2,19 +2,25 @@
 
 ---
 
-<section class="relative w-full h-[33vh] min-h-[500px] max-h-[600px] flex items-center justify-center bg-gray-900">
+<section class="relative w-full h-[33vh] min-h-screen max-h-[600px] flex items-center justify-center bg-gray-900 overflow-hidden">
     <!-- Video de fondo -->
     <div class="absolute inset-0 w-full h-full overflow-hidden">
         <video autoplay loop muted playsinline class="absolute w-full h-full object-cover parallax-video">
-            <source src="/videos/hero.mp4" type="video/mp4" />
+            <source src="/videos/hero_720p.mp4" type="video/mp4" />
             Tu navegador no soporta videos en HTML5.
         </video>
+        <!-- Botón flotante -->
+        <button
+            id="scroll-down-button"
+            class="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-white bg-opacity-20 rounded-full p-3 hover:bg-opacity-30 transition-opacity"
+            aria-label="Desplazarse hacia abajo"
+        >
+            <!-- Ícono de flecha hacia abajo (puedes usar un SVG o un ícono de una librería) -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+            </svg>
+        </button>
     </div>
-
-    <!-- Logo en el centro -->
-    <!-- <div class="relative flex items-center justify-center bg-black bg-opacity-30">
-        <Image src={bandLogo} alt="Logo de la Banda" class="w-48 md:w-64 lg:w-80" />
-    </div> -->
 </section>
 <style>
     .parallax-video {
@@ -41,4 +47,16 @@
 
     // Escucha el evento de scroll
     window.addEventListener('scroll', handleScroll);
+</script>
+<script>
+    // Selecciona el botón
+    const scrollButton = document.getElementById('scroll-down-button');
+
+    // Función para desplazarse suavemente hacia la siguiente sección
+    scrollButton.addEventListener('click', () => {
+        window.scrollBy({
+            top: window.innerHeight, // Desplaza una pantalla hacia abajo
+            behavior: 'smooth', // Desplazamiento suave
+        });
+    });
 </script>
