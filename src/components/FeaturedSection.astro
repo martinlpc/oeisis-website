@@ -3,15 +3,18 @@ import { Image } from 'astro:assets';
 import featuredImg from '../images/nextshow.jpg';
 ---
 
-<section class="w-full min-h-screen flex items-center justify-center py-8 bg-black text-white text-center">
+<section class="w-full flex items-center justify-center py-8 bg-black text-white text-center">
     <div class="max-w-4xl mx-auto px-4">
         <h2 class="text-2xl md:text-4xl font-bold mb-4">UPCOMING NEXT:</h2>
 
         <Image src={featuredImg} alt="Lo que se viene" sizes="(max-width: 767px) 100vw, 50vw" widths={[480, 768, 1024]} class="w-9/10 h-auto mx-auto mb-8" />
         <div class="text-base md:text-lg font-small space-y-1 pb-4">
+            <p><u>SE REPROGRAMA EL SHOW DE BUENOS AIRES</u></p>
+            <span>Te esperamos el SÁBADO 6 DE SEPTIEMBRE - 20:00 hs</span>
             <p>Con tu compra accedés al sorteo de una entrada para</p>
             <p>OASIS EN RIVER PLATE</p>
             <p>15 de noviembre | 21:00 | Campo 1</p>
+            <small><i>Si adquiriste entradas para Vorterix, estas son válidas para la nueva fecha</i></small>
         </div>
         <button class="buy-button px-8 py-4 bg-yellow-500 text-black text-lg lg:text-xl font-semibold rounded-md hover:bg-yellow-600 transition-colors">
             <a target="_blank" href="https://www.allaccess.com.ar/event/oeisis-tributo-a-oasis-knebworth-night">Comprar</a>
