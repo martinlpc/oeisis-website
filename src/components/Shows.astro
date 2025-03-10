@@ -1,0 +1,94 @@
+---
+// src/components/Shows.astro
+import { showsService } from '../lib/showsService.js';
+import { formatDate } from '../utils/dateUtils';
+import ShowsList from './ShowsList.js';
+
+// Obtener shows desde Firebase
+let shows = [];
+let error = null;
+
+try {
+    shows = await showsService.getFutureShows();
+} catch (err) {
+    console.error("Error cargando shows:", err);
+    error = "Hubo un problema al cargar los próximos shows";
+}
+
+// Pasa por client:load cuando necesites interactividad o actualizaciones en tiempo real
+// Si solo necesitas mostrar datos estáticos, puedes eliminar este componente React
+const clientSide = true;
+---
+
+<section id="shows" class="bg-white dark:bg-neutral-950">
+  <div class="container mx-auto p-8 md:px-16">
+    <h2 class="text-3xl lg:text-4xl font-semibold mb-6 text-center">
+      Próximos Shows
+    </h2>
+
+    {error && (
+      <div class="text-center text-red-500">
+        <p>{error}</p>
+      </div>
+    )}
+
+    {shows.length > 0 ? (
+      <!-- Opción 1: Usar Astro para renderizado estático -->
+      <div class="grid grid-cols-1 gap-6">
+        {shows.map((show) => (
+          <div
+            class="bg-gray-100 dark:bg-neutral-900 rounded-lg p-4 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+          >
+            <div>
+              <h3 class="text-lg md:text-xl font-medium">
+                {show.nombre}
+              </h3>
+              <div class="flex items-center gap-2 mt-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 dark:text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>{formatDate(show.fecha)}</span>
+              </div>
+              <div class="flex items-center gap-2 mt-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 dark:text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span>{show.lugar}</span>
+                {show.direccion && (
+                  <span class="text-gray-500">
+                    - {show.direccion}
+                  </span>
+                )}
+              </div>
+            </div>
+            {show.link && (
+              <a
+                href={show.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+              >
+                Comprar Tickets
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <!-- Opción 2: Usar React para interactividad y actualización en tiempo real -->
+      <!-- Descomenta esta línea y comenta la sección de arriba si prefieres usar el componente React -->
+      <!-- <ShowsList shows={shows} client:load={clientSide} /> -->
+    ) : (
+      <div class="text-center">
+        <p class="text-lg">No hay shows programados por el momento.</p>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">
+          Seguinos en nuestras redes para enterarte de las próximas fechas.
+        </p>
+      </div>
+    )}
+  </div>
+</section>
