@@ -20,6 +20,12 @@ importers:
       firebase:
         specifier: ^11.4.0
         version: 11.4.0
+      react:
+        specifier: ^19.0.0
+        version: 19.0.0
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.0.0(react@19.0.0)
       sharp:
         specifier: ^0.33.5
         version: 0.33.5
