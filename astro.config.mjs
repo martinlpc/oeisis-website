@@ -5,5 +5,12 @@ import react from '@astrojs/react';
 
 // https://astro.build/config
 export default defineConfig({
+  vite: {
+    resolve: {
+      alias: {
+        tslib: 'tslib'
+      }
+    }
+  },
   integrations: [tailwind(), react()],
 });
