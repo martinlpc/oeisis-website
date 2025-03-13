@@ -1,10 +1,9 @@
 ---
-import { getCollection } from 'astro:content';
-import type { CollectionEntry } from 'astro:content';
+import { getUpcomingShows } from '../lib/firebase.js';
 
-// Obtener los datos de "shows.yaml"
-const showsData: CollectionEntry<'shows'>[] = await getCollection('shows');
-//const shows = showsData[0]?.data.shows ?? [];
+// Obtener los datos de Firebase
+const showsData = await getUpcomingShows();
+console.log(showsData);
 ---
 
 <section class="w-full py-16 bg-gray-900 text-white text-center min-h-screen">
@@ -14,18 +13,18 @@ const showsData: CollectionEntry<'shows'>[] = await getCollection('shows');
         {
             showsData.length > 0 ? (
                 showsData.map((show) => (
-                    <div class="bg-gray-800 rounded-lg p-5 mb-4" id={show.data.id}>
+                    <div class="bg-gray-800 rounded-lg p-5 mb-4" id={show.id}>
                         <h3 class="text-xl font-semibold">
-                            {show.data.ciudad} - {show.data.lugar}
+                            {show.location} - {show.venue}
                         </h3>
-                        <p class="text-gray-300">{show.data.fecha}</p>
-                        {show.data.linkCompra ? (
+                        <p class="text-gray-300">{show.displayDate}</p>
+                        {show.ticketLink ? (
                             <a
-                                href={show.data.linkCompra}
+                                href={show.ticketLink}
                                 target="_blank"
                                 class="mt-3 inline-block bg-yellow-500 text-black px-4 py-2 rounded hover:bg-yellow-400 transition"
                             >
-                                Comprar Entradas
+                                Comprar entradas
                             </a>
                         ) : (
                             <p class="text-gray-500 mt-2">Entradas próximamente</p>

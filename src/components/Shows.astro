@@ -1,0 +1,68 @@
+---
+import { getUpcomingShows, getPastShows } from '../lib/firebase';
+// import { formatDate } from '../utils/dateUtils';
+
+const upcomingShows = await getUpcomingShows();
+const pastShows = await getPastShows();
+
+function formatDate(dateString: any) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-AR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    });
+}
+---
+
+<section id="shows" class="bg-white dark:bg-neutral-950">
+    <div class="container mx-auto p-8 md:px-16">
+        <h2 class="text-3xl lg:text-4xl font-semibold mb-6 text-center">Próximos Shows</h2>
+
+        {
+            upcomingShows.length === 0 ? (
+                <p class="text-center text-xl mb-16">No hay shows programados por el momento.</p>
+            ) : (
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+                    {upcomingShows.map((show) => (
+                        <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+                            <div class="p-6">
+                                <h2 class="text-2xl font-bold mb-2">{show.venue}</h2>
+                                <p class="text-gray-300 mb-4">{formatDate(show.date)}</p>
+                                <p class="text-gray-400 mb-4">{show.location}</p>
+                                {show.ticketLink && (
+                                    <a
+                                        href={show.ticketLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition"
+                                    >
+                                        Comprar Entradas
+                                    </a>
+                                )}
+                                {!show.ticketLink && show.info && <p class="text-gray-300 italic">{show.info}</p>}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )
+        }
+
+        <h2 class="text-3xl font-bold text-center mb-8">Shows Anteriores</h2>
+        <div class="max-w-3xl mx-auto">
+            {
+                pastShows.length === 0 ? (
+                    <p class="text-center text-xl">No hay shows anteriores registrados.</p>
+                ) : (
+                    <ul class="space-y-4">
+                        {pastShows.map((show) => (
+                            <li class="border-b border-gray-700 pb-3">
+                                <span class="font-bold">{formatDate(show.date)}</span> - {show.venue}, {show.location}
+                            </li>
+                        ))}
+                    </ul>
+                )
+            }
+        </div>
+    </div>
+</section>
