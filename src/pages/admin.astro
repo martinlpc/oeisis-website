@@ -40,6 +40,10 @@ import Layout from '../layouts/Layout.astro';
                         <input type="date" id="date" class="w-full p-2 rounded bg-gray-700 text-white" />
                     </div>
                     <div>
+                        <label for="displayDate" class="block mb-1">Texto Fecha a mostrar</label>
+                        <input type="text" id="displayDate" class="w-full p-2 rounded bg-gray-700 text-white" />
+                    </div>
+                    <div>
                         <label for="location" class="block mb-1">Ubicación</label>
                         <input type="text" id="location" class="w-full p-2 rounded bg-gray-700 text-white" />
                     </div>
@@ -219,6 +223,7 @@ import Layout from '../layouts/Layout.astro';
                 const showIdInput = document.getElementById('showId') as HTMLInputElement;
                 const venueInput = document.getElementById('venue') as HTMLInputElement;
                 const dateInput = document.getElementById('date') as HTMLInputElement;
+                const displayDateInput = document.getElementById('displayDate') as HTMLInputElement;
                 const locationInput = document.getElementById('location') as HTMLInputElement;
                 const ticketLinkInput = document.getElementById('ticketLink') as HTMLInputElement;
                 const infoInput = document.getElementById('info') as HTMLTextAreaElement;
@@ -227,6 +232,7 @@ import Layout from '../layouts/Layout.astro';
                 if (showIdInput) showIdInput.value = '';
                 if (venueInput) venueInput.value = '';
                 if (dateInput) dateInput.value = '';
+                if (displayDateInput) displayDateInput.value = '';
                 if (locationInput) locationInput.value = '';
                 if (ticketLinkInput) ticketLinkInput.value = '';
                 if (infoInput) infoInput.value = '';
@@ -244,11 +250,12 @@ import Layout from '../layouts/Layout.astro';
                 const showIdInput = document.getElementById('showId') as HTMLInputElement;
                 const venueInput = document.getElementById('venue') as HTMLInputElement;
                 const dateInput = document.getElementById('date') as HTMLInputElement;
+                const displayDateInput = document.getElementById('displayDate') as HTMLInputElement;
                 const locationInput = document.getElementById('location') as HTMLInputElement;
                 const ticketLinkInput = document.getElementById('ticketLink') as HTMLInputElement;
                 const infoInput = document.getElementById('info') as HTMLTextAreaElement;
 
-                if (!showIdInput || !venueInput || !dateInput || !locationInput || !ticketLinkInput || !infoInput) {
+                if (!showIdInput || !venueInput || !dateInput || !displayDateInput || !locationInput || !ticketLinkInput || !infoInput) {
                     alert('No se encontraron todos los campos del formulario');
                     return;
                 }
@@ -257,6 +264,7 @@ import Layout from '../layouts/Layout.astro';
                 const data = {
                     venue: venueInput.value,
                     date: dateInput.value,
+                    displayDate: displayDateInput.value,
                     location: locationInput.value,
                     ticketLink: ticketLinkInput.value || null,
                     info: infoInput.value || null,
@@ -303,6 +311,7 @@ import Layout from '../layouts/Layout.astro';
                     const showIdInput = document.getElementById('showId') as HTMLInputElement;
                     const venueInput = document.getElementById('venue') as HTMLInputElement;
                     const dateInput = document.getElementById('date') as HTMLInputElement;
+                    const displayDateInput = document.getElementById('displayDate') as HTMLInputElement;
                     const locationInput = document.getElementById('location') as HTMLInputElement;
                     const ticketLinkInput = document.getElementById('ticketLink') as HTMLInputElement;
                     const infoInput = document.getElementById('info') as HTMLTextAreaElement;
