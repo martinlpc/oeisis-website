@@ -6,14 +6,14 @@ const showsData = await getUpcomingShows();
 console.log(showsData);
 ---
 
-<section class="w-full py-16 bg-gray-900 text-white text-center min-h-screen">
+<section class="w-full py-16 bg-gray-900 text-white text-center min-h-auto">
     <h2 class="text-3xl md:text-4xl font-bold">Próximos shows</h2>
 
-    <div class="mt-8 max-w-4xl mx-auto space-y-6">
+    <ul class="mt-8 max-w-4xl mx-auto space-y-6">
         {
             showsData.length > 0 ? (
                 showsData.map((show) => (
-                    <div class="bg-gray-800 rounded-lg p-5 mb-4" id={show.id}>
+                    <li class="bg-gray-800 rounded-lg p-5 mb-4" id={show.id}>
                         <h3 class="text-xl font-semibold">
                             {show.location} - {show.venue}
                         </h3>
@@ -29,11 +29,11 @@ console.log(showsData);
                         ) : (
                             <p class="text-gray-500 mt-2">Entradas próximamente</p>
                         )}
-                    </div>
+                    </li>
                 ))
             ) : (
                 <p class="text-center text-gray-400">No hay shows disponibles en este momento.</p>
             )
         }
-    </div>
+    </ul>
 </section>
