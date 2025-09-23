@@ -3,40 +3,40 @@ import { Image } from 'astro:assets';
 import featuredImg from '../images/nextshow.png';
 ---
 
-<section class="w-full flex items-center justify-center py-8 bg-black text-white text-center">
-    <div class="max-w-4xl mx-auto px-4">
-        <h2 class="text-2xl md:text-4xl font-bold mb-4"></h2>
+<section class="w-full flex items-center justify-center py-8 bg-black text-white">
+    <div class="max-w-4xl mx-auto px-4 text-center">
+        <h2 class="text-2xl md:text-4xl font-bold mb-4">Próximo evento</h2>
 
-        <Image
-            src={featuredImg}
-            alt="Oeisis en vivo en XLR San Miguel"
-            sizes="(max-width: 767px) 100vw, 50vw"
-            widths={[480, 768, 1024]}
-            class="w-full max-w-4xl max-h-[75vh] object-contain mx-auto mb-8"
-        />
-        <div class="text-base md:text-lg font-small space-y-1 pb-4">
-            <p><u>¡Volvemos a SAN MIGUEL!</u></p>
-            <span>Te esperamos el SÁBADO 11 DE OCTUBRE, desde las 22:00 hs</span>
+        <figure class="mx-auto mb-6">
+            <Image
+                src={featuredImg}
+                alt="Oeisis en vivo en XLR San Miguel"
+                sizes="(max-width: 767px) 100vw, 50vw"
+                widths={[320, 480, 768, 1024]}
+                loading="lazy"
+                placeholder="blur"
+                class="w-full max-w-4xl max-h-[60vh] object-contain mx-auto"
+            />
+            <figcaption class="sr-only">Afiche del próximo show de Oeisis en XLR San Miguel</figcaption>
+        </figure>
+
+        <div class="text-base md:text-lg space-y-1 pb-4">
+            <p class="font-semibold underline">¡Volvemos a SAN MIGUEL!</p>
+            <p>Te esperamos el <strong>SÁBADO 11 DE OCTUBRE</strong>, desde las <strong>22:00 hs</strong></p>
+            <!-- Countdown removed by request -->
         </div>
-        <button class="buy-button px-8 py-4 bg-yellow-500 text-black text-lg lg:text-xl font-semibold rounded-md hover:bg-yellow-600 transition-colors">
-            <a target="_blank" href="https://livepass.com.ar/events/fiesta-mtv-80-90-00-en-san-miguel-11-10">Comprar entradas</a>
-        </button>
+
+        <a
+            class="inline-block mt-4 px-6 py-3 bg-yellow-400 text-black text-base md:text-lg lg:text-xl font-semibold rounded-md hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-300 transition-colors"
+            href="https://livepass.com.ar/events/fiesta-mtv-80-90-00-en-san-miguel-11-10"
+            target="_blank"
+            rel="noopener noreferrer"
+            role="button"
+            aria-label="Comprar entradas para Oeisis en San Miguel (se abre en nueva pestaña)"
+        >
+            Comprar entradas
+        </a>
     </div>
 </section>
 
-<style>
-    .buy-button {
-        padding: 5px 15px;
-        background-color: #f0cc42;
-        color: #000;
-        text-transform: uppercase;
-        font-weight: bold;
-        border: none;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-    .buy-button:hover {
-        background-color: #fff;
-        color: #000;
-    }
-</style>
+<!-- Small inline styles removed in favor of Tailwind classes above. -->
