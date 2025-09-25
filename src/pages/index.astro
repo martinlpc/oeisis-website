@@ -12,3 +12,52 @@ import FeaturedVideos from '../components/FeaturedVideos.astro';
     <ShowsList />
     <FeaturedVideos />
 </Layout>
+
+<!-- Structured Data for Featured Event -->
+<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Event",
+        "name": "Oeisis en Fiesta MTV 80s 90s 2000s - XLR San Miguel",
+        "startDate": "2025-10-11T22:00:00-03:00",
+        "endDate": "2025-10-12T05:00:00-03:00",
+        "location": {
+            "@type": "Place",
+            "name": "XLR San Miguel",
+            "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "Tribulato 449",
+                "addressLocality": "San Miguel",
+                "addressRegion": "Buenos Aires",
+                "postalCode": "1663",
+                "addressCountry": "AR"
+            }
+        },
+        "image": ["https://oeisis.netlify.app/_astro/nextshow.CXnRAUYL_2ekFhM.webp", "https://oeisis.netlify.app/images/logo.png"],
+        "description": "¡Oeisis vuelve a San Miguel! Tributo a Oasis en vivo en XLR. Sumate a una noche única con los mejores temas del rock británico de los 90s, incluyendo Wonderwall, Don't Look Back in Anger, Live Forever y muchos más.",
+        "performer": {
+            "@type": "MusicGroup",
+            "name": "Oeisis",
+            "image": "https://oeisis.netlify.app/images/logo.png",
+            "sameAs": ["https://www.instagram.com/oeisisok/"]
+        },
+        "offers": {
+            "@type": "Offer",
+            "url": "https://livepass.com.ar/events/fiesta-mtv-80-90-00-en-san-miguel-11-10",
+            "availability": "https://schema.org/InStock",
+            "validFrom": "2025-09-23",
+            "price": 10000,
+            "priceCurrency": "ARS",
+            "category": "primary",
+            "priceSpecification": {
+                "@type": "PriceSpecification",
+                "price": 10000,
+                "priceCurrency": "ARS",
+                "validFrom": "2025-09-23"
+            }
+        },
+        "eventStatus": "https://schema.org/EventScheduled",
+        "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+        "typicalAgeRange": "18+"
+    }
+</script>

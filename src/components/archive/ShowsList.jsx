@@ -1,14 +1,13 @@
-// src/components/ShowsList.jsx
+// src/components/archive/ShowsList.jsx
+// Copia archivada de ShowsList.jsx — movido porque la versión activa en site es ShowsList.astro
 import React, { useState, useEffect } from 'react';
-import { formatDate } from '../utils/dateUtils';
-import { showsService } from '../lib/showsService';
+import { formatDate } from '../../utils/dateUtils';
+import { showsService } from '../../lib/showsService';
 
 const ShowsList = ({ shows: initialShows }) => {
     const [shows, setShows] = useState(initialShows || []);
     const [loading, setLoading] = useState(false);
 
-    // Este efecto solo es necesario si quieres actualizaciones en tiempo real
-    // Si prefieres el renderizado estático, puedes eliminarlo
     useEffect(() => {
         const fetchUpdatedShows = async () => {
             try {
@@ -22,12 +21,7 @@ const ShowsList = ({ shows: initialShows }) => {
             }
         };
 
-        // Actualizar datos cuando el componente se monta
         // fetchUpdatedShows();
-
-        // Descomenta esta sección si quieres actualizaciones periódicas
-        // const interval = setInterval(fetchUpdatedShows, 60000); // Actualizar cada minuto
-        // return () => clearInterval(interval);
     }, []);
 
     if (loading) {

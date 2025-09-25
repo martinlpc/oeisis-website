@@ -3,31 +3,103 @@ import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 
 const videosData: CollectionEntry<'videos'>[] = await getCollection('videos');
+
+function toEmbedUrl(url: string | undefined) {
+    if (!url) return '';
+    try {
+        const u = new URL(url);
+        const host = u.hostname.toLowerCase();
+
+        // YouTube long link -> embed
+        if (host.includes('youtube.com')) {
+            const v = u.searchParams.get('v');
+            if (v) return `https://www.youtube.com/embed/${v}`;
+            // sometimes embed links already
+            if (u.pathname.includes('/embed/')) return url;
+        }
+
+        // youtu.be short link
+        if (host === 'youtu.be') {
+            const id = u.pathname.split('/').filter(Boolean)[0];
+            if (id) return `https://www.youtube.com/embed/${id}`;
+        }
+
+        // Vimeo -> convert to player URL
+        if (host.includes('vimeo.com')) {
+            const parts = u.pathname.split('/').filter(Boolean);
+            const id = parts[parts.length - 1];
+            if (id) return `https://player.vimeo.com/video/${id}`;
+        }
+
+        // If it's already an embed or unknown provider, return as-is
+        return url;
+    } catch (e) {
+        return '';
+    }
+}
+
+function extractYouTubeId(url: string | undefined) {
+    if (!url) return null;
+    try {
+        const u = new URL(url);
+        const host = u.hostname.toLowerCase();
+        if (host.includes('youtube.com')) return u.searchParams.get('v');
+        if (host === 'youtu.be') return u.pathname.split('/').filter(Boolean)[0];
+        return null;
+    } catch {
+        return null;
+    }
+}
 ---
 
 <section class="w-full text-white text-center py-12">
     <div class="w-full max-w-xl px-4 mx-auto">
-        <h2 class="text-3xl md:text-4xl font-bold mb-8">Videos destacados</h2>
+        <h2 class="text-2xl md:text-4xl font-bold mb-4">Videos destacados</h2>
         {
             videosData.length > 0 ? (
-                videosData.map((video) => (
-                    <div class="video-wrapper mb-8">
-                        <div class="video-container mx-auto mb-4">
-                            <iframe
-                                loading="lazy"
-                                class="w-full h-full"
-                                width="560"
-                                height="315"
-                                src={video.data.url}
-                                title="YouTube video player"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                referrerpolicy="strict-origin-when-cross-origin"
-                                allowfullscreen
-                            />
+                videosData.map((video) => {
+                    const embed = toEmbedUrl(video.data.url);
+                    const ytId = extractYouTubeId(video.data.url);
+                    const title = video.data.texto ?? 'Video destacado';
+                    const placeholderId = `lite-${video.id}`;
+                    return (
+                        <div class="video-wrapper mb-8">
+                            <div class="video-container mx-auto mb-4">
+                                {ytId ? (
+                                    <div class="lite-video" id={placeholderId} data-embed={embed} data-title={title} data-ytid={ytId}>
+                                        <button aria-label={`Reproducir ${title}`} class="relative w-full h-full block">
+                                            <img src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`} alt={title} class="w-full h-full object-cover" />
+                                            <span class="absolute inset-0 flex items-center justify-center">
+                                                <svg class="w-16 h-16 text-white opacity-90" viewBox="0 0 68 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path
+                                                        d="M66.52 7.07C65.6 4.18 63.48 2.06 60.59 1.14 56.53 0 34 0 34 0s-22.53 0-26.59 1.14C4.52 2.06 2.4 4.18 1.48 7.07 0 11.82 0 24 0 24s0 12.18 1.48 16.93c.92 2.89 3.04 5.01 5.93 5.93C11.47 49 34 49 34 49s22.53 0 26.59-1.14c2.89-.92 5.01-3.04 5.93-5.93C68 36.18 68 24 68 24s0-12.18-1.48-16.93z"
+                                                        fill="#f00"
+                                                    />
+                                                    <path d="M45 24L27 14v20z" fill="#fff" />
+                                                </svg>
+                                            </span>
+                                        </button>
+                                    </div>
+                                ) : embed ? (
+                                    <iframe
+                                        loading="lazy"
+                                        class="w-full h-full"
+                                        width="560"
+                                        height="315"
+                                        src={embed}
+                                        title={title}
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        referrerpolicy="strict-origin-when-cross-origin"
+                                        allowfullscreen
+                                    />
+                                ) : (
+                                    <div class="w-full h-0 pt-[56.25%] bg-gray-800 flex items-center justify-center text-gray-300">Video no disponible</div>
+                                )}
+                            </div>
+                            <figcaption class="text-sm block mt-2">{title}</figcaption>
                         </div>
-                        <small class="text-sm block mt-2">{video.data.texto}</small>
-                    </div>
-                ))
+                    );
+                })
             ) : (
                 <p class="text-center text-gray-400">No hay videos disponibles en este momento.</p>
             )
@@ -57,3 +129,38 @@ const videosData: CollectionEntry<'videos'>[] = await getCollection('videos');
         border: none;
     }
 </style>
+
+<script is:inline>
+    // Click-to-load handler for lite videos
+    (function () {
+        function loadIframe(container) {
+            const embed = container.getAttribute('data-embed');
+            const title = container.getAttribute('data-title') || 'Video';
+            const ytid = container.getAttribute('data-ytid');
+            const src = embed || (ytid ? `https://www.youtube.com/embed/${ytid}` : '');
+            if (!src) return;
+            const iframe = document.createElement('iframe');
+            iframe.setAttribute('loading', 'lazy');
+            iframe.setAttribute('width', '560');
+            iframe.setAttribute('height', '315');
+            iframe.setAttribute('src', src + '?autoplay=1');
+            iframe.setAttribute('title', title);
+            iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+            iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+            iframe.setAttribute('allowfullscreen', '');
+            iframe.className = 'w-full h-full';
+            // replace container with iframe
+            container.parentNode.replaceChild(iframe, container);
+        }
+
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('.lite-video, .lite-video *');
+            if (!btn) return;
+            const container = btn.classList && btn.classList.contains('lite-video') ? btn : btn.closest('.lite-video');
+            if (container) {
+                e.preventDefault();
+                loadIframe(container);
+            }
+        });
+    })();
+</script>
