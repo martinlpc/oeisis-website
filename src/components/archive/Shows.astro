@@ -1,6 +1,7 @@
 ---
-import { getUpcomingShows, getPastShows } from '../lib/firebase';
-// import { formatDate } from '../utils/dateUtils';
+import { getUpcomingShows, getPastShows } from '../../lib/firebase.js';
+// Archivo archivado: Shows.astro
+// Copia de seguridad: este archivo fue movido a src/components/archive/ porque la versión activa es ShowsList.astro
 
 const upcomingShows = await getUpcomingShows();
 const pastShows = await getPastShows();
@@ -17,14 +18,14 @@ function formatDate(dateString: any) {
 
 <section id="shows" class="bg-white dark:bg-neutral-950">
     <div class="container mx-auto p-8 md:px-16">
-        <h2 class="text-3xl lg:text-4xl font-semibold mb-6 text-center">Próximos Shows</h2>
+        <h2 class="text-2xl md:text-4xl font-bold mb-4">Próximos Shows</h2>
 
         {
             upcomingShows.length === 0 ? (
                 <p class="text-center text-xl mb-16">No hay shows programados por el momento.</p>
             ) : (
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-                    {upcomingShows.map((show) => (
+                    {upcomingShows.map((show: any) => (
                         <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg">
                             <div class="p-6">
                                 <h2 class="text-2xl font-bold mb-2">{show.venue}</h2>
@@ -55,7 +56,7 @@ function formatDate(dateString: any) {
                     <p class="text-center text-xl">No hay shows anteriores registrados.</p>
                 ) : (
                     <ul class="space-y-4">
-                        {pastShows.map((show) => (
+                        {pastShows.map((show: any) => (
                             <li class="border-b border-gray-700 pb-3">
                                 <span class="font-bold">{formatDate(show.date)}</span> - {show.venue}, {show.location}
                             </li>
