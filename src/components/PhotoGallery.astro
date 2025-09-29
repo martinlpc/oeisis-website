@@ -1,65 +1,147 @@
 ---
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
-import demoImage from '../images/logo.png';
+
+// Importar imágenes de forma dinámica usando import.meta.glob
+const imageFiles = import.meta.glob<{ default: ImageMetadata }>('/src/assets/gallery/*.{jpg,jpeg,png,gif,webp,avif,JPEG}', { eager: true });
 
 // Interface para las fotos
 interface GalleryPhoto {
     src: ImageMetadata;
     alt: string;
     title?: string;
+    date?: string;
+    isError?: boolean;
 }
 
-// Array de fotos de ejemplo
-const photos: GalleryPhoto[] = [
-    {
-        src: demoImage,
-        alt: "Oeisis en vivo",
-        title: "Show en vivo"
-    },
-    {
-        src: demoImage,
-        alt: "Oeisis backstage",
-        title: "Backstage"
-    },
-    {
-        src: demoImage,
-        alt: "Oeisis con fans",
-        title: "Meet & Greet"
+// Función para procesar las imágenes
+function getImages() {
+    const photos: GalleryPhoto[] = [];
+    
+    try {
+        // Convertir el objeto de imágenes en un array y ordenar por nombre de archivo
+        Object.entries(imageFiles)
+            .sort(([pathA], [pathB]) => pathA.localeCompare(pathB))
+            .forEach(([path, image]) => {
+                // Extraer el nombre del archivo de la ruta completa
+                const filename = path.split('/').pop()?.split('.')[0] || '';
+                
+                // Crear el título a partir del nombre del archivo
+                const title = filename
+                    .split(/[-_]/)
+                    .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                    .join(' ');
+
+                // Crear el objeto de la foto
+                photos.push({
+                    src: image.default,
+                    alt: `Oeisis - ${title}`,
+                    title: title,
+                    // Extraer año si existe en el nombre del archivo, sino dejar vacío
+                    date: filename.match(/\d{4}/)?.[0] || ''
+                });
+            });
+
+    } catch (error) {
+        console.error('Error procesando imágenes de la galería:', error);
     }
-];
+
+    return photos;
+}
+
+const photos = await getImages();
 
 // Opciones del carrusel
 const autoplay = true; // Activado
 const autoplayInterval = 3000; // 3 segundos entre slides
+
+// Estado inicial del modal (se maneja con JavaScript)
+let isModalOpen = false;
+let currentModalImage = null;
 ---
 
 <section class="w-full py-12 bg-gray-900 text-white">
     <div class="max-w-7xl mx-auto px-4">
         <h2 class="text-2xl md:text-4xl font-bold text-center mb-8">Galería</h2>
+
+        <!-- Modal -->
+        <div id="imageModal" class="fixed inset-0 bg-black/90 z-50 hidden items-center justify-center">
+            <div class="relative max-w-7xl mx-auto px-4 py-8 w-full h-full flex flex-col items-center justify-center">
+                <!-- Botón cerrar -->
+                <button 
+                    id="closeModal"
+                    class="absolute top-4 right-4 text-white text-4xl hover:text-yellow-400 transition-colors z-20"
+                    aria-label="Cerrar modal"
+                >
+                    ×
+                </button>
+                
+                <!-- Contenedor de imagen -->
+                <div class="relative w-full h-full flex items-center justify-center">
+                    <img
+                        id="modalImage"
+                        src=""
+                        alt=""
+                        class="max-h-[90vh] max-w-[90vw] object-contain"
+                    />
+                    
+                    <!-- Leyenda -->
+                    <div id="modalCaption" class="absolute bottom-4 left-0 right-0 text-center text-white bg-black/75 p-4 mx-auto max-w-2xl rounded">
+                        <h3 class="text-xl font-semibold"></h3>
+                        <p class="text-sm text-gray-300"></p>
+                    </div>
+                </div>
+
+                <!-- Navegación -->
+                <button
+                    id="prevImage"
+                    class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/75 text-white w-12 h-12 rounded-full flex items-center justify-center text-3xl transition-colors"
+                    aria-label="Imagen anterior"
+                >‹</button>
+                <button
+                    id="nextImage"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/75 text-white w-12 h-12 rounded-full flex items-center justify-center text-3xl transition-colors"
+                    aria-label="Siguiente imagen"
+                >›</button>
+            </div>
+        </div>
         
         {photos.length === 0 ? (
-            <p class="text-center text-gray-400 py-12">No hay fotos disponibles</p>
+            <div class="text-center py-12">
+                <p class="text-gray-400">No hay fotos disponibles en la galería</p>
+                <p class="text-sm text-gray-500 mt-2">Agrega imágenes en la carpeta src/assets/gallery</p>
+            </div>
         ) : (
             <div class="relative">
                 <!-- Slides container -->
                 <div id="photo-carousel" class="overflow-hidden rounded-lg">
                     <div class="carousel-track flex transition-transform duration-500 ease-out" style="transform: translateX(0%)">
                         {photos.map((photo) => (
-                            <figure class="w-full flex-shrink-0" style="width:100%">
+                            <figure 
+                                class="w-full flex-shrink-0 relative cursor-pointer group" 
+                                style="width:100%"
+                                data-index={photos.indexOf(photo)}
+                            >
                                 <Image
                                     src={photo.src}
                                     alt={photo.alt}
-                                    widths={[320, 640, 960]}
+                                    widths={[320, 640, 960, 1200]}
                                     sizes="(max-width: 640px) 100vw, 90vw"
                                     loading="lazy"
-                                    class="w-full h-72 md:h-[420px] object-cover"
+                                    class={`w-full h-72 md:h-[420px] object-cover transition-transform duration-300 group-hover:scale-105 ${photo.isError ? 'opacity-50' : ''}`}
                                 />
                                 {photo.title && (
                                     <figcaption class="absolute bottom-0 left-0 right-0 bg-black/75 text-white p-4">
-                                        <h3 class="text-lg font-semibold">{photo.title}</h3>
+                                        <h3 class="text-lg font-semibold">
+                                            {photo.title}
+                                            {photo.isError && <span class="text-yellow-400 text-sm ml-2">(Error cargando imagen)</span>}
+                                        </h3>
+                                        {photo.date && <p class="text-sm text-gray-300">{photo.date}</p>}
                                     </figcaption>
                                 )}
+                                <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <span class="bg-black/75 text-white px-4 py-2 rounded-full">Ver imagen</span>
+                                </div>
                             </figure>
                         ))}
                     </div>
@@ -99,6 +181,7 @@ const autoplayInterval = 3000; // 3 segundos entre slides
 
 <script>
     (function () {
+        // Elementos del carrusel
         const track = document.querySelector('.carousel-track') as HTMLElement;
         if (!track) return;
 
@@ -107,6 +190,18 @@ const autoplayInterval = 3000; // 3 segundos entre slides
 
         const slides = Array.from(track.children) as HTMLElement[];
         if (slides.length === 0) return;
+
+        // Elementos del modal
+        const modal = document.getElementById('imageModal') as HTMLElement;
+        const modalImage = document.getElementById('modalImage') as HTMLImageElement;
+        const modalCaption = document.getElementById('modalCaption') as HTMLElement;
+        const modalTitle = modalCaption?.querySelector('h3');
+        const modalDate = modalCaption?.querySelector('p');
+        const closeButton = document.getElementById('closeModal');
+        const prevModalBtn = document.getElementById('prevImage');
+        const nextModalBtn = document.getElementById('nextImage');
+        
+        let currentModalIndex = 0;
 
         let index = 0;
         const total = slides.length;
@@ -210,6 +305,73 @@ const autoplayInterval = 3000; // 3 segundos entre slides
         window.addEventListener('resize', refreshSlideWidths);
         trackParent.addEventListener('mouseenter', stopAutoplay);
         trackParent.addEventListener('mouseleave', startAutoplay);
+
+        // Modal functionality
+        function openModal(index: number) {
+            if (!modal || !modalImage || !modalTitle || !modalDate) return;
+            
+            currentModalIndex = index;
+            const slide = slides[index];
+            if (!slide) return;
+
+            const img = slide.querySelector('img');
+            const caption = slide.querySelector('figcaption');
+            
+            if (img) {
+                modalImage.src = img.src;
+                modalImage.alt = img.alt;
+            }
+            
+            if (caption) {
+                modalTitle.textContent = caption.querySelector('h3')?.textContent || '';
+                modalDate.textContent = caption.querySelector('p')?.textContent || '';
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            if (!modal) return;
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+
+        function showNextModal() {
+            openModal((currentModalIndex + 1) % slides.length);
+        }
+
+        function showPrevModal() {
+            openModal((currentModalIndex - 1 + slides.length) % slides.length);
+        }
+
+        // Event listeners para el modal
+        slides.forEach((slide, index) => {
+            slide.addEventListener('click', () => {
+                stopAutoplay();
+                openModal(index);
+            });
+        });
+
+        closeButton?.addEventListener('click', closeModal);
+        prevModalBtn?.addEventListener('click', showPrevModal);
+        nextModalBtn?.addEventListener('click', showNextModal);
+
+        // Cerrar modal con Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+            if (modal && !modal.classList.contains('hidden')) {
+                if (e.key === 'ArrowRight') showNextModal();
+                if (e.key === 'ArrowLeft') showPrevModal();
+            }
+        });
+
+        // Cerrar modal al hacer click fuera de la imagen
+        modal?.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
 
         // Initialize
         refreshSlideWidths();
