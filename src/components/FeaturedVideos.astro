@@ -63,7 +63,7 @@ function extractYouTubeId(url: string | undefined) {
                     const title = video.data.texto ?? 'Video destacado';
                     const placeholderId = `lite-${video.id}`;
                     return (
-                        <div class="video-wrapper mb-8">
+                        <figure class="video-wrapper mb-8">
                             <div class="video-container mx-auto mb-4">
                                 {ytId ? (
                                     <div class="lite-video" id={placeholderId} data-embed={embed} data-title={title} data-ytid={ytId}>
@@ -97,7 +97,7 @@ function extractYouTubeId(url: string | undefined) {
                                 )}
                             </div>
                             <figcaption class="text-sm block mt-2">{title}</figcaption>
-                        </div>
+                        </figure>
                     );
                 })
             ) : (
