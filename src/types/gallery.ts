@@ -6,6 +6,9 @@ export interface GalleryPhoto {
     title?: string;
     date?: string;
     isError?: boolean;
+    originalPath?: string;
+    retryCount?: number;
+    lastError?: string;
 }
 
 export interface ModalPhoto {
@@ -14,6 +17,9 @@ export interface ModalPhoto {
     title?: string;
     date?: string;
     isError?: boolean;
+    originalPath?: string;
+    retryCount?: number;
+    lastError?: string;
 }
 
 export interface CarouselConfig {

@@ -11,7 +11,9 @@ export const IMAGE_CONFIG = {
     widths: [320, 640, 960, 1200, 1600],
     sizes: '(max-width: 640px) 100vw, 90vw',
     formats: ['webp', 'avif', 'jpg'],
-    loading: 'lazy' as const
+    loading: 'lazy' as const,
+    placeholder: 'blur',
+    quality: 80
 } as const;
 
 // Configuración de accesibilidad

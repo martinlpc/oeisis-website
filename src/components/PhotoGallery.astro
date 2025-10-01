@@ -115,7 +115,7 @@ const photos = processGalleryImages(imageFiles);
                                     widths={[...IMAGE_CONFIG.widths]}
                                     sizes={IMAGE_CONFIG.sizes}
                                     loading={IMAGE_CONFIG.loading}
-                                    class={`w-full h-72 md:h-[420px] object-cover transition-transform duration-300 group-hover:scale-105 ${photo.isError ? 'opacity-50' : ''}`}
+                                    class={`w-full h-72 md:h-[420px] object-cover transition-transform duration-300 group-hover:scale-105 ${photo.isError ? 'gallery-image-error error-placeholder' : ''}`}
                                 />
                                 {photo.title && (
                                     <figcaption 
@@ -124,9 +124,23 @@ const photos = processGalleryImages(imageFiles);
                                     >
                                         <h3 class="text-lg font-semibold">
                                             {photo.title}
-                                            {photo.isError && <span class="text-yellow-400 text-sm ml-2" role="alert">(Error cargando imagen)</span>}
                                         </h3>
                                         {photo.date && <p class="text-sm text-gray-300">{photo.date}</p>}
+                                        {photo.isError && (
+                                            <div class="mt-2 space-y-1 error-message">
+                                                <p class="text-yellow-400 text-sm flex items-center gap-2 error-indicator" role="alert">
+                                                    <span>⚠️</span>
+                                                    <span>Error cargando imagen</span>
+                                                </p>
+                                                <button 
+                                                    class="retry-button text-white text-xs underline hover:no-underline transition-all duration-200"
+                                                    data-retry-image={index}
+                                                    title="Haz clic para reintentar cargar la imagen"
+                                                >
+                                                    Reintentar carga
+                                                </button>
+                                            </div>
+                                        )}
                                     </figcaption>
                                 )}
                                 <div 
@@ -185,6 +199,7 @@ const photos = processGalleryImages(imageFiles);
     import { ModalController } from '../utils/gallery/modalController.js';
     import { PerformanceOptimizer, RenderOptimizer } from '../utils/gallery/performanceOptimization.js';
     import { setupLazyLoading, preloadAdjacentImages } from '../utils/gallery/imageOptimization.js';
+    import { retryFailedImage, getErrorStatusText } from '../utils/gallery/imageUtils.js';
     import { FocusTrap } from '../utils/gallery/focusManagement.js';
     import { CAROUSEL_CONFIG } from '../utils/gallery/config.js';
     import type { CarouselElements, ModalElements, GalleryPhoto, ModalPhoto } from '../types/gallery.js';
@@ -260,7 +275,7 @@ const photos = processGalleryImages(imageFiles);
                 } as GalleryPhoto;
             }).filter(Boolean) as GalleryPhoto[];
             
-            preloadAdjacentImages(state.currentIndex, photos);
+            preloadAdjacentImages(state.currentIndex, photos, 1);
         });
 
         carouselElements.prevButton?.addEventListener('click', () => carousel.prev());
@@ -364,6 +379,55 @@ const photos = processGalleryImages(imageFiles);
             startX = null;
         });
 
+        // Manejo de reintentos de imágenes con error
+        document.addEventListener('click', async (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (target.hasAttribute('data-retry-image')) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const imageIndex = parseInt(target.getAttribute('data-retry-image') || '0', 10);
+                const slideElement = carouselElements.slides?.[imageIndex];
+                const imgElement = slideElement?.querySelector('img') as HTMLImageElement;
+                const photosData = getGalleryPhotos();
+                const photo = photosData[imageIndex];
+                
+                if (photo && imgElement && photo.isError) {
+                    // Mostrar indicador de carga
+                    target.textContent = 'Reintentando...';
+                    target.setAttribute('disabled', 'true');
+                    
+                    try {
+                        const success = await retryFailedImage(photo, imgElement);
+                        if (success) {
+                            // Actualizar la UI para reflejar el éxito
+                            const errorElements = slideElement?.querySelectorAll('[role="alert"], [data-retry-image]');
+                            errorElements?.forEach(el => el.remove());
+                            
+                            // Agregar clase de éxito temporal
+                            imgElement.classList.add('transition-opacity', 'opacity-50');
+                            setTimeout(() => {
+                                imgElement.classList.remove('opacity-50');
+                            }, 300);
+                        } else {
+                            // Actualizar texto del botón con el estado actual
+                            target.textContent = getErrorStatusText(photo);
+                        }
+                    } catch (error) {
+                        target.textContent = 'Error en reintento';
+                        console.error('Error al reintentar imagen:', error);
+                    } finally {
+                        target.removeAttribute('disabled');
+                        if (photo.retryCount && photo.retryCount < 3) {
+                            setTimeout(() => {
+                                target.textContent = 'Reintentar carga';
+                            }, 2000);
+                        }
+                    }
+                }
+            }
+        });
+
         // Cleanup
         window.addEventListener('beforeunload', () => {
             carousel.destroy();
@@ -376,3 +440,76 @@ const photos = processGalleryImages(imageFiles);
         carousel.play();
     })();
 </script>
+
+<style>
+    /* Estilos para estados de error y carga */
+    .gallery-image-error {
+        position: relative;
+        opacity: 0.7;
+        filter: grayscale(20%);
+    }
+    
+    .gallery-image-error::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 8px,
+            rgba(239, 68, 68, 0.1) 8px,
+            rgba(239, 68, 68, 0.1) 16px
+        );
+        pointer-events: none;
+    }
+    
+    .retry-button {
+        background: rgba(59, 130, 246, 0.8);
+        border-radius: 4px;
+        padding: 4px 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .retry-button:hover {
+        background: rgba(59, 130, 246, 1);
+        transform: translateY(-1px);
+    }
+    
+    .retry-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .error-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    @keyframes fadeInError {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .error-message {
+        animation: fadeInError 0.3s ease-out;
+    }
+    
+    /* Mejorar la apariencia del placeholder de error */
+    .error-placeholder {
+        background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+        border: 2px dashed #6b7280;
+        border-radius: 8px;
+    }
+</style>
