@@ -286,8 +286,8 @@ import Layout from '../layouts/Layout.astro';
                     showForm.classList.add('hidden');
                     loadShows();
 
-                    // Opcionalmente, dispara una reconstrucción del sitio
-                    triggerRebuild();
+                    // Los datos ya están actualizados en Firebase
+                    // No es necesario rebuilding el sitio
                 } catch (error) {
                     const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
                     alert(`Error guardando el show: ${errorMessage}`);
@@ -343,8 +343,8 @@ import Layout from '../layouts/Layout.astro';
                     try {
                         await deleteDoc(doc(db, 'shows', id));
                         loadShows();
-                        // Opcionalmente, dispara una reconstrucción del sitio
-                        triggerRebuild();
+                        // Los datos ya están actualizados en Firebase
+                        // No es necesario rebuilding el sitio
                     } catch (error) {
                         const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
                         alert(`Error eliminando el show: ${errorMessage}`);
