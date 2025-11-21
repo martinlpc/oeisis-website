@@ -15,7 +15,7 @@ const showsData = await getUpcomingShows();
                 showsData.map((show) => (
                     <li class="bg-gray-800 rounded-lg p-5 mb-4" id={show.id}>
                         <h3 class="text-xl font-semibold">
-                            {show.location} - {show.venue}
+                            {show.venue} - {show.location}
                         </h3>
                         <p class="text-gray-300">{show.displayDate}</p>
                         {show.ticketLink ? (
