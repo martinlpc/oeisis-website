@@ -1,0 +1,515 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import type { GalleryPhoto } from '../types/gallery.js';
+import { CAROUSEL_CONFIG, IMAGE_CONFIG, ARIA_LABELS } from '../utils/gallery/config.js';
+import { processGalleryImages } from '../utils/gallery/imageUtils.js';
+import { getCarouselAriaProps, getModalAriaProps, getNavigationAriaProps, getIndicatorAriaProps } from '../utils/gallery/accessibility.js';
+
+// Importar imágenes de forma dinámica usando import.meta.glob
+const imageFiles = import.meta.glob<{ default: ImageMetadata }>('/src/assets/gallery/*.{jpg,jpeg,png,gif,webp,avif,JPEG}', { eager: true });
+
+// Procesar imágenes usando la utilidad
+const photos = processGalleryImages(imageFiles);
+---
+
+<section 
+    class="w-full py-12 bg-gray-900 text-white"
+    role="region"
+    aria-label={ARIA_LABELS.gallery}
+>
+    <div class="max-w-7xl mx-auto px-4">
+        <h2 class="text-2xl md:text-4xl font-bold text-center mb-8" id="gallery-title">Galería</h2>
+
+        <!-- Modal -->
+        <div 
+            id="imageModal" 
+            class="fixed inset-0 bg-black/90 z-50 hidden items-center justify-center"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-title"
+            aria-describedby="modal-description"
+        >
+            <div class="relative max-w-7xl mx-auto px-4 py-8 w-full h-full flex flex-col items-center justify-center">
+                <!-- Botón cerrar -->
+                <button 
+                    id="closeModal"
+                    class="absolute top-4 right-4 text-white text-4xl hover:text-yellow-400 transition-colors z-20"
+                    aria-label={ARIA_LABELS.closeModal}
+                >
+                    ×
+                </button>
+                
+                <!-- Contenedor de imagen -->
+                <div class="relative w-full h-full flex items-center justify-center">
+                    <img
+                        id="modalImage"
+                        src=""
+                        alt=""
+                        class="max-h-[90vh] max-w-[90vw] object-contain"
+                        role="img"
+                        aria-labelledby="modal-title"
+                    />
+                    
+                    <!-- Leyenda -->
+                    <div 
+                        id="modalCaption" 
+                        class="absolute bottom-4 left-0 right-0 text-center text-white bg-black/75 p-4 mx-auto max-w-2xl rounded"
+                        role="complementary"
+                        aria-live="polite"
+                    >
+                        <h3 id="modal-title" class="text-xl font-semibold"></h3>
+                        <p id="modal-description" class="text-sm text-gray-300"></p>
+                    </div>
+                </div>
+
+                <!-- Navegación -->
+                <button
+                    id="prevImage"
+                    class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/75 text-white w-12 h-12 rounded-full flex items-center justify-center text-3xl transition-colors"
+                    aria-label={ARIA_LABELS.prevImage}
+                    aria-controls="modalImage"
+                >‹</button>
+                <button
+                    id="nextImage"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/75 text-white w-12 h-12 rounded-full flex items-center justify-center text-3xl transition-colors"
+                    aria-label={ARIA_LABELS.nextImage}
+                    aria-controls="modalImage"
+                >›</button>
+            </div>
+        </div>
+        
+        {photos.length === 0 ? (
+            <div class="text-center py-12">
+                <p class="text-gray-400">No hay fotos disponibles en la galería</p>
+                <p class="text-sm text-gray-500 mt-2">Agrega imágenes en la carpeta src/assets/gallery</p>
+            </div>
+        ) : (
+            <div class="relative">
+                <!-- Slides container -->
+                <div 
+                    id="photo-carousel" 
+                    class="overflow-hidden rounded-lg"
+                    role="region"
+                    aria-label={ARIA_LABELS.carousel}
+                    aria-roledescription="carousel"
+                >
+                    <div 
+                        class="carousel-track flex transition-transform duration-500 ease-out" 
+                        style="transform: translateX(0%)"
+                        role="presentation"
+                    >
+                        {photos.map((photo, index) => (
+                            <figure 
+                                class="w-full flex-shrink-0 relative cursor-pointer group" 
+                                style="width:100%"
+                                data-index={index}
+                                role="tabpanel"
+                                id={`carousel-item-${index + 1}`}
+                                aria-label={ARIA_LABELS.slideImage(index + 1, photos.length)}
+                                aria-hidden={index !== 0}
+                            >
+                                <Image
+                                    src={photo.src}
+                                    alt={photo.alt}
+                                    widths={[...IMAGE_CONFIG.widths]}
+                                    sizes={IMAGE_CONFIG.sizes}
+                                    loading={IMAGE_CONFIG.loading}
+                                    class={`w-full h-72 md:h-[420px] object-cover transition-transform duration-300 group-hover:scale-105 ${photo.isError ? 'gallery-image-error error-placeholder' : ''}`}
+                                />
+                                {photo.title && (
+                                    <figcaption 
+                                        class="absolute bottom-0 left-0 right-0 bg-black/75 text-white p-4"
+                                        id={`caption-${index + 1}`}
+                                    >
+                                        <h3 class="text-lg font-semibold">
+                                            {photo.title}
+                                        </h3>
+                                        {photo.date && <p class="text-sm text-gray-300">{photo.date}</p>}
+                                        {photo.isError && (
+                                            <div class="mt-2 space-y-1 error-message">
+                                                <p class="text-yellow-400 text-sm flex items-center gap-2 error-indicator" role="alert">
+                                                    <span>⚠️</span>
+                                                    <span>Error cargando imagen</span>
+                                                </p>
+                                                <button 
+                                                    class="retry-button text-white text-xs underline hover:no-underline transition-all duration-200"
+                                                    data-retry-image={index}
+                                                    title="Haz clic para reintentar cargar la imagen"
+                                                >
+                                                    Reintentar carga
+                                                </button>
+                                            </div>
+                                        )}
+                                    </figcaption>
+                                )}
+                                <div 
+                                    class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                    aria-hidden="true"
+                                >
+                                    <span class="bg-black/75 text-white px-4 py-2 rounded-full">Ver imagen</span>
+                                </div>
+                            </figure>
+                        ))}
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <button 
+                    class="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/75 text-white w-10 h-10 rounded-full flex items-center justify-center text-2xl transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    aria-label={ARIA_LABELS.prevImage}
+                    aria-controls="photo-carousel"
+                    data-carousel-prev
+                >
+                    ‹
+                </button>
+                <button 
+                    class="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/75 text-white w-10 h-10 rounded-full flex items-center justify-center text-2xl transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    aria-label={ARIA_LABELS.nextImage}
+                    aria-controls="photo-carousel"
+                    data-carousel-next
+                >
+                    ›
+                </button>
+
+                <!-- Dots -->
+                <div 
+                    class="mt-4 flex justify-center gap-2" 
+                    role="tablist" 
+                    aria-label={ARIA_LABELS.carousel}
+                >
+                    {photos.map((_, i) => (
+                        <button
+                            class="w-2.5 h-2.5 rounded-full bg-gray-400/60 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-colors"
+                            role="tab"
+                            aria-label={ARIA_LABELS.slideImage(i + 1, photos.length)}
+                            aria-controls={`carousel-item-${i + 1}`}
+                            aria-selected={i === 0}
+                            data-carousel-dot={i}
+                        />
+                    ))}
+                </div>
+            </div>
+        )}
+    </div>
+</section>
+
+<script>
+    import { CarouselController } from '../utils/gallery/carouselController.js';
+    import { ModalController } from '../utils/gallery/modalController.js';
+    import { PerformanceOptimizer, RenderOptimizer } from '../utils/gallery/performanceOptimization.js';
+    import { setupLazyLoading, preloadAdjacentImages } from '../utils/gallery/imageOptimization.js';
+    import { retryFailedImage, getErrorStatusText } from '../utils/gallery/imageUtils.js';
+    import { FocusTrap } from '../utils/gallery/focusManagement.js';
+    import { CAROUSEL_CONFIG } from '../utils/gallery/config.js';
+    import type { CarouselElements, ModalElements, GalleryPhoto, ModalPhoto } from '../types/gallery.js';
+    
+    (async function initialize() {
+        // Obtener elementos del DOM
+        const carouselElements: Partial<CarouselElements> = {
+            track: document.querySelector('.carousel-track') as HTMLElement,
+            slides: Array.from(document.querySelectorAll('.carousel-track > figure')) as HTMLElement[],
+            prevButton: document.querySelector('[data-carousel-prev]') as HTMLElement,
+            nextButton: document.querySelector('[data-carousel-next]') as HTMLElement,
+            dots: Array.from(document.querySelectorAll('[data-carousel-dot]')) as HTMLElement[]
+        };
+
+        const modalElements: Partial<ModalElements> = {
+            container: document.getElementById('imageModal') as HTMLElement,
+            image: document.getElementById('modalImage') as HTMLImageElement,
+            caption: document.getElementById('modalCaption') as HTMLElement,
+            title: document.querySelector('#modalCaption h3') as HTMLElement,
+            date: document.querySelector('#modalCaption p') as HTMLElement,
+            closeButton: document.getElementById('closeModal') as HTMLElement,
+            prevButton: document.getElementById('prevImage') as HTMLElement,
+            nextButton: document.getElementById('nextImage') as HTMLElement
+        };
+
+        // Verificar elementos requeridos
+        if (!carouselElements.track || !modalElements.container) return;
+
+        // Inicializar controladores
+        const carousel = new CarouselController(CAROUSEL_CONFIG);
+        const modal = new ModalController();
+        const focusTrap = new FocusTrap(modalElements.container);
+        const performanceOptimizer = new PerformanceOptimizer(
+            carouselElements.track,
+            (isVisible: boolean) => {
+                if (isVisible) {
+                    carousel.play();
+                } else {
+                    carousel.pause();
+                }
+            }
+        );
+        const renderOptimizer = new RenderOptimizer();
+
+        // Configurar Lazy Loading
+        setupLazyLoading();
+
+        // Event Listeners para el Carrusel
+        carousel.subscribe((state) => {
+            if (!renderOptimizer.shouldUpdate()) return;
+
+            const percent = -state.currentIndex * 100;
+            carouselElements.track!.style.transform = `translateX(${percent}%)`;
+            
+            carouselElements.dots?.forEach((dot, i) => {
+                dot.setAttribute('aria-selected', (i === state.currentIndex).toString());
+                dot.classList.toggle('bg-yellow-400', i === state.currentIndex);
+            });
+
+            // Precargar imágenes adyacentes
+            const photos = carouselElements.slides!.map(slide => {
+                const img = slide.querySelector('img');
+                if (!img) return null;
+                
+                return {
+                    src: {
+                        src: img.src,
+                        width: img.naturalWidth,
+                        height: img.naturalHeight,
+                        format: img.src.split('.').pop() || 'jpg'
+                    },
+                    alt: img.alt
+                } as GalleryPhoto;
+            }).filter(Boolean) as GalleryPhoto[];
+            
+            preloadAdjacentImages(state.currentIndex, photos, 1);
+        });
+
+        carouselElements.prevButton?.addEventListener('click', () => carousel.prev());
+        carouselElements.nextButton?.addEventListener('click', () => carousel.next());
+        carouselElements.dots?.forEach((dot, index) => {
+            dot.addEventListener('click', () => carousel.goTo(index));
+        });
+
+        // Función auxiliar para convertir elementos DOM en GalleryPhotos
+        function getGalleryPhotos(): GalleryPhoto[] {
+            return carouselElements.slides!.map(slide => {
+                const img = slide.querySelector('img');
+                if (!img) return null;
+                
+                return {
+                    src: {
+                        src: img.src,
+                        width: img.naturalWidth,
+                        height: img.naturalHeight,
+                        format: img.src.split('.').pop() || 'jpg'
+                    },
+                    alt: img.alt,
+                    title: slide.querySelector('h3')?.textContent,
+                    date: slide.querySelector('p')?.textContent
+                } as GalleryPhoto;
+            }).filter(Boolean) as GalleryPhoto[];
+        }
+
+        // Event Listeners para el Modal
+        modal.subscribe((state) => {
+            if (state.isOpen) {
+                modalElements.container!.classList.remove('hidden');
+                modalElements.container!.classList.add('flex');
+                focusTrap.activate();
+                document.body.style.overflow = 'hidden';
+            } else {
+                modalElements.container!.classList.add('hidden');
+                modalElements.container!.classList.remove('flex');
+                focusTrap.deactivate();
+                document.body.style.overflow = '';
+            }
+
+            if (state.image) {
+                modalElements.image!.src = state.image.src.src;
+                modalElements.image!.alt = state.image.alt;
+                modalElements.title!.textContent = state.image.title || '';
+                modalElements.date!.textContent = state.image.date || '';
+            }
+        });
+
+        carouselElements.slides?.forEach((slide, index) => {
+            slide.addEventListener('click', () => {
+                const img = slide.querySelector('img');
+                if (!img) return;
+
+                modal.open(index, {
+                    src: { src: img.src },
+                    alt: img.alt,
+                    title: slide.querySelector('h3')?.textContent || '',
+                    date: slide.querySelector('p')?.textContent || ''
+                });
+            });
+        });
+
+        modalElements.closeButton?.addEventListener('click', () => modal.close());
+        modalElements.prevButton?.addEventListener('click', () => modal.prev(getGalleryPhotos()));
+        modalElements.nextButton?.addEventListener('click', () => modal.next(getGalleryPhotos()));
+        modalElements.container?.addEventListener('click', (e: MouseEvent) => {
+            if (e.target === modalElements.container) {
+                modal.close();
+            }
+        });
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                modal.close();
+            } else if (modal.getState().isOpen) {
+                if (e.key === 'ArrowRight') modal.next(getGalleryPhotos());
+                if (e.key === 'ArrowLeft') modal.prev(getGalleryPhotos());
+            } else {
+                if (e.key === 'ArrowRight') carousel.next();
+                if (e.key === 'ArrowLeft') carousel.prev();
+            }
+        });
+
+        // Touch / swipe support
+        let startX: number | null = null;
+        carouselElements.track?.addEventListener('touchstart', (e: TouchEvent) => {
+            startX = e.touches[0].clientX;
+        }, { passive: true });
+
+        carouselElements.track?.addEventListener('touchend', (e: TouchEvent) => {
+            if (startX === null) return;
+            const endX = e.changedTouches[0].clientX;
+            const diff = startX - endX;
+            if (Math.abs(diff) > 40) {
+                if (diff > 0) carousel.next();
+                else carousel.prev();
+            }
+            startX = null;
+        });
+
+        // Manejo de reintentos de imágenes con error
+        document.addEventListener('click', async (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (target.hasAttribute('data-retry-image')) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const imageIndex = parseInt(target.getAttribute('data-retry-image') || '0', 10);
+                const slideElement = carouselElements.slides?.[imageIndex];
+                const imgElement = slideElement?.querySelector('img') as HTMLImageElement;
+                const photosData = getGalleryPhotos();
+                const photo = photosData[imageIndex];
+                
+                if (photo && imgElement && photo.isError) {
+                    // Mostrar indicador de carga
+                    target.textContent = 'Reintentando...';
+                    target.setAttribute('disabled', 'true');
+                    
+                    try {
+                        const success = await retryFailedImage(photo, imgElement);
+                        if (success) {
+                            // Actualizar la UI para reflejar el éxito
+                            const errorElements = slideElement?.querySelectorAll('[role="alert"], [data-retry-image]');
+                            errorElements?.forEach(el => el.remove());
+                            
+                            // Agregar clase de éxito temporal
+                            imgElement.classList.add('transition-opacity', 'opacity-50');
+                            setTimeout(() => {
+                                imgElement.classList.remove('opacity-50');
+                            }, 300);
+                        } else {
+                            // Actualizar texto del botón con el estado actual
+                            target.textContent = getErrorStatusText(photo);
+                        }
+                    } catch (error) {
+                        target.textContent = 'Error en reintento';
+                        console.error('Error al reintentar imagen:', error);
+                    } finally {
+                        target.removeAttribute('disabled');
+                        if (photo.retryCount && photo.retryCount < 3) {
+                            setTimeout(() => {
+                                target.textContent = 'Reintentar carga';
+                            }, 2000);
+                        }
+                    }
+                }
+            }
+        });
+
+        // Cleanup
+        window.addEventListener('beforeunload', () => {
+            carousel.destroy();
+            modal.destroy();
+            performanceOptimizer.destroy();
+            focusTrap.deactivate();
+        });
+
+        // Iniciar carrusel
+        carousel.play();
+    })();
+</script>
+
+<style>
+    /* Estilos para estados de error y carga */
+    .gallery-image-error {
+        position: relative;
+        opacity: 0.7;
+        filter: grayscale(20%);
+    }
+    
+    .gallery-image-error::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 8px,
+            rgba(239, 68, 68, 0.1) 8px,
+            rgba(239, 68, 68, 0.1) 16px
+        );
+        pointer-events: none;
+    }
+    
+    .retry-button {
+        background: rgba(59, 130, 246, 0.8);
+        border-radius: 4px;
+        padding: 4px 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .retry-button:hover {
+        background: rgba(59, 130, 246, 1);
+        transform: translateY(-1px);
+    }
+    
+    .retry-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .error-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    @keyframes fadeInError {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .error-message {
+        animation: fadeInError 0.3s ease-out;
+    }
+    
+    /* Mejorar la apariencia del placeholder de error */
+    .error-placeholder {
+        background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+        border: 2px dashed #6b7280;
+        border-radius: 8px;
+    }
+</style>

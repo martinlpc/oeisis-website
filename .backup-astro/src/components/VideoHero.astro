@@ -1,0 +1,62 @@
+---
+
+---
+
+<section class="relative w-full h-[75vh] min-h-[600px] max-h-[800px] flex items-center justify-center bg-gray-900 overflow-hidden">
+    <!-- Video de fondo -->
+    <div class="absolute inset-0 w-full h-full overflow-hidden">
+        <video autoplay loop muted playsinline class="absolute w-full h-full object-cover parallax-video">
+            <source src="/videos/hero_720p.mp4" type="video/mp4" />
+            Tu navegador no soporta videos en HTML5.
+        </video>
+        <!-- Botón flotante -->
+        <button
+            id="scroll-down-button"
+            class="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-white bg-opacity-20 rounded-full p-3 hover:bg-opacity-30 transition-opacity"
+            aria-label="Desplazarse hacia abajo"
+        >
+            <!-- Ícono de flecha hacia abajo (puedes usar un SVG o un ícono de una librería) -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+            </svg>
+        </button>
+    </div>
+</section>
+<style>
+    .parallax-video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: translateY(0); /* Inicialmente en su posición */
+        will-change: transform; /* Optimización para animaciones */
+    }
+</style>
+<script>
+    // Selecciona el video
+    const video = document.querySelector('.parallax-video');
+
+    // Función para mover el video
+    const handleScroll = () => {
+        const scrollPosition = window.scrollY; // Obtén la posición del scroll
+        const speed = 0.5; // Ajusta la velocidad del parallax (0.5 = 50% de la velocidad del scroll)
+        video.style.transform = `translateY(${scrollPosition * speed}px)`;
+    };
+
+    // Escucha el evento de scroll
+    window.addEventListener('scroll', handleScroll);
+</script>
+<script>
+    // Selecciona el botón
+    const scrollButton = document.getElementById('scroll-down-button');
+
+    // Función para desplazarse suavemente hacia la siguiente sección
+    scrollButton.addEventListener('click', () => {
+        window.scrollBy({
+            top: window.innerHeight, // Desplaza una pantalla hacia abajo
+            behavior: 'smooth', // Desplazamiento suave
+        });
+    });
+</script>

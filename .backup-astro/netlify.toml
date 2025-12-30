@@ -1,0 +1,10 @@
+[build]
+  command = "pnpm install --shamefully-hoist && pnpm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NETLIFY_USE_PNPM = "true"
+
+[context.deploy-preview]
+  command = "pnpm install --shamefully-hoist && pnpm run build"

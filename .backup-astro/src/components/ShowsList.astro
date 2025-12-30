@@ -1,0 +1,39 @@
+---
+import { getUpcomingShows } from '../lib/firebase.js';
+
+// Obtener los datos de Firebase
+const showsData = await getUpcomingShows();
+//console.log(showsData);
+---
+
+<section class="w-full py-16 bg-gray-900 text-white text-center min-h-auto">
+    <h2 class="text-2xl md:text-4xl font-bold mb-4">Próximos shows</h2>
+
+    <ul class="mt-8 max-w-4xl mx-auto space-y-6">
+        {
+            showsData.length > 0 ? (
+                showsData.map((show) => (
+                    <li class="bg-gray-800 rounded-lg p-5 mb-4" id={show.id}>
+                        <h3 class="text-xl font-semibold">
+                            {show.venue} - {show.location}
+                        </h3>
+                        <p class="text-gray-300">{show.displayDate}</p>
+                        {show.ticketLink ? (
+                            <a
+                                href={show.ticketLink}
+                                target="_blank"
+                                class="mt-3 inline-block bg-yellow-500 text-black px-4 py-2 rounded hover:bg-yellow-400 transition"
+                            >
+                                Comprar entradas
+                            </a>
+                        ) : (
+                            <p class="text-gray-500 mt-2">Entradas próximamente</p>
+                        )}
+                    </li>
+                ))
+            ) : (
+                <p class="text-center text-gray-400">No hay shows disponibles en este momento.</p>
+            )
+        }
+    </ul>
+</section>
