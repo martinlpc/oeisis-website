@@ -1,5 +1,10 @@
+import { useState, useEffect } from 'react';
 export function UnderConstruction() {
-    const lang = navigator.language.startsWith('es') ? 'es' : 'en';
+    const [lang, setLang] = useState('es')
+
+    useEffect(() => {
+        setLang(navigator.language.startsWith('es') ? 'es' : 'en');
+    }, []);
 
     const content = {
         es: {
