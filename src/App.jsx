@@ -1,19 +1,16 @@
-import { Hero } from './components/Hero';
-import { UpcomingShows } from './components/Upcomingshows';
-import { AdminShowForm } from './components/AdminShowForm';
-import { NewsForm } from './components/NewsForm';
-import { NewsList } from './components/NewsList';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Home } from './pages/Home';
+import { Admin } from './pages/Admin';
 import './index.css';
 
 function App() {
   return (
-    <div className="min-h-screen bg-black text-white">
-      <Hero />
-      <UpcomingShows />
-      <NewsList />
-      <NewsForm />
-      <AdminShowForm />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/admin" element={<Admin />} />
+      </Routes>
+    </Router>
   );
 }
 

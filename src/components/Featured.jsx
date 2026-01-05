@@ -1,0 +1,80 @@
+import { useFeatured } from '../hooks/useFeatured'
+
+export function Featured() {
+    const { featured, loading, error } = useFeatured()
+
+    if (loading) {
+        return (
+            <div className='min-h-screen bg-black flex items-center justify-center'>
+                <p className='text-white text-xl'>Cargando sección destacada...</p>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className='min-h-screen bg-black flex items-center justify-center'>
+                <p className='text-white text-xl'>Error: {error}</p>
+            </div>
+        )
+    }
+
+    if (!featured) {
+        return null
+    }
+
+    return (
+        <section className='relative w-full min-h-screen bg-black text-white overflow-hidden'>
+            {/* Imagen/video de fondno */}
+            <div className='absoulte inset-0 pointer-events-none'>
+                {featured.type === 'video' && featured.videoUrl ? (
+                    <iframe
+                        src={featured.videoUrl}
+                        className='w-full h-full'
+                        title={featured.title}
+                        allow='accelerometer; autoplay; clipboard-white; encrypted-media; gyroscope; picture-in-picture'
+                        allowFullScreen
+                    />
+                ) : featured.image ? (
+                    <img
+                        src={featured.image}
+                        alt={featured.title}
+                        className='w-full h-full object-cover'
+                    />
+                ) : null}
+                {/* Overlay oscuro */}
+                <div className='absolute inset-0 bg-black/60' />
+            </div>
+
+            {/* Contenido */}
+            <div className="relative z-20 h-screen flex items-center justify-center px-4">
+                <div className="text-center max-w-2xl">
+                    <h1 className="text-6xl md:text-7xl font-bold mb-6">
+                        {featured.title}
+                    </h1>
+
+                    <p className="text-xl md:text-2xl text-gray-300 mb-12">
+                        {featured.description}
+                    </p>
+
+                    {/* CTAs */}
+                    {featured.ctas && featured.ctas.length > 0 && (
+                        <div className='flex flex-col md:flex-row gap-4 justify-center'>
+                            {featured.ctas.map((cta, index) => (
+                                <a
+                                    key={index}
+                                    href={cta.url}
+                                    target='_blank'
+                                    rel='noopener noreferrer'
+                                    className='px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition text-lg'
+                                >
+                                    {cta.label}
+                                </a>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </section>
+    )
+}
