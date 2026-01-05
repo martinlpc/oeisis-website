@@ -1,13 +1,31 @@
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import { AdminShowForm } from '../components/AdminShowForm';
 import { NewsForm } from '../components/NewsForm';
 
 export function Admin() {
+    const { logout } = useAuth()
+    const navigate = useNavigate()
+
+    const handleLogout = async () => {
+        await logout()
+        navigate('/login')
+    }
+
     return (
         <div className="min-h-screen bg-black text-white">
             <nav className="bg-gray-900 border-b border-gray-700 p-4">
                 <div className="max-w-7xl mx-auto">
-                    <h1 className="text-2xl font-bold">ADMIN PANEL</h1>
-                    <p className="text-gray-400 text-sm">Gestión de contenido</p>
+                    <div>
+                        <h1 className="text-2xl font-bold">ADMIN PANEL</h1>
+                        <p className="text-gray-400 text-sm">Gestión de contenido</p>
+                    </div>
+                    <button
+                        onClick={handleLogout}
+                        className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded font-semibold transition"
+                    >
+                        Cerrar sesión
+                    </button>
                 </div>
             </nav>
 
