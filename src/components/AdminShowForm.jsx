@@ -174,6 +174,32 @@ export function AdminShowForm() {
                         </div>
                     </div>
 
+                    {/* Provincia y País */}
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-semibold mb-2">Provincia</label>
+                            <input
+                                type="text"
+                                name="province"
+                                value={formData.province}
+                                onChange={handleChange}
+                                placeholder="Buenos Aires"
+                                className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white focus:border-blue-500 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold mb-2">País</label>
+                            <input
+                                type="text"
+                                name="country"
+                                value={formData.country}
+                                onChange={handleChange}
+                                placeholder="Argentina"
+                                className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white focus:border-blue-500 outline-none"
+                            />
+                        </div>
+                    </div>
+
                     {/* Entradas */}
                     <div>
                         <div className="space-y-4">
