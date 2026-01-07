@@ -1,10 +1,10 @@
 export function ShowCard({ show }) {
     return (
         <div className="border border-gray-700 rounded-lg p-6 hover:border-blue-500 transition">
-            <p className="text-2xl text-center font-bold text-white border-b border-gray-700 py-4">
+            <p className="text-2xl text-center font-bold text-white border-b border-gray-700 pb-6">
                 {show.title}
             </p>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-3 gap-6 p-1">
                 {/* Fecha */}
                 <div>
                     <p className="text-gray-400 text-sm mb-1">FECHA</p>

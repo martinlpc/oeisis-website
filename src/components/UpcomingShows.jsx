@@ -21,8 +21,8 @@ export function UpcomingShows() {
     }
 
     return (
-        <section className='min-h-screen bg-black text-white py-20 flex items-center justify-center'>
-            <div className='max-w-4xl mx-auto px-4 md:px-6 lg:px-0' >
+        <section className='min-h-screen bg-black text-white py-20 flex items-center justify-center px-4 md:px-6 lg:px-0'>
+            <div className='max-w-4xl mx-auto' >
                 <h2 className='text-5xl font-bold mb-12 text-center'>Próximos shows</h2>
                 <div className='h-8'></div>
 
