@@ -24,11 +24,12 @@ export function UpcomingShows() {
         <section className='min-h-screen bg-black text-white py-20 px-4 flex items-center justify-center'>
             <div className='max-w-4xl mx-auto'>
                 <h2 className='text-5xl font-bold mb-12 text-center'>Próximos shows</h2>
+                <div className='h-8'></div>
 
                 {shows.length === 0 ? (
                     <p className='text-center text-gray-400 text-lg'>No hay shows programados</p>
                 ) : (
-                    <div className='space-y-6'>
+                    <div className='flex flex-col gap-6'>
                         {shows.map((show) => (
                             <ShowCard key={show.id} show={show} />
                         ))}

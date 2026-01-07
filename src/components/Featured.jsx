@@ -26,11 +26,11 @@ export function Featured() {
     return (
         <section className='relative w-full min-h-screen bg-black text-white overflow-hidden'>
             {/* Imagen/video de fondno */}
-            <div className='absoulte inset-0 pointer-events-none'>
+            <div className='absolute inset-0 pointer-events-none w-full h-full'>
                 {featured.type === 'video' && featured.videoUrl ? (
                     <iframe
                         src={featured.videoUrl}
-                        className='w-full h-full'
+                        className='w-full h-full object-contain'
                         title={featured.title}
                         allow='accelerometer; autoplay; clipboard-white; encrypted-media; gyroscope; picture-in-picture'
                         allowFullScreen
@@ -39,42 +39,45 @@ export function Featured() {
                     <img
                         src={featured.image}
                         alt={featured.title}
-                        className='w-full h-full object-cover'
+                        className='w-full h-full object-contain'
                     />
                 ) : null}
                 {/* Overlay oscuro */}
-                <div className='absolute inset-0 bg-black/60' />
+                <div className='absolute inset-0 bg-black/50' />
             </div>
 
             {/* Contenido */}
-            <div className="relative z-20 h-screen flex items-center justify-center px-4">
-                <div className="text-center max-w-2xl">
-                    <h1 className="text-6xl md:text-7xl font-bold mb-6">
-                        {featured.title}
-                    </h1>
+            {featured.type !== 'video' && (
+                <div className="relative z-20 h-screen flex items-center justify-center px-4">
+                    <div className="text-center max-w-3xl">
+                        <h1 className="text-2xl md:text-5xl lg:text-6xl font-bold mb-8 leading-tight text-center">
+                            {featured.title}
+                        </h1>
 
-                    <p className="text-xl md:text-2xl text-gray-300 mb-12">
-                        {featured.description}
-                    </p>
+                        <p className="text-lg md:text-2xl text-gray-200 mb-16 leading-relaxed">
+                            {featured.description}
+                        </p>
 
-                    {/* CTAs */}
-                    {featured.ctas && featured.ctas.length > 0 && (
-                        <div className='flex flex-col md:flex-row gap-4 justify-center'>
-                            {featured.ctas.map((cta, index) => (
-                                <a
-                                    key={index}
-                                    href={cta.url}
-                                    target='_blank'
-                                    rel='noopener noreferrer'
-                                    className='px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition text-lg'
-                                >
-                                    {cta.label}
-                                </a>
-                            ))}
-                        </div>
-                    )}
+                        {/* CTAs */}
+                        {featured.ctas && featured.ctas.length > 0 && (
+                            <div className='flex flex-col md:flex-row gap-6 justify-center'>
+                                {featured.ctas.map((cta, index) => (
+                                    <a
+                                        key={index}
+                                        href={cta.url}
+                                        target='_blank'
+                                        rel='noopener noreferrer'
+                                        style={{ padding: '10px 64px' }}
+                                        className='inline-block bg-blue-600 hover:bg-blue-700 text-white rounded transition text-lg'
+                                    >
+                                        {cta.label}
+                                    </a>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div>
+            )}
         </section>
     )
 }
