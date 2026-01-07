@@ -1,11 +1,14 @@
 export function ShowCard({ show }) {
     return (
         <div className="border border-gray-700 rounded-lg p-6 hover:border-blue-500 transition">
+            <p className="text-2xl text-center font-bold text-white border-b border-gray-700 py-4">
+                {show.title}
+            </p>
             <div className="grid md:grid-cols-3 gap-6">
                 {/* Fecha */}
                 <div>
                     <p className="text-gray-400 text-sm mb-1">FECHA</p>
-                    <p className="text-2xl font-bold">
+                    <p className="text-xl font-bold">
                         {show.date}
                     </p>
                     <p className="text-lg text-gray-300">{show.time}</p>
@@ -20,7 +23,7 @@ export function ShowCard({ show }) {
                 </div>
 
                 {/* Botón de entradas */}
-                <div className="flex items-end">
+                <div className="flex items-center">
                     {show.ticketLink ? (
                         <a
                             href={show.ticketLink}
@@ -39,7 +42,7 @@ export function ShowCard({ show }) {
             </div>
 
             {show.description && (
-                <p className="mt-4 text-gray-300 border-t border-gray-700 pt-4">
+                <p className="text-center mt-4 text-gray-300 border-t border-gray-700 pt-4">
                     {show.description}
                 </p>
             )}

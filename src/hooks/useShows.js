@@ -9,7 +9,7 @@ export function useShows() {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        const q = query(collection(db, 'shows'), orderBy('date', 'asc'));
+        const q = query(collection(db, 'shows'), orderBy('createdAt', 'asc'));
 
         const unsubscribe = onSnapshot(
             q,
@@ -18,6 +18,14 @@ export function useShows() {
                     id: doc.id,
                     ...doc.data(),
                 }));
+
+                // Ordenar por fecha (más próximo primero)
+                showsData.sort((a, b) => {
+                    const dateA = new Date(a.date.split(' ').filter(p => p !== 'de').reverse().join('-'));
+                    const dateB = new Date(b.date.split(' ').filter(p => p !== 'de').reverse().join('-'));
+                    return dateA - dateB;
+                });
+
                 setShows(showsData);
                 setLoading(false);
             },
