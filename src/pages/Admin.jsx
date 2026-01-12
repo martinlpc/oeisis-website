@@ -15,7 +15,7 @@ export function Admin() {
     }
 
     return (
-        <div className="min-h-screen bg-black text-white">
+        <div className="min-h-screen  text-white">
             <nav className="bg-gray-900 border-b border-gray-700 p-4">
                 <div className="max-w-7xl mx-auto">
                     <div>

@@ -1,11 +1,13 @@
 import { useNews } from '../hooks/useNews';
+import { useInView } from '../hooks/useInView';
 
 export function NewsList() {
+    const [ref, isInView] = useInView()
     const { news, loading, error } = useNews();
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-black flex items-center justify-center">
+            <div className="min-h-screen  flex items-center justify-center">
                 <p className="text-white text-xl">Cargando noticias...</p>
             </div>
         );
@@ -13,14 +15,17 @@ export function NewsList() {
 
     if (error) {
         return (
-            <div className="min-h-screen bg-black flex items-center justify-center">
+            <div className="min-h-screen  flex items-center justify-center">
                 <p className="text-red-500 text-xl">Error: {error}</p>
             </div>
         );
     }
 
     return (
-        <section className="min-h-screen bg-black text-white py-20 px-4 flex items-center justify-center">
+        <section
+            ref={ref}
+            className={`min-h-screen  text-white py-20 px-4 flex items-center justify-center transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
+        >
             <div className="max-w-4xl mx-auto">
                 <h2 className="text-5xl font-bold mb-12 text-center">Últimas Noticias</h2>
 

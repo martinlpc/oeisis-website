@@ -1,7 +1,9 @@
 import { useFeatured } from '../hooks/useFeatured'
+import { useInView } from '../hooks/useInView'
 
 export function Featured() {
     const { featured, loading, error } = useFeatured()
+    const [ref, isInView] = useInView()
 
     if (loading) {
         return (
@@ -24,26 +26,36 @@ export function Featured() {
     }
 
     return (
-        <section className='relative w-full min-h-screen bg-black text-white overflow-hidden'>
+        <section
+            ref={ref}
+            className={`relative w-full min-h-screen text-white overflow-hidden transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
+        >
             {/* Imagen/video de fondno */}
             <div className='absolute inset-0 pointer-events-none w-full h-full'>
                 {featured.type === 'video' && featured.videoUrl ? (
-                    <iframe
-                        src={featured.videoUrl}
-                        className='w-full h-full object-contain'
-                        title={featured.title}
-                        allow='accelerometer; autoplay; clipboard-white; encrypted-media; gyroscope; picture-in-picture'
-                        allowFullScreen
-                    />
+                    <>
+                        <iframe
+                            src={featured.videoUrl}
+                            className='w-full h-full object-contain'
+                            title={featured.title}
+                            allow='accelerometer; autoplay; clipboard-white; encrypted-media; gyroscope; picture-in-picture'
+                            allowFullScreen
+                        />
+                        {/* Overlay oscuro */}
+                        <div className='absolute inset-0 bg-black/50' />
+                    </>
                 ) : featured.image ? (
-                    <img
-                        src={featured.image}
-                        alt={featured.title}
-                        className='w-full h-full object-contain'
-                    />
+                    <>
+                        <img
+                            src={featured.image}
+                            alt={featured.title}
+                            className='w-full h-full object-contain'
+                        />
+                        {/* Overlay oscuro */}
+                        <div className='absolute inset-0 bg-black/50' />
+                    </>
                 ) : null}
-                {/* Overlay oscuro */}
-                <div className='absolute inset-0 bg-black/50' />
+
             </div>
 
             {/* Contenido */}

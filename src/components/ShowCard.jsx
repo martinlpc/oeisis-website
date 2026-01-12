@@ -1,6 +1,13 @@
+import { useInView } from "../hooks/useInView";
+
 export function ShowCard({ show }) {
+    const [ref, isInView] = useInView()
+
     return (
-        <div className="border border-gray-700 rounded-lg p-6 hover:border-blue-500 transition">
+        <div
+            ref={ref}
+            className={`border border-gray-700 rounded-lg p-6 hover:border-blue-500 transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`
+            }>
             <p className="text-2xl text-center font-bold text-white border-b border-gray-700 pb-6">
                 {show.title}
             </p>
@@ -41,11 +48,13 @@ export function ShowCard({ show }) {
                 </div>
             </div>
 
-            {show.description && (
-                <p className="text-center mt-4 text-gray-300 border-t border-gray-700 pt-4">
-                    {show.description}
-                </p>
-            )}
-        </div>
+            {
+                show.description && (
+                    <p className="text-center mt-4 text-gray-300 border-t border-gray-700 pt-4">
+                        {show.description}
+                    </p>
+                )
+            }
+        </div >
     );
 }

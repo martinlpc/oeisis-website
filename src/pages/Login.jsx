@@ -27,7 +27,7 @@ export function Login() {
     }
 
     return (
-        <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
+        <div className="min-h-screen  text-white flex items-center justify-center px-4">
             <div className="max-w-md w-full">
                 <div className="text-center mb-8">
                     <h1 className="text-4xl font-bold mb-2">OEISIS ADMIN</h1>

@@ -6,7 +6,7 @@ export function PrivateRoute({ children }) {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-black flex items-center justify-center">
+            <div className="min-h-screen  flex items-center justify-center">
                 <p className="text-white text-xl">Cargando...</p>
             </div>
         )
