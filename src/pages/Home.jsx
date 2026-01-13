@@ -1,8 +1,10 @@
-import { Hero } from '../components/Hero';
-import { Featured } from '../components/Featured';
-import { UpcomingShows } from '../components/UpcomingShows';
-import { NewsList } from '../components/NewsList';
-import { Footer } from '../components/Footer';
+import { Hero } from '../components/home/Hero';
+import { Featured } from '../components/home/featured/Featured';
+import { UpcomingShows } from '../components/home/shows/UpcomingShows';
+import { NewsList } from '../components/home/news/NewsList';
+import { Footer } from '../components/home/Footer';
+import { VideoGallery } from '../components/home/videos/VideoGallery';
+import { PhotoGallery } from '../components/home/photos/PhotoGallery';
 
 export function Home() {
     return (
@@ -11,6 +13,8 @@ export function Home() {
             <Featured />
             <UpcomingShows />
             <NewsList />
+            <VideoGallery />
+            <PhotoGallery />
             <Footer />
         </div>
     );

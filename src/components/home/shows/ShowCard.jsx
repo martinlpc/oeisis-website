@@ -1,4 +1,4 @@
-import { useInView } from "../hooks/useInView";
+import { useInView } from "../../../hooks/useInView";
 
 export function ShowCard({ show }) {
     const [ref, isInView] = useInView()

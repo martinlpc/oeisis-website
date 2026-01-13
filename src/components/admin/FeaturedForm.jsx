@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { collection, query, limit, onSnapshot, setDoc, doc, serverTimestamp } from 'firebase/firestore'
-import { db } from "../firebase/config";
+import { db } from "../../firebase/config";
 
 export function FeaturedForm() {
     const [formData, setFormData] = useState({

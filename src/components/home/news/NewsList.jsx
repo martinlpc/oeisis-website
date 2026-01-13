@@ -1,5 +1,5 @@
-import { useNews } from '../hooks/useNews';
-import { useInView } from '../hooks/useInView';
+import { useNews } from '../../../hooks/useNews';
+import { useInView } from '../../../hooks/useInView';
 
 export function NewsList() {
     const [ref, isInView] = useInView()

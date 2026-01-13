@@ -1,5 +1,5 @@
-import { useFeatured } from '../hooks/useFeatured'
-import { useInView } from '../hooks/useInView'
+import { useFeatured } from '../../../hooks/useFeatured'
+import { useInView } from '../../../hooks/useInView'
 
 export function Featured() {
     const { featured, loading, error } = useFeatured()

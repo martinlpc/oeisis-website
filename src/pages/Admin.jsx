@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { AdminShowForm } from '../components/AdminShowForm';
-import { ShowsManager } from '../components/ShowsManager';
-import { NewsForm } from '../components/NewsForm';
-import { FeaturedForm } from '../components/FeaturedForm';
+import { useAuth } from '../hooks/useAuth'
+import { AdminShowForm } from '../components/admin/AdminShowForm';
+import { ShowsManager } from '../components/admin/ShowsManager';
+import { NewsForm } from '../components/admin/NewsForm';
+import { FeaturedForm } from '../components/admin/FeaturedForm';
 
 export function Admin() {
     const { logout } = useAuth()

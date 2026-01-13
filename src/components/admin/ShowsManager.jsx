@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useShows } from '../hooks/useShows';
+import { useShows } from '../../hooks/useShows'
 import { ShowListItem } from './ShowListItem';
 import { ShowEditForm } from './ShowEditForm';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '../firebase/config';
+import { db } from '../../firebase/config';
 
 export function ShowsManager() {
     const { shows, loading, error } = useShows()

@@ -1,5 +1,5 @@
-import { useShows } from '../hooks/useShows.js'
-import { useInView } from '../hooks/useInView.js'
+import { useShows } from '../../../hooks/useShows.js'
+import { useInView } from '../../../hooks/useInView.js'
 import { ShowCard } from './ShowCard.jsx'
 
 export function UpcomingShows() {
