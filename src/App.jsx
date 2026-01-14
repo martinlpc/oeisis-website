@@ -3,7 +3,7 @@ import { Home } from './pages/Home';
 import { Admin } from './pages/Admin';
 import { Login } from './pages/Login';
 import './index.css';
-import { PrivateRoute } from './components/PrivateRoute';
+import { PrivateRoute } from './PrivateRoute';
 
 function App() {
   return (
