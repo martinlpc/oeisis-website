@@ -80,7 +80,7 @@ export function Featured() {
                                         target='_blank'
                                         rel='noopener noreferrer'
                                         style={{ padding: '10px 64px' }}
-                                        className='inline-block bg-blue-600 hover:bg-blue-700 text-white rounded transition text-lg'
+                                        className='inline-block bg-black border-2 border-white text-white rounded transition text-lg hover:bg-white hover:text-black'
                                     >
                                         {cta.label}
                                     </a>
