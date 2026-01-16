@@ -26,14 +26,19 @@ export function VideoGallery() {
             className={`min-h-screen text-white py-20 px-4 transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
         >
             <div className="max-w-6xl mx-auto">
-                <h2 className="text-5xl font-bold mb-12 text-center">Videos</h2>
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8 md:mb-12 text-center">Videos</h2>
 
                 {videos.length === 0 ? (
-                    <p className="text-center text-gray-400 text-lg">Videos proximamente</p>
+                    <>
+                        <p className="text-center text-gray-400 text-lg">Videos proximamente</p>
+                        <p className="text-center text-gray-400 text-lg">¿Querés ver un video tuyo acá? Envialo a nuestro Instagram mas abajo</p>
+                    </>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="flex flex-wrap justify-center items-center gap-6">
                         {videos.map((video) => (
-                            <VideoCard key={video.id} video={video} />
+                            <div className="w-full max-w-sm">
+                                <VideoCard key={video.id} video={video} />
+                            </div>
                         ))}
                     </div>
                 )}

@@ -24,10 +24,10 @@ export function NewsList() {
     return (
         <section
             ref={ref}
-            className={`min-h-screen  text-white py-20 px-4 flex items-center justify-center transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
+            className={`bg-[#141414] min-h-screen text-white py-20 px-4 flex items-center justify-center transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
         >
             <div className="max-w-4xl mx-auto">
-                <h2 className="text-5xl font-bold mb-12 text-center">Últimas Noticias</h2>
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8 md:mb-12 text-center">Últimas Noticias</h2>
 
                 {news.length === 0 ? (
                     <p className="text-center text-gray-400 text-lg">No hay noticias aún</p>

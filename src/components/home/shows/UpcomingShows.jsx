@@ -28,7 +28,7 @@ export function UpcomingShows() {
             className={`min-h-screen bg-[#1f1f1f] text-white py-20 flex items-center justify-center px-4 md:px-6 lg:px-0 transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
         >
             <div className='max-w-4xl mx-auto' >
-                <h2 className='text-5xl font-bold mb-12 text-center'>Próximos shows</h2>
+                <h2 className='text-3xl md:text-4xl lg:text-5xl font-bold mb-8 md:mb-12 text-center'>Próximos shows</h2>
                 <div className='h-8'></div>
 
                 {shows.length === 0 ? (

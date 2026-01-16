@@ -29,68 +29,63 @@ export function Featured() {
         <section
             id='featured-section'
             ref={ref}
-            className={`relative w-full min-h-screen text-white overflow-hidden transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
+            className={`py-10 bg-[#141414] relative w-full min-h-screen text-white overflow-hidden transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
         >
-            {/* Imagen/video de fondno */}
-            <div className='absolute inset-0 pointer-events-none w-full h-full'>
-                {featured.type === 'video' && featured.videoUrl ? (
-                    <>
+            <h2 className='text-3xl md:text-4xl lg:text-5xl font-bold mb-8 md:mb-12 text-center'>Próximamente</h2>
+
+            {/* Media (imagen o video) */}
+            <div className="relative w-full h-96 md:h-[500px] overflow-hidden">
+                <div
+                    className="absolute inset-0 w-full h-full overflow-hidden"
+                >
+                    {featured.type === 'video' && featured.videoUrl ? (
                         <iframe
-                            src={featured.videoUrl}
-                            className='w-full h-full object-contain'
+                            src={`${featured.videoUrl}?rel=0`}
+                            className="w-full h-full object-contain"
                             title={featured.title}
-                            allow='accelerometer; autoplay; clipboard-white; encrypted-media; gyroscope; picture-in-picture'
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
                         />
-                        {/* Overlay oscuro */}
-                        <div className='absolute inset-0 bg-black/50' />
-                    </>
-                ) : featured.image ? (
-                    <>
+                    ) : featured.image ? (
                         <img
                             src={featured.image}
                             alt={featured.title}
-                            className='w-full h-full object-contain'
+                            className="w-full h-full object-contain"
                         />
-                        {/* Overlay oscuro */}
-                        <div className='absolute inset-0 bg-black/50' />
-                    </>
-                ) : null}
+                    ) : null}
 
+                </div>
             </div>
 
-            {/* Contenido */}
-            {featured.type !== 'video' && (
-                <div className="relative z-20 h-screen flex items-center justify-center px-4">
-                    <div className="text-center max-w-3xl">
-                        <h1 className="text-2xl md:text-5xl lg:text-6xl font-bold mb-8 leading-tight text-center">
-                            {featured.title}
-                        </h1>
+            {/* Contenido debajo */}
+            <div className="relative z-20 px-4 py-8 md:px-6 md:py-12 lg:py-16">
+                <div className="max-w-3xl mx-auto text-center">
+                    <h1 className="text-xl md:text-2xl lg:text-5xl font-bold mb-4 md:mb-8 leading-tight">
+                        {featured.title}
+                    </h1>
 
-                        <p className="text-lg md:text-2xl text-gray-200 mb-16 leading-relaxed">
-                            {featured.description}
-                        </p>
+                    <p className="text-base md:text-lg lg:text-2xl text-gray-200 mb-8 md:mb-12 leading-relaxed">
+                        {featured.description}
+                    </p>
 
-                        {/* CTAs */}
-                        {featured.ctas && featured.ctas.length > 0 && (
-                            <div className='flex flex-col md:flex-row gap-6 justify-center'>
-                                {featured.ctas.map((cta, index) => (
-                                    <a
-                                        key={index}
-                                        href={cta.url}
-                                        target='_blank'
-                                        rel='noopener noreferrer'
-                                        style={{ padding: '10px 64px' }}
-                                        className='inline-block bg-black btn-double-border font-bold text-white rounded transition text-lg hover:bg-white hover:text-black'
-                                    >
-                                        {cta.label}
-                                    </a>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    {featured.ctas && featured.ctas.length > 0 && (
+                        <div className='flex flex-col md:flex-row gap-4 md:gap-6 justify-center max-w-lg mx-auto'>
+                            {featured.ctas.map((cta, index) => (
+                                <a
+                                    key={index}
+                                    href={cta.url}
+                                    target='_blank'
+                                    rel='noopener noreferrer'
+                                    style={{ padding: '8px 24px' }}
+                                    className='inline-block bg-black text-white transition text-sm md:text-base btn-double-border'
+                                >
+                                    {cta.label}
+                                </a>
+                            ))}
+                        </div>
+                    )}
                 </div>
-            )}
+            </div>
         </section>
     )
 }
