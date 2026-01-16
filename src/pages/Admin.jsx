@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth'
 import { AdminShowForm } from '../components/admin/AdminShowForm';
 import { ShowsManager } from '../components/admin/ShowsManager';
+import { NewsManager } from '../components/admin/NewsManager';
 import { NewsForm } from '../components/admin/NewsForm';
 import { FeaturedForm } from '../components/admin/FeaturedForm';
 
@@ -55,9 +56,17 @@ export function Admin() {
                     <h2 className="text-3xl font-bold mb-6 pb-2 border-b border-green-600">
                         📰 Gestión de Noticias
                     </h2>
-                    <div className="border border-gray-700 rounded-lg p-6">
-                        <h3 className="text-2xl font-bold mb-6">Crear Noticia</h3>
-                        <NewsForm />
+                    <div className="grid md:grid-cols-2 gap-8">
+
+                        <div className="border border-gray-700 rounded-lg p-6">
+                            <h3 className="text-2xl font-bold mb-6">Crear Noticia</h3>
+                            <NewsForm />
+                        </div>
+
+                        <div className="border border-gray-700 rounded-lg p-6">
+                            <h3 className="text-2xl font-bold mb-6">Editar/Eliminar Noticias</h3>
+                            <NewsManager />
+                        </div>
                     </div>
                 </div>
 

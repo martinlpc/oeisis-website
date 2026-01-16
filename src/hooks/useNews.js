@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore'
+import { collection, query, orderBy, onSnapshot, updateDoc, doc, deleteDoc } from 'firebase/firestore'
 import { db } from '../firebase/config'
 
 export function useNews() {
@@ -30,5 +30,25 @@ export function useNews() {
         return () => unsubscribe()
     }, [])
 
-    return { news, loading, error }
+    const updateNews = async (id, data) => {
+        try {
+            await updateDoc(doc(db, 'news', id), data)
+            return true
+        } catch (error) {
+            console.error('Error updating news:', error)
+            throw error
+        }
+    }
+
+    const deleteNews = async (id) => {
+        try {
+            await deleteDoc(doc(db, 'news', id))
+            return true
+        } catch (error) {
+            console.error('Error updating news:', error)
+            throw error
+        }
+    }
+
+    return { news, loading, error, updateNews, deleteNews }
 }
