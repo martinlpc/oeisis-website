@@ -36,7 +36,7 @@ export function ShowCard({ show }) {
                             href={show.ticketLink}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded transition text-center"
+                            className="btn-double-border w-full bg-black text-white font-bold py-3 px-6 rounded transition text-center hover:bg-white hover:text-black "
                         >
                             Comprar Entradas
                         </a>
