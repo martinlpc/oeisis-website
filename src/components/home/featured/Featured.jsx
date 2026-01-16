@@ -31,7 +31,7 @@ export function Featured() {
             ref={ref}
             className={`py-10 bg-[#141414] relative w-full min-h-screen text-white overflow-hidden transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
         >
-            <h2 className='text-3xl md:text-4xl lg:text-5xl font-bold mb-8 md:mb-12 text-center'>Próximamente</h2>
+            <h2 className='text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-8 text-center'>Próximamente</h2>
 
             {/* Media (imagen o video) */}
             <div className="relative w-full h-96 md:h-[500px] overflow-hidden">
@@ -58,7 +58,7 @@ export function Featured() {
             </div>
 
             {/* Contenido debajo */}
-            <div className="relative z-20 px-4 py-8 md:px-6 md:py-12 lg:py-16">
+            <div className="relative z-20 px-4 md:px-6 py-6 md:py-10">
                 <div className="max-w-3xl mx-auto text-center">
                     <h1 className="text-xl md:text-2xl lg:text-5xl font-bold mb-4 md:mb-8 leading-tight">
                         {featured.title}
@@ -68,16 +68,17 @@ export function Featured() {
                         {featured.description}
                     </p>
 
+                    {/** Call to action's (CTAs) */}
                     {featured.ctas && featured.ctas.length > 0 && (
-                        <div className='flex flex-col md:flex-row gap-4 md:gap-6 justify-center max-w-lg mx-auto'>
+                        <div className='flex flex-col sm:flex-row gap-4 justify-center items-center'>
                             {featured.ctas.map((cta, index) => (
                                 <a
                                     key={index}
                                     href={cta.url}
                                     target='_blank'
                                     rel='noopener noreferrer'
-                                    style={{ padding: '8px 24px' }}
-                                    className='inline-block bg-black text-white transition text-sm md:text-base btn-double-border'
+                                    style={{ padding: '8px 16px' }}
+                                    className='w-fit bg-black text-white transition text-sm md:text-base btn-double-border'
                                 >
                                     {cta.label}
                                 </a>

@@ -40,14 +40,8 @@ export function Hero() {
 
             {/** Logo y frase */}
             <div className="relative z-10 pointer-events-auto text-center text-white items-center justify-center">
-                <div className="w-40 md:w-64 lg:w-80 mx-auto mb-8">
-                    <svg className="w-full" viewBox="0 0 100 100">
-                        <image
-                            width="100"
-                            height="100"
-                            href="/logo.svg"
-                        />
-                    </svg>
+                <div className="w-40 md:w-64 lg:w-80 mx-auto mb-2">
+                    <svg className="w-full" viewBox="0 30 100 50"><image width="100" height="100" href="/logo.svg" /></svg>
                 </div>
                 <p className="text-lg mb-2">Banda homenaje a Oasis</p>
                 <p className="text-lg mb-16">Oasis tribute band</p>

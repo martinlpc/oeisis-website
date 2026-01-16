@@ -36,12 +36,12 @@ export function ShowCard({ show }) {
                             href={show.ticketLink}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="btn-double-border w-full bg-black text-white font-bold py-3 px-6 rounded transition text-center hover:bg-white hover:text-black "
+                            className="btn-double-border w-full text-white font-bold py-3 px-6 transition text-center"
                         >
                             Comprar Entradas
                         </a>
                     ) : (
-                        <button className="w-full bg-gray-700 text-gray-400 font-bold py-3 px-6 rounded cursor-not-allowed">
+                        <button className="w-full bg-gray-700 text-gray-400 font-bold py-3 px-6 cursor-not-allowed">
                             Próximamente
                         </button>
                     )}
