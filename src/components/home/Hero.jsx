@@ -18,7 +18,7 @@ export function Hero() {
     return (
         <section
             ref={ref}
-            className={`overflow-hidden relative w-full h-screen flex items-center justify-center transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
+            className={`overflow-hidden relative w-full h-screen flex flex-col items-center justify-center transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
         >
             {/** Video background con parallax */}
             <div
@@ -39,16 +39,43 @@ export function Hero() {
             </div>
 
             {/** Logo y frase */}
-            <div className="relative z-10 pointer-events-auto text-center text-white">
-                <svg className="w-full max-w-md mx-auto" viewBox="0 0 100 100">
-                    <image
-                        width="100"
-                        height="100"
-                        href="/logo.svg"
+            <div className="relative z-10 pointer-events-auto text-center text-white items-center justify-center">
+                <div className="w-40 md:w-64 lg:w-80 mx-auto mb-8">
+                    <svg className="w-full" viewBox="0 0 100 100">
+                        <image
+                            width="100"
+                            height="100"
+                            href="/logo.svg"
+                        />
+                    </svg>
+                </div>
+                <p className="text-lg mb-2">Banda homenaje a Oasis</p>
+                <p className="text-lg mb-16">Oasis tribute band</p>
+            </div>
+
+            {/** Flecha abajo */}
+            <button
+                onClick={() => {
+                    const featured = document.getElementById('featured-section');
+                    featured?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="absolute bottom-8 bg-white/20 rounded-full p-3 hover:bg-white/30 transition opacity-70 animate-bounce flex items-center justify-center"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 14l-7 7m0 0l-7-7m7 7V3"
                     />
                 </svg>
-                <p className="text-xl">Tributo a Oasis | Oasis tribute band</p>
-            </div>
+            </button>
         </section>
     )
 }

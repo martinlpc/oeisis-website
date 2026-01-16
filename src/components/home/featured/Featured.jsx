@@ -27,6 +27,7 @@ export function Featured() {
 
     return (
         <section
+            id='featured-section'
             ref={ref}
             className={`relative w-full min-h-screen text-white overflow-hidden transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
         >
@@ -80,7 +81,7 @@ export function Featured() {
                                         target='_blank'
                                         rel='noopener noreferrer'
                                         style={{ padding: '10px 64px' }}
-                                        className='inline-block bg-black border-2 border-white text-white rounded transition text-lg hover:bg-white hover:text-black'
+                                        className='inline-block bg-black btn-double-border font-bold text-white rounded transition text-lg hover:bg-white hover:text-black'
                                     >
                                         {cta.label}
                                     </a>
