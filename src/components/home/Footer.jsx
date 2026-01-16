@@ -48,7 +48,7 @@ export function Footer() {
                         <h3 className="text-white font-bold text-lg mb-4">Contacto</h3>
                         <div className="space-y-2 text-sm">
                             <a
-                                href="mailto:info@oeisis.com"
+                                href="mailto:jeronimo.blazer@gmail.com"
                                 className="block hover:text-white transition"
                             >
                                 📧 jeronimo.blazer@gmail.com
