@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { collection, addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
-import { db } from '../../firebase/config';
+import { useShows } from '../../hooks/useShows';
 
 export function AdminShowForm() {
-    const [formData, setFormData] = useState({
+
+    const INITIAL_FORM_DATA = {
         title: '',
         status: 'disponible',
         date: '',
@@ -15,10 +15,12 @@ export function AdminShowForm() {
         country: 'Argentina',
         ticketLink: '',
         description: '',
-    });
+    }
 
+    const [formData, setFormData] = useState(INITIAL_FORM_DATA);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
+    const { createShow } = useShows()
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -33,60 +35,21 @@ export function AdminShowForm() {
         setLoading(true);
         setMessage('');
 
-        // Convertir fecha de YYYY-MM-DD a "DD MMM YYYY"
-        const [year, month, day] = formData.date.split('-');
-        const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-        const formattedDate = `${day} ${months[parseInt(month) - 1]} ${year}`;
-
         try {
-            const docData = {
-                title: formData.title,
-                status: formData.status,
-                date: formattedDate,
-                time: formData.time,
-                location: {
-                    venue: formData.venue,
-                    city: formData.city,
-                    province: formData.province,
-                    address: formData.address,
-                    country: formData.country,
-                },
-                ticketLink: formData.ticketLink,
-                description: formData.description,
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp(),
-            };
+            await createShow(formData)
+            setMessage('✅ Show creado exitosamente')
 
-            await addDoc(collection(db, 'shows'), docData);
-            setMessage('✅ Show creado exitosamente');
-
-            // Reset form
-            setFormData({
-                title: '',
-                status: 'disponible',
-                date: '',
-                time: '',
-                venue: '',
-                city: '',
-                province: 'Buenos Aires',
-                address: '',
-                country: 'Argentina',
-                ticketLink: '',
-                description: '',
-            });
+            setFormData(INITIAL_FORM_DATA)
         } catch (error) {
-            setMessage(`❌ Error: ${error.message}`);
-            console.error(error);
+            setMessage(`❌ Error: ${error.message}`)
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
     };
 
     return (
         <section className="min-h-screen  text-white py-20 px-4 flex items-center justify-center">
             <div className="max-w-2xl mx-auto">
-                {/* <h2 className="text-4xl font-bold mb-8 text-center">Admin - Crear Show</h2> */}
-
                 {message && (
                     <div className="mb-6 p-4 rounded bg-gray-800 border border-gray-700">
                         {message}

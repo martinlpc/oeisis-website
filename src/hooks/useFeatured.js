@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, query, limit, onSnapshot } from 'firebase/firestore'
+import { collection, query, limit, onSnapshot, doc, setDoc } from 'firebase/firestore'
 import { db } from '../firebase/config'
 
 export function useFeatured() {
@@ -31,5 +31,15 @@ export function useFeatured() {
         return () => unsubscribe()
     }, [])
 
-    return { featured, loading, error }
+    const updateFeatured = async (data, id = 'current') => {
+        try {
+            await setDoc(doc(db, 'featured', id), data, { merge: true })
+            return true
+        } catch (error) {
+            console.error('Error updating featured:', error)
+            throw error
+        }
+    }
+
+    return { featured, loading, error, updateFeatured }
 }

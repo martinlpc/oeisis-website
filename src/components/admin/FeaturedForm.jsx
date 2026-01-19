@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { collection, query, limit, onSnapshot, setDoc, doc, serverTimestamp } from 'firebase/firestore'
-import { db } from "../../firebase/config";
+import { useFeatured } from "../../hooks/useFeatured";
 
 export function FeaturedForm() {
     const [formData, setFormData] = useState({
@@ -10,33 +9,24 @@ export function FeaturedForm() {
         image: '',
         videoUrl: ''
     })
-
+    const { featured, updateFeatured } = useFeatured()
     const [ctas, setCtas] = useState([])
     const [newCta, setNewCta] = useState({ label: '', url: '' })
-    const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState('')
-    const [existingFeatured, setExistingFeatured] = useState(null)
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        const q = query(collection(db, 'featured'), limit(1))
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            if (!snapshot.empty) {
-                const data = snapshot.docs[0].data()
-                setExistingFeatured(snapshot.docs[0].id)
-                setFormData({
-                    type: data.type || 'show',
-                    title: data.title || '',
-                    description: data.description || '',
-                    image: data.image || '',
-                    videoUrl: data.videoUrl || ''
-                })
-                setCtas(data.ctas || [])
-            }
-        })
-
-        return () => unsubscribe()
-    }, [])
+        if (featured) {
+            setFormData({
+                type: featured.type || 'show',
+                title: featured.title || '',
+                description: featured.description || '',
+                image: featured.image || '',
+                videoUrl: featured.videoUrl || ''
+            })
+            setCtas(featured.ctas || [])
+        }
+    }, [featured])
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -69,20 +59,13 @@ export function FeaturedForm() {
                 description: formData.description,
                 image: formData.image,
                 videoUrl: formData.videoUrl,
-                ctas: ctas,
-                updatedAt: serverTimestamp()
+                ctas: ctas
             }
 
-            if (existingFeatured) {
-                await setDoc(doc(db, 'featured', existingFeatured), docData, { merge: true })
-            } else {
-                await setDoc(doc(db, 'featured', 'current'), docData)
-            }
-
+            await updateFeatured(docData, featured?.id || 'current')
             setMessage('Featured actualizado!')
         } catch (error) {
             setMessage(`Error: ${error.message}`)
-            console.error(error)
         } finally {
             setLoading(false)
         }

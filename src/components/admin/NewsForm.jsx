@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
-import { db } from '../../firebase/config'
+import { useNews } from '../../hooks/useNews'
 import { useCloudinaryUpload } from '../../hooks/useCloudinaryUpload'
 
 export function NewsForm() {
+    const { createNews } = useNews()
     const { uploadImage } = useCloudinaryUpload()
 
     const [formData, setFormData] = useState({
@@ -61,12 +61,10 @@ export function NewsForm() {
                     month: 'long',
                     year: 'numeric'
                 }),
-                featured: formData.featured,
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp()
+                featured: formData.featured
             }
 
-            await addDoc(collection(db, 'news'), docData)
+            await createNews(docData)
             setMessage('✅ Noticia creada')
 
             setFormData({
