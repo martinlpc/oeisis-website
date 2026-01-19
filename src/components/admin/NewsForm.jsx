@@ -9,6 +9,8 @@ export function NewsForm() {
     const [formData, setFormData] = useState({
         title: '',
         content: '',
+        type: 'interview',
+        externalLink: '',
         featured: false
     })
 
@@ -81,7 +83,7 @@ export function NewsForm() {
     }
 
     return (
-        <section className='min-h-screen text-white py-10 px-4 flex items-center justify-center'>
+        <section className='min-h-screen text-white py-20 px-4'>
             <div className='max-w-2xl mx-auto'>
                 {/* <h2 className='text-4xl font-bold mb-8 text-center'>Admin - Crear Noticia</h2> */}
                 {message && (
@@ -119,37 +121,75 @@ export function NewsForm() {
                         />
                     </div>
 
-                    {/* Images */}
+                    {/** Select de tipo de contenido */}
                     <div>
-                        <label className="block text-sm font-semibold mb-2">Imágenes</label>
-                        <input
-                            type="file"
-                            multiple
-                            accept="image/*"
-                            onChange={handleImageUpload}
-                            disabled={uploading}
+                        <label className="block text-sm font-semibold mb-2">Tipo de contenido</label>
+                        <select
+                            name="type"
+                            value={formData.type}
+                            onChange={handleChange}
                             className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
-                        />
-                        {uploading && <p className='text-blue-400 mt-2'>Subiendo imágenes...</p>}
-                        {images.length > 0 && (
-                            <div className='mt-4 grid grid-cols-3 gap-4'>
-                                {images.map((url, index) => (
-                                    <div key={index} className='relative'>
-                                        <img src={url} alt={`preview-${index}`} className='w-full h-24 object-cover rounded' />
-                                        <button
-                                            type="button"
-                                            onClick={() => removeImage(index)}
-                                            className='absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm'
-                                        >
-                                            x
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                        >
+                            <option value="news">Noticia</option>
+                            <option value="interview">Entrevista</option>
+                        </select>
                     </div>
 
-                    {/* Featured */}
+                    {/** Link a video externo */}
+                    {formData.type === 'interview' && (
+                        <div className='mt-4'>
+                            <label className="block text-sm font-semibold mb-2">Video</label>
+                            <input
+                                type="url"
+                                name="externalLink"
+                                value={formData.externalLink}
+                                onChange={handleChange}
+                                placeholder="Link YouTube o externo"
+                                className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white cursor-pointer text-center hover:bg-gray-800 transition"
+                            />
+                        </div>
+                    )}
+
+                    {/* Images */}
+                    {formData.type === 'news' && (
+                        <div className='mt-4'>
+                            <label className="block text-sm font-semibold mb-2">Imágenes</label>
+                            <input
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                disabled={uploading}
+                                id="file-input"
+                                className="hidden"
+                            />
+                            <label
+                                htmlFor="file-input"
+                                className='w-full block bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white cursor-pointer text-center hover:bg-gray-800 transition'
+                            >
+                                {uploading ? 'Subiendo...' : 'Seleccionar imágenes'}
+                            </label>
+                            {uploading && <p className='text-blue-400 mt-2'>Subiendo imágenes...</p>}
+                            {images.length > 0 && (
+                                <div className='mt-4 grid grid-cols-3 gap-4'>
+                                    {images.map((url, index) => (
+                                        <div key={index} className='relative'>
+                                            <img src={url} alt={`preview-${index}`} className='w-full h-24 object-cover rounded' />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeImage(index)}
+                                                className='absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm'
+                                            >
+                                                x
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Featured checkbox */}
                     <div>
                         <label className='flex items-center'>
                             <input
