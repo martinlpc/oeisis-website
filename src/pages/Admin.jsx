@@ -5,6 +5,8 @@ import { ShowsManager } from '../components/admin/ShowsManager';
 import { NewsManager } from '../components/admin/NewsManager';
 import { NewsForm } from '../components/admin/NewsForm';
 import { FeaturedForm } from '../components/admin/FeaturedForm';
+import { VideoManager } from '../components/admin/VideoManager';
+import { VideoForm } from '../components/admin/VideoForm';
 
 export function Admin() {
     const { logout } = useAuth()
@@ -51,7 +53,17 @@ export function Admin() {
                     </div>
                 </div>
 
-                {/* SECCIÓN 2: NOTICIAS */}
+                {/* SECCIÓN 2: DESTACADO */}
+                <div className="mb-12">
+                    <h2 className="text-3xl font-bold mb-6 pb-2 border-b border-purple-600">
+                        ⭐ Sección Destacada
+                    </h2>
+                    <div className="border border-gray-700 rounded-lg p-6">
+                        <FeaturedForm />
+                    </div>
+                </div>
+
+                {/* SECCIÓN 3: NOTICIAS */}
                 <div className="mb-12">
                     <h2 className="text-3xl font-bold mb-6 pb-2 border-b border-green-600">
                         📰 Gestión de Noticias
@@ -70,14 +82,27 @@ export function Admin() {
                     </div>
                 </div>
 
-                {/* SECCIÓN 3: DESTACADO */}
-                <div>
+                {/** SECCION 4: VIDEOS */}
+                <div className="mb-12">
                     <h2 className="text-3xl font-bold mb-6 pb-2 border-b border-purple-600">
-                        ⭐ Sección Destacada
+                        🎥 Gestión de Videos
                     </h2>
-                    <div className="border border-gray-700 rounded-lg p-6">
-                        <FeaturedForm />
+                    <div className="grid md:grid-cols-2 gap-8">
+                        <div className="border border-gray-700 rounded-lg p-6">
+                            <h3 className="text-2xl font-bold mb-6">Crear Video</h3>
+                            <VideoForm />
+                        </div>
+
+                        <div className="border border-gray-700 rounded-lg p-6">
+                            <h3 className="text-2xl font-bold mb-6">Editar/Eliminar Videos</h3>
+                            <VideoManager />
+                        </div>
                     </div>
+                </div>
+
+                {/** SECCION 5: IMGS */}
+                <div className="mb-12">
+
                 </div>
             </div>
         </div >
