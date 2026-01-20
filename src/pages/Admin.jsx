@@ -7,6 +7,8 @@ import { NewsForm } from '../components/admin/NewsForm';
 import { FeaturedForm } from '../components/admin/FeaturedForm';
 import { VideoManager } from '../components/admin/VideoManager';
 import { VideoForm } from '../components/admin/VideoForm';
+import { PhotoManager } from '../components/admin/PhotoManager';
+import { PhotoForm } from '../components/admin/PhotoForm';
 
 export function Admin() {
     const { logout } = useAuth()
@@ -102,7 +104,20 @@ export function Admin() {
 
                 {/** SECCION 5: IMGS */}
                 <div className="mb-12">
+                    <h2 className="text-3xl font-bold mb-6 pb-2 border-b border-purple-600">
+                        🎥 Gestión de Fotos
+                    </h2>
+                    <div className="grid md:grid-cols-2 gap-8">
+                        <div className="border border-gray-700 rounded-lg p-6">
+                            <h3 className="text-2xl font-bold mb-6">Subir Foto</h3>
+                            <PhotoForm />
+                        </div>
 
+                        <div className="border border-gray-700 rounded-lg p-6">
+                            <h3 className="text-2xl font-bold mb-6">Editar/Eliminar Fotos</h3>
+                            <PhotoManager />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div >
