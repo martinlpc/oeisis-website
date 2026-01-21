@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, query, orderBy, onSnapshot, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore'
+import { collection, query, orderBy, onSnapshot, addDoc, updateDoc, doc, deleteDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase/config'
 
 export function useNews() {
@@ -8,7 +8,11 @@ export function useNews() {
     const [error, setError] = useState(null)
 
     useEffect(() => {
-        const q = query(collection(db, 'news'), orderBy('createdAt', 'desc'))
+        const q = query(
+            collection(db, 'news'),
+            orderBy('featured', 'desc'),
+            orderBy('createdAt', 'desc')
+        )
 
         const unsubscribe = onSnapshot(
             q,
@@ -32,7 +36,12 @@ export function useNews() {
 
     const createNews = async (data) => {
         try {
-            await addDoc(collection(db, 'news'), data)
+            const newsData = {
+                ...data,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+            }
+            await addDoc(collection(db, 'news'), newsData)
             return true
         } catch (error) {
             console.error('Error creating news:', error);

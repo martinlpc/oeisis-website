@@ -57,6 +57,8 @@ export function NewsForm() {
             const docData = {
                 title: formData.title,
                 content: formData.content,
+                type: formData.type,
+                externalLink: formData.externalLink,
                 images: images,
                 date: new Date().toLocaleDateString('es-AR', {
                     day: '2-digit',

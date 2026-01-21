@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNews } from '../../hooks/useNews'
 import { ListItem } from './ListItem';
 import { NewsEditForm } from './NewsEditForm';
+import { useCloudinaryUpload } from '../../hooks/useCloudinaryUpload'
 
 export function NewsManager() {
     const { news, loading, error, updateNews, deleteNews } = useNews()
@@ -9,10 +10,14 @@ export function NewsManager() {
     const [editData, setEditData] = useState(null)
     const [message, setMessage] = useState('')
     const [updating, setUpdating] = useState(false)
+    const [images, setImages] = useState([])
+    const [uploading, setUploading] = useState(false)
+    const { uploadImage } = useCloudinaryUpload()
 
     const handleEdit = (item) => {
         setEditingId(item.id)
         setEditData({ ...item })
+        setImages(item.images || [])
     }
 
     const handleChange = (e) => {
@@ -29,6 +34,7 @@ export function NewsManager() {
 
         try {
             const { id, ...dataToUpdate } = editData
+            dataToUpdate.images = images
             await updateNews(id, dataToUpdate)
             setMessage('✅ Noticia actualizada')
             setEditingId(null)
@@ -55,6 +61,27 @@ export function NewsManager() {
         setEditingId(null)
         setEditData(null)
     }
+
+    const handleImageUpload = async (e) => {
+        const files = Array.from(e.target.files);
+        setUploading(true);
+
+        try {
+            for (const file of files) {
+                const url = await uploadImage(file);
+                setImages(prev => [...prev, url]);
+            }
+        } catch (error) {
+            setMessage(`❌ Error: ${error.message}`);
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleRemoveImage = (index) => {
+        setImages(prev => prev.filter((_, i) => i !== index));
+    };
+
 
     if (loading) {
         return <p className="text-gray-400">Cargando noticias...</p>
@@ -86,6 +113,10 @@ export function NewsManager() {
                                 onSave={handleSave}
                                 onCancel={handleCancel}
                                 onDataChange={handleChange}
+                                onImageUpload={handleImageUpload}
+                                uploading={uploading}
+                                images={images}
+                                onRemoveImage={handleRemoveImage}
                             />
                         ) : (
                             <ListItem

@@ -1,9 +1,31 @@
 import { useNews } from '../../../hooks/useNews';
 import { useInView } from '../../../hooks/useInView';
+import { InterviewThumbnail } from './InterviewThumbnail';
 
 export function NewsList() {
     const [ref, isInView] = useInView()
     const { news, loading, error } = useNews();
+
+    const renderContentWithLinks = (content) => {
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+        return content.split(urlRegex).map((part, index) => {
+            if (urlRegex.test(part)) {
+                return (
+                    <a
+                        key={index}
+                        href={part}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-300 underline"
+                    >
+                        {part}
+                    </a >
+                );
+            }
+            return part;
+        });
+    }
 
     if (loading) {
         return (
@@ -49,8 +71,16 @@ export function NewsList() {
 
                                 {/* Contenido */}
                                 <p className="text-gray-300 mb-6 leading-relaxed">
-                                    {item.content}
+                                    {renderContentWithLinks(item.content)}
                                 </p>
+
+                                {/* Thumbnail de YouTube */}
+                                {item.type === 'interview' && item.externalLink && (
+                                    <InterviewThumbnail
+                                        externalLink={item.externalLink}
+                                        title={item.title}
+                                    />
+                                )}
 
                                 {/* Imágenes */}
                                 {item.images && item.images.length > 0 && (
