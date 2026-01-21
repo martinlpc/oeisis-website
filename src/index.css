@@ -1,0 +1,25 @@
+@import 'tailwindcss';
+
+html,
+body,
+#root {
+  background-color: #1f1f1f;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, San Francisco, Helvetica Neue, Helvetica, Ubuntu, Roboto, Noto, Segoe UI, Arial, sans-serif;
+}
+
+.btn-double-border {
+  font-style: italic;
+  border: 2px solid black;
+  box-shadow: inset 0 0 0 2px #1f1f1f, inset 0 0 0 4px white;
+  transition: all 0.3s ease;
+}
+
+.btn-double-border:hover {
+  border: 2px solid white;
+  box-shadow: inset 0 0 0 2px white, inset 0 0 0 4px black;
+  background-color: white;
+  color: black;
+}
