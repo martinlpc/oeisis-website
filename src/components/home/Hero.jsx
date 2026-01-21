@@ -50,11 +50,12 @@ export function Hero() {
             {/** Flecha abajo */}
             <button
                 onClick={() => {
-                    const featured = document.getElementById('featured-section');
-                    featured?.scrollIntoView({ behavior: 'smooth' });
+                    const destination = document.getElementById('upcoming-shows');
+                    destination?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="absolute bottom-8 bg-white/20 rounded-full p-3 hover:bg-white/30 transition opacity-70 animate-bounce flex items-center justify-center"
+                className="absolute bottom-16 bg-white/20 rounded-full p-3 hover:bg-white/30 transition opacity-70 animate-bounce flex flex-col items-center justify-center gap-2"
             >
+                <span className="text-xs font-semibold tracking-widest uppercase">shows</span>
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-8 w-8 text-white"

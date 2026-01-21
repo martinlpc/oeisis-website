@@ -24,6 +24,7 @@ export function UpcomingShows() {
 
     return (
         <section
+            id='upcoming-shows'
             ref={ref}
             className={`min-h-screen bg-[#1f1f1f] text-white py-20 flex items-center justify-center px-4 md:px-6 lg:px-0 transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
         >
