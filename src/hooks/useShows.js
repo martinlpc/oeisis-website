@@ -8,6 +8,30 @@ export function useShows() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const formatDateToInput = (dateString) => {
+        // "09 ene 2026" -> "2026-01-09"
+        const months = {
+            ene: '01', feb: '02', mar: '03', abr: '04', may: '05', jun: '06',
+            jul: '07', ago: '08', sep: '09', oct: '10', nov: '11', dic: '12'
+        };
+        const parts = dateString.split(' ').filter(p => p !== 'de');
+        const day = parts[0].padStart(2, '0');
+        const month = months[parts[1]];
+        const year = parts[2];
+
+        return `${year}-${month}-${day}`
+    }
+
+    const formatDateFromInput = (dateString) => {
+        // "2026-01-09" -> "09 ene 2026"
+        const date = new Date(dateString + 'T00:00:00');
+        return date.toLocaleDateString('es-AR', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+        }).replace(/ de /g, ' ') // Elimina 'de' entre los digitos de la fecha
+    }
+
     useEffect(() => {
         const q = query(collection(db, 'shows'));
 
@@ -21,8 +45,8 @@ export function useShows() {
 
                 // Ordenar por fecha (más próximo primero)
                 showsData.sort((a, b) => {
-                    const dateA = new Date(a.date.split(' ').filter(p => p !== 'de').reverse().join('-'));
-                    const dateB = new Date(b.date.split(' ').filter(p => p !== 'de').reverse().join('-'));
+                    const dateA = new Date(formatDateToInput(a.date))
+                    const dateB = new Date(formatDateToInput(b.date));
                     return dateA - dateB;
                 });
 
@@ -92,29 +116,7 @@ export function useShows() {
         }
     }
 
-    const formatDateToInput = (dateString) => {
-        // "09 ene 2026" -> "2026-01-09"
-        const months = {
-            ene: '01', feb: '02', mar: '03', abr: '04', may: '05', jun: '06',
-            jul: '07', ago: '08', sep: '09', oct: '10', nov: '11', dic: '12'
-        };
-        const parts = dateString.split(' ').filter(p => p !== 'de');
-        const day = parts[0].padStart(2, '0');
-        const month = months[parts[1]];
-        const year = parts[2];
 
-        return `${year}-${month}-${day}`
-    }
-
-    const formatDateFromInput = (dateString) => {
-        // "2026-01-09" -> "09 ene 2026"
-        const date = new Date(dateString + 'T00:00:00');
-        return date.toLocaleDateString('es-AR', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-        }).replace(/ de /g, ' ') // Elimina 'de' entre los digitos de la fecha
-    }
 
     return { shows, loading, error, createShow, updateShow, deleteShow, formatDateFromInput, formatDateToInput };
 }
