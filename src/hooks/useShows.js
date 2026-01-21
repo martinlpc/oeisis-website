@@ -1,6 +1,6 @@
 // src/hooks/useShows.js
 import { useState, useEffect } from 'react';
-import { collection, query, orderBy, onSnapshot, doc, addDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, onSnapshot, doc, addDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
 export function useShows() {
@@ -9,7 +9,7 @@ export function useShows() {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        const q = query(collection(db, 'shows'), orderBy('createdAt', 'asc'));
+        const q = query(collection(db, 'shows'));
 
         const unsubscribe = onSnapshot(
             q,
