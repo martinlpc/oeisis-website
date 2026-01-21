@@ -5,9 +5,9 @@ export function Footer() {
         <footer className="bg-gray-900 text-gray-300 border-t border-gray-800">
             <div className="max-w-7xl mx-auto px-4 py-16">
                 {/** Grid principal */}
-                <div className="grid md:grid-cols-3 gap-12 mb-12">
+                <div className="grid md:grid-cols-3 gap-12 mb-12 justify-items-center md:justify-items-start">
                     {/** Logo + copy + gacetilla */}
-                    <div>
+                    <div className="text-center md:text-left">
                         <div className="w-24 md:w-28 mx-auto md:mx-0 mb-6">
                             <svg className="w-full" viewBox="0 30 100 50"><image width="100" height="100" href="/logo.svg" /></svg>
                         </div>
@@ -26,7 +26,7 @@ export function Footer() {
                     </div>
 
                     {/* Redes Sociales */}
-                    <div>
+                    <div className="text-center md:text-left">
                         <h3 className="text-white font-bold text-lg mb-4">Seguinos</h3>
                         <div className="flex gap-4">
                             {/* YOUTUBE */}
@@ -49,7 +49,7 @@ export function Footer() {
                     </div>
 
                     {/* Contacto */}
-                    <div>
+                    <div className="text-center md:text-left">
                         <h3 className="text-white font-bold text-lg mb-4">Contacto</h3>
                         <div className="space-y-2 text-sm">
                             <a
