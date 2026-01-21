@@ -13,7 +13,7 @@ export function Footer() {
                         </div>
 
                         <p className="text-sm leading-relaxed">
-                            Tributo a Oasis en Argentina. La mejor experiencia del clásico británico con una propuesta única y memorable.
+                            Tributo a Oasis, desde Argentina para todo el mundo. La mejor experiencia del clásico británico con una propuesta única y memorable.
                         </p>
 
                         <a
@@ -84,7 +84,14 @@ export function Footer() {
                 {/* Copyright */}
                 <div className="border-t border-gray-800 pt-8 text-center text-xs text-gray-500">
                     <p>&copy; {currentYear} OEISIS. Todos los derechos reservados.</p>
+                    <p className="mt-2">
+                        👨🏻‍💻Diseño y desarrollo por{' '}
+                        <a href="https://github.com/martinlpc" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition">
+                            Martín Pacheco
+                        </a>
+                    </p>
                 </div>
+
             </div>
         </footer >
     )
