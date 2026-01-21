@@ -33,7 +33,7 @@ export function PhotoGallery() {
                 {photos.length === 0 ? (
                     <>
                         <p className="text-center text-gray-400 text-lg">No hay fotos aún</p>
-                        <p className="text-center text-gray-400 text-lg">¿Querés ver una tuya acá? Enviala a nuestro Instagram mas abajo</p>
+                        <p className="text-center text-gray-400 text-lg">¿Querés ver una foto tuya acá? Enviala a nuestro Instagram mas abajo</p>
                     </>
                 ) : (
                     <div className="flex flex-wrap justify-center items-center gap-6">
