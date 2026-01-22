@@ -4,7 +4,7 @@ export function NewsArticle({ item, renderContentWithLinks }) {
     return (
         <article
             key={item.id}
-            className="border-l-4 border-blue-600 pl-6 pb-12"
+            className="border-l-4 border-white pl-6 pb-12"
         >
             {/* Fecha */}
             <div className="flex items-center mb-4">
@@ -42,7 +42,7 @@ export function NewsArticle({ item, renderContentWithLinks }) {
 
             {/* Badge */}
             {item.featured && (
-                <div className="inline-block bg-blue-600 text-white px-4 py-1 rounded text-sm font-semibold">
+                <div className="inline-block border border-color-white bg-black text-white px-4 py-1 rounded text-sm font-semibold">
                     ⭐ Destacado
                 </div>
             )}
