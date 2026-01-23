@@ -1,19 +1,45 @@
 import { useInView } from "../../hooks/useInView"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 
 export function Hero() {
     const [ref, isInView] = useInView()
     const [scrollY, setScrollY] = useState(0)
+    const rafRef = useRef(null)
 
-    const HERO_VIDEO_URL = "https://res.cloudinary.com/duf2yqpa1/video/upload/v1768500545/video_hello_eii3lq.mp4"
+    const HERO_VIDEO_URL = "https://res.cloudinary.com/duf2yqpa1/video/upload/q_auto,f_auto,w_1920,br_500k/v1768500545/video_hello_eii3lq.mp4";
 
+    // Video para mobile (más liviano)
+    const HERO_VIDEO_MOBILE_URL = "https://res.cloudinary.com/duf2yqpa1/video/upload/q_auto,f_auto,w_768,br_300k/v1768500545/video_hello_eii3lq.mp4";
+
+    // Poster optimizado (primera frame del video como JPG)
+    const POSTER_URL = "https://res.cloudinary.com/duf2yqpa1/video/upload/so_0,q_auto,f_auto,w_1920/v1768500545/video_hello_eii3lq.jpg";
+
+
+    // ⚡ Scroll con requestAnimationFrame (60fps smooth)
     useEffect(() => {
-        const handleScroll = () => setScrollY(window.scrollY)
-        window.addEventListener('scroll', handleScroll)
+        let ticking = false
 
-        return () => window.removeEventListener('scroll', handleScroll)
+        const handleScroll = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    setScrollY(window.scrollY)
+                    ticking = false
+                })
+                ticking = true
+            }
+        }
+
+        window.addEventListener('scroll', handleScroll)
+        return () => {
+            window.removeEventListener('scroll', handleScroll)
+            if (rafRef.current) {
+                cancelAnimationFrame(rafRef.current)
+            }
+        }
     }, [])
 
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+    const videoUrl = isMobile ? HERO_VIDEO_MOBILE_URL : HERO_VIDEO_URL
 
     return (
         <section
@@ -23,16 +49,21 @@ export function Hero() {
             {/** Video background con parallax */}
             <div
                 className="absolute inset-0 w-full h-full"
-                style={{ transform: `translateY(${scrollY * 0.5}px)` }}
+                style={{
+                    transform: `translate3D(0, ${scrollY * 0.5}px, 0)`,
+                    willChange: 'transform'
+                }}
             >
                 <video
                     autoPlay
                     muted
                     loop
                     playsInline
+                    poster={POSTER_URL}
                     className="w-full h-full object-cover"
+                    preload="metadata"
                 >
-                    <source src={HERO_VIDEO_URL} type="video/mp4" />
+                    <source src={videoUrl} type="video/mp4" />
                 </video>
                 {/** Overlay */}
                 <div className="absolute inset-0 bg-black/40" />
@@ -54,6 +85,7 @@ export function Hero() {
                     destination?.scrollIntoView({ behavior: 'smooth' });
                 }}
                 className="absolute bottom-16 bg-white/20 rounded-full p-3 hover:bg-white/30 transition opacity-70 animate-bounce flex flex-col items-center justify-center gap-2"
+                aria-label="Ir a shows"
             >
                 <span className="text-xs font-semibold tracking-widest uppercase">shows</span>
                 <svg
@@ -62,6 +94,7 @@ export function Hero() {
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
+                    aria-hidden='true'
                 >
                     <path
                         strokeLinecap="round"
