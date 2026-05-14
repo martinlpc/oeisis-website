@@ -85,9 +85,9 @@ export function Footer() {
                 <div className="border-t border-gray-800 pt-8 text-center text-xs text-gray-500">
                     <p>&copy; {currentYear} OEISIS. Todos los derechos reservados.</p>
                     <p className="mt-2">
-                        👨🏻‍💻Diseño y desarrollo por{' '}
-                        <a href="https://github.com/martinlpc" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition">
-                            Martín Pacheco
+                        👨🏻‍💻Design & development by{' '}
+                        <a href="https://martin-pacheco.vercel.app" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition">
+                            `< MP />`
                         </a>
                     </p>
                 </div>
