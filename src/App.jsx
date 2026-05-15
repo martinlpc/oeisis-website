@@ -2,9 +2,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import './index.css';
 import { PrivateRoute } from './PrivateRoute';
-//import { Admin } from './pages/Admin';
-//import { Login } from './pages/Login';
-
 import { Home } from './pages/Home';
 import { Modality } from 'firebase/ai';
 
