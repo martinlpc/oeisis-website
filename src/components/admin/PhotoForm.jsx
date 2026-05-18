@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useCloudinaryUpload } from "../../hooks/useCloudinaryUpload";
+import { useSupabaseStorage } from "../../hooks/useSupabaseStorage"
 import { usePhotos } from "../../hooks/usePhotos";
 
 export function PhotoForm() {
@@ -10,11 +10,11 @@ export function PhotoForm() {
         album: ''
     }
 
-    const { uploadImage } = useCloudinaryUpload()
+    const { upload, uploading } = useSupabaseStorage()
     const { createPhoto } = usePhotos()
     const [formData, setFormData] = useState(INITIAL_FORM_DATA)
     const [loading, setLoading] = useState(false)
-    const [uploading, setUploading] = useState(false)
+    //const [uploading, setUploading] = useState(false)
     const [message, setMessage] = useState('')
     const [preview, setPreview] = useState(null)
 
@@ -22,21 +22,18 @@ export function PhotoForm() {
         const file = e.target.files[0]
         if (!file) return
 
-        setUploading(true)
+        //setUploading(true)
         setMessage('')
 
         try {
-            const imageUrl = await uploadImage(file)
+            const { url } = await upload(file)
             setFormData(prev => ({
-                ...prev,
-                imageUrl: imageUrl
+                ...prev, imageUrl: url
             }))
-            setPreview(imageUrl)
+            setPreview(url)
             setMessage('✅ Imagen pre-cargada')
         } catch (error) {
             setMessage(`❌ Error: ${error.message}`);
-        } finally {
-            setUploading(false)
         }
     }
 
