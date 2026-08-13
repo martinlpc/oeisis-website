@@ -21,7 +21,7 @@ Sitio web profesional para banda homenaje a Oasis con panel de administración c
     - Shows (fecha, ubicación, horario, tickets)
     - Noticias y Entrevistas
     - Videos YouTube
-    - Fotos (con upload a Cloudinary)
+    - Fotos (con upload a Supabase Storage)
 - Autenticación Firebase
 - Interfaz intuitiva y responsive
 - Managers con edición inline
@@ -37,7 +37,7 @@ Sitio web profesional para banda homenaje a Oasis con panel de administración c
 **Backend & Servicios:**
 
 - Firebase (Firestore, Authentication)
-- Cloudinary (image hosting)
+- Supabase Storage (image/video hosting)
 
 **Hosting:**
 
@@ -79,7 +79,7 @@ Este es un proyecto real, pero también utilizado para **portfolio** que demuest
 
 - Arquitectura escalable en React
 - Integración con Firebase (Firestore, Auth)
-- Upload de archivos (Cloudinary)
+- Upload de archivos (Supabase Storage)
 - Custom hooks desacoplados
 - UI/UX profesional
 - Responsive design

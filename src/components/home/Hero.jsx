@@ -6,13 +6,13 @@ export function Hero() {
     const [scrollY, setScrollY] = useState(0)
     const rafRef = useRef(null)
 
-    const HERO_VIDEO_URL = "https://res.cloudinary.com/duf2yqpa1/video/upload/q_auto,f_auto,w_1920,br_500k/v1768500545/video_hello_eii3lq.mp4";
+    const HERO_VIDEO_URL = "/videos/hero-720.mp4";
 
     // Video para mobile (más liviano)
-    const HERO_VIDEO_MOBILE_URL = "https://res.cloudinary.com/duf2yqpa1/video/upload/q_auto,f_auto,w_768,br_300k/v1768500545/video_hello_eii3lq.mp4";
+    const HERO_VIDEO_MOBILE_URL = "/videos/hero-360.mp4";
 
     // Poster optimizado (primera frame del video como JPG)
-    const POSTER_URL = "https://res.cloudinary.com/duf2yqpa1/video/upload/so_0,q_auto,f_auto,w_1920/v1768500545/video_hello_eii3lq.jpg";
+    const POSTER_URL = "/images/hero-poster.jpg";
 
 
     // ⚡ Scroll con requestAnimationFrame (60fps smooth)

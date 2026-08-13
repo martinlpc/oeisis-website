@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useNews } from '../../hooks/useNews'
-import { useCloudinaryUpload } from '../../hooks/useCloudinaryUpload'
+import { useSupabaseStorage } from '../../hooks/useSupabaseStorage'
 
 export function NewsForm() {
     const { createNews } = useNews()
-    const { uploadImage } = useCloudinaryUpload()
+    const { upload } = useSupabaseStorage()
 
     const [formData, setFormData] = useState({
         title: '',
@@ -33,7 +33,7 @@ export function NewsForm() {
 
         try {
             for (const file of files) {
-                const url = await uploadImage(file)
+                const { url } = await upload(file)
                 setImages(prev => [...prev, url])
             }
             setMessage(`✅ ${files.length} imagen(es) subida(s)`)

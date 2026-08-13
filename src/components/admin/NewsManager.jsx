@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNews } from '../../hooks/useNews'
 import { ListItem } from './ListItem';
 import { NewsEditForm } from './NewsEditForm';
-import { useCloudinaryUpload } from '../../hooks/useCloudinaryUpload'
+import { useSupabaseStorage } from '../../hooks/useSupabaseStorage'
 
 export function NewsManager() {
     const { news, loading, error, updateNews, deleteNews } = useNews()
@@ -12,7 +12,7 @@ export function NewsManager() {
     const [updating, setUpdating] = useState(false)
     const [images, setImages] = useState([])
     const [uploading, setUploading] = useState(false)
-    const { uploadImage } = useCloudinaryUpload()
+    const { upload } = useSupabaseStorage()
 
     const handleEdit = (item) => {
         setEditingId(item.id)
@@ -68,7 +68,7 @@ export function NewsManager() {
 
         try {
             for (const file of files) {
-                const url = await uploadImage(file);
+                const { url } = await upload(file);
                 setImages(prev => [...prev, url]);
             }
         } catch (error) {
