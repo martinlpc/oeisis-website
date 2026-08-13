@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNews } from '../../hooks/useNews'
 import { useSupabaseStorage } from '../../hooks/useSupabaseStorage'
 
 export function NewsForm() {
     const { createNews } = useNews()
-    const { upload } = useSupabaseStorage()
+    const { upload, removeByUrl } = useSupabaseStorage()
 
     const [formData, setFormData] = useState({
         title: '',
@@ -18,6 +18,19 @@ export function NewsForm() {
     const [uploading, setUploading] = useState(false)
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState('')
+
+    // URLs subidas pero aún no guardadas: se borran del bucket si el form se abandona
+    const uploadedRef = useRef([])
+    const committedRef = useRef(false)
+
+    useEffect(() => {
+        return () => {
+            if (!committedRef.current) {
+                uploadedRef.current.forEach(url => removeByUrl(url).catch(() => {}))
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target
@@ -34,6 +47,7 @@ export function NewsForm() {
         try {
             for (const file of files) {
                 const { url } = await upload(file)
+                uploadedRef.current.push(url)
                 setImages(prev => [...prev, url])
             }
             setMessage(`✅ ${files.length} imagen(es) subida(s)`)
@@ -45,7 +59,11 @@ export function NewsForm() {
     }
 
     const removeImage = (index) => {
-        setImages(prev => prev.filter((_, i) => i !== index))
+        const url = images[index]
+        const i = uploadedRef.current.indexOf(url)
+        if (i !== -1) uploadedRef.current.splice(i, 1)
+        removeByUrl(url).catch(() => {})
+        setImages(prev => prev.filter((_, j) => j !== index))
     }
 
     const handleSubmit = async (e) => {
@@ -69,6 +87,8 @@ export function NewsForm() {
             }
 
             await createNews(docData)
+            committedRef.current = true
+            uploadedRef.current = []
             setMessage('✅ Noticia creada')
 
             setFormData({

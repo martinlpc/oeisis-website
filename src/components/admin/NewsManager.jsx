@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNews } from '../../hooks/useNews'
 import { ListItem } from './ListItem';
 import { NewsEditForm } from './NewsEditForm';
@@ -12,12 +12,19 @@ export function NewsManager() {
     const [updating, setUpdating] = useState(false)
     const [images, setImages] = useState([])
     const [uploading, setUploading] = useState(false)
-    const { upload } = useSupabaseStorage()
+    const { upload, removeByUrl } = useSupabaseStorage()
+
+    // Imágenes borradas del form (se eliminan del bucket solo al guardar)
+    const removedRef = useRef([])
+    // Imágenes subidas en esta sesión de edición (se eliminan si se cancela)
+    const uploadedRef = useRef([])
 
     const handleEdit = (item) => {
         setEditingId(item.id)
         setEditData({ ...item })
         setImages(item.images || [])
+        removedRef.current = []
+        uploadedRef.current = []
     }
 
     const handleChange = (e) => {
@@ -36,6 +43,12 @@ export function NewsManager() {
             const { id, ...dataToUpdate } = editData
             dataToUpdate.images = images
             await updateNews(id, dataToUpdate)
+
+            const toRemove = [...removedRef.current]
+            uploadedRef.current = []
+            removedRef.current = []
+            toRemove.forEach(url => removeByUrl(url).catch(() => {}))
+
             setMessage('✅ Noticia actualizada')
             setEditingId(null)
             setEditData(null)
@@ -58,6 +71,11 @@ export function NewsManager() {
     }
 
     const handleCancel = () => {
+        // Al cancelar, las imágenes subidas en esta sesión quedan sin referencia: se limpian
+        const toClean = [...uploadedRef.current]
+        uploadedRef.current = []
+        removedRef.current = []
+        toClean.forEach(url => removeByUrl(url).catch(() => {}))
         setEditingId(null)
         setEditData(null)
     }
@@ -69,6 +87,7 @@ export function NewsManager() {
         try {
             for (const file of files) {
                 const { url } = await upload(file);
+                uploadedRef.current.push(url);
                 setImages(prev => [...prev, url]);
             }
         } catch (error) {
@@ -79,6 +98,8 @@ export function NewsManager() {
     };
 
     const handleRemoveImage = (index) => {
+        const url = images[index];
+        removedRef.current.push(url);
         setImages(prev => prev.filter((_, i) => i !== index));
     };
 

@@ -33,5 +33,14 @@ export function useSupabaseStorage() {
         if (error) throw error
     }
 
-    return { upload, list, remove }
+    // Elimina el archivo a partir de la URL pública de Supabase.
+    // Si la URL no es de Supabase (legacy, otro host), no hace nada.
+    const removeByUrl = async (url) => {
+        const match = String(url || '').match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/)
+        if (!match) return
+        const [, bucket, path] = match
+        await remove(bucket, path)
+    }
+
+    return { upload, list, remove, removeByUrl }
 }

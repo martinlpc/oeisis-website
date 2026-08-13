@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useSupabaseStorage } from "../../hooks/useSupabaseStorage"
 import { usePhotos } from "../../hooks/usePhotos";
 
@@ -10,7 +10,7 @@ export function PhotoForm() {
         album: ''
     }
 
-    const { upload, uploading } = useSupabaseStorage()
+    const { upload, removeByUrl } = useSupabaseStorage()
     const { createPhoto } = usePhotos()
     const [formData, setFormData] = useState(INITIAL_FORM_DATA)
     const [loading, setLoading] = useState(false)
@@ -18,15 +18,36 @@ export function PhotoForm() {
     const [message, setMessage] = useState('')
     const [preview, setPreview] = useState(null)
 
+    // URL subida pero aún no guardada: se borra del bucket si se reemplaza o se abandona
+    const uploadedRef = useRef(null)
+    const committedRef = useRef(false)
+
+    useEffect(() => {
+        return () => {
+            if (!committedRef.current && uploadedRef.current) {
+                removeByUrl(uploadedRef.current).catch(() => {})
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
     const handleImageUpload = async (e) => {
         const file = e.target.files[0]
         if (!file) return
+
+        committedRef.current = false
+
+        // Si había una imagen subida sin guardar, se reemplaza: limpiar la anterior
+        if (uploadedRef.current) {
+            removeByUrl(uploadedRef.current).catch(() => {})
+        }
 
         //setUploading(true)
         setMessage('')
 
         try {
             const { url } = await upload(file)
+            uploadedRef.current = url
             setFormData(prev => ({
                 ...prev, imageUrl: url
             }))
@@ -43,6 +64,8 @@ export function PhotoForm() {
 
         try {
             await createPhoto(formData)
+            committedRef.current = true
+            uploadedRef.current = null
             setMessage('✅ Imagen cargada al sitio')
         } catch (error) {
             setMessage(`❌ Error: ${error.message}`)
@@ -76,7 +99,6 @@ export function PhotoForm() {
                             type="file"
                             accept="image/*"
                             onChange={handleImageUpload}
-                            disabled={uploading}
                             id="photo-input"
                             className="hidden"
                         />
@@ -84,7 +106,7 @@ export function PhotoForm() {
                             htmlFor="photo-input"
                             className='w-full block bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white cursor-pointer text-center hover:bg-gray-800 transition'
                         >
-                            {uploading ? 'Subiendo...' : 'Seleccionar imagen'}
+                            Seleccionar imagen
                         </label>
                     </div>
 
