@@ -1,29 +1,37 @@
 import { useNews } from '../../../hooks/useNews';
 import { useInView } from '../../../hooks/useInView';
 import { NewsArticle } from './NewsArticle';
+import { Fragment } from 'react';
+
+const URL_REGEX = /(https?:\/\/[^\s]+)/;
+const TRAILING_PUNCTUATION = /[.,;:!?)\]]+$/;
 
 export function NewsList() {
     const [ref, isInView] = useInView()
     const { news, loading, error } = useNews();
 
     const renderContentWithLinks = (content) => {
-        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        // split con grupo de captura: las URLs quedan siempre en las posiciones impares
+        return String(content || '').split(URL_REGEX).map((part, index) => {
+            if (index % 2 === 0) return part
 
-        return content.split(urlRegex).map((part, index) => {
-            if (urlRegex.test(part)) {
-                return (
+            // La puntuación pegada al final ("mirá https://x.com.") queda afuera del link
+            const trailing = part.match(TRAILING_PUNCTUATION)?.[0] || ''
+            const url = trailing ? part.slice(0, -trailing.length) : part
+
+            return (
+                <Fragment key={index}>
                     <a
-                        key={index}
-                        href={part}
+                        href={url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-400 hover:text-blue-300 underline"
                     >
-                        {part}
-                    </a >
-                );
-            }
-            return part;
+                        {url}
+                    </a>
+                    {trailing}
+                </Fragment>
+            );
         });
     }
 
