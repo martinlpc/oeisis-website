@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { usePhotos } from '../../hooks/usePhotos';
+import { useSupabaseStorage } from '../../hooks/useSupabaseStorage';
 import { ListItem } from './ListItem';
 import { PhotoEditForm } from './PhotoEditForm';
 
 export function PhotoManager() {
     const { photos, loading, error, updatePhoto, deletePhoto } = usePhotos();
+    const { removeByUrl } = useSupabaseStorage();
     const [editingId, setEditingId] = useState(null);
     const [editData, setEditData] = useState(null);
     const [message, setMessage] = useState('');
@@ -43,11 +45,20 @@ export function PhotoManager() {
     const handleDelete = async (id) => {
         if (!window.confirm('¿Estás seguro de que querés eliminar esta foto?')) return;
 
+        const photo = photos.find(p => p.id === id);
+
         try {
             await deletePhoto(id);
-            setMessage('✅ Foto eliminada');
         } catch (error) {
             setMessage(`❌ Error: ${error.message}`);
+            return;
+        }
+
+        try {
+            if (photo?.imageUrl) await removeByUrl(photo.imageUrl);
+            setMessage('✅ Foto eliminada');
+        } catch (error) {
+            setMessage(`⚠️ Foto eliminada del sitio, pero el archivo quedó en Supabase: ${error.message}`);
         }
     };
 
@@ -65,7 +76,16 @@ export function PhotoManager() {
     }
 
     if (photos.length === 0) {
-        return <p className="text-gray-400">No hay fotos aún</p>;
+        return (
+            <div>
+                {message && (
+                    <div className="mb-6 p-4 rounded bg-gray-800 border border-gray-700">
+                        {message}
+                    </div>
+                )}
+                <p className="text-gray-400">No hay fotos aún</p>
+            </div>
+        );
     }
 
     return (

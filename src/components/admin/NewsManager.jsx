@@ -62,11 +62,20 @@ export function NewsManager() {
     const handleDelete = async (id) => {
         if (!window.confirm('¿Estás seguro de que querés eliminar esta noticia?')) return
 
+        const item = news.find(n => n.id === id)
+
         try {
             await deleteNews(id)
-            setMessage('✅ Noticia eliminada')
         } catch (error) {
             setMessage(`❌ Error: ${error.message}`)
+            return
+        }
+
+        try {
+            await Promise.all((item?.images || []).map(url => removeByUrl(url)))
+            setMessage('✅ Noticia eliminada')
+        } catch (error) {
+            setMessage(`⚠️ Noticia eliminada del sitio, pero el archivo quedó en Supabase: ${error.message}`)
         }
     }
 
@@ -113,7 +122,16 @@ export function NewsManager() {
     }
 
     if (news.length === 0) {
-        return <p className="text-gray-400">No hay shows aún</p>
+        return (
+            <div>
+                {message && (
+                    <div className="mb-6 p-4 rounded bg-gray-800 border border-gray-700">
+                        {message}
+                    </div>
+                )}
+                <p className="text-gray-400">No hay noticias aún</p>
+            </div>
+        )
     }
 
     return (

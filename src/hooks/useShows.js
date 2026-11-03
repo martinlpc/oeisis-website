@@ -1,36 +1,45 @@
-// src/hooks/useShows.js
 import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, doc, addDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
-export function useShows() {
+const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+// "2026-01-09" -> "09 ene 2026" (texto que se muestra en la web)
+export function formatDisplayDate(iso) {
+    const [year, month, day] = iso.split('-');
+    return `${day} ${MONTHS[parseInt(month, 10) - 1]} ${year}`;
+}
+
+// "09 ene 2026" (o "09 de ene. de 2026") -> "2026-01-09". Solo para shows viejos sin dateISO.
+export function parseLegacyDate(text) {
+    const parts = String(text || '')
+        .toLowerCase()
+        .replace(/\./g, '')
+        .split(' ')
+        .filter(p => p && p !== 'de');
+    const monthIndex = MONTHS.indexOf(parts[1]?.slice(0, 3));
+    if (parts.length < 3 || monthIndex === -1) return null;
+    return `${parts[2]}-${String(monthIndex + 1).padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+}
+
+export function getShowISO(show) {
+    return show.dateISO || parseLegacyDate(show.date);
+}
+
+// Fecha de hoy en Argentina como "YYYY-MM-DD"
+function todayISO() {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }).format(new Date());
+}
+
+export function isPastShow(show) {
+    const iso = getShowISO(show);
+    return iso ? iso < todayISO() : false;
+}
+
+export function useShows({ upcomingOnly = false } = {}) {
     const [shows, setShows] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
-    const formatDateToInput = (dateString) => {
-        // "09 ene 2026" -> "2026-01-09"
-        const months = {
-            ene: '01', feb: '02', mar: '03', abr: '04', may: '05', jun: '06',
-            jul: '07', ago: '08', sep: '09', oct: '10', nov: '11', dic: '12'
-        };
-        const parts = dateString.split(' ').filter(p => p !== 'de');
-        const day = parts[0].padStart(2, '0');
-        const month = months[parts[1]];
-        const year = parts[2];
-
-        return `${year}-${month}-${day}`
-    }
-
-    const formatDateFromInput = (dateString) => {
-        // "2026-01-09" -> "09 ene 2026"
-        const date = new Date(dateString + 'T00:00:00');
-        return date.toLocaleDateString('es-AR', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-        }).replace(/ de /g, ' ') // Elimina 'de' entre los digitos de la fecha
-    }
 
     useEffect(() => {
         const q = query(collection(db, 'shows'));
@@ -38,17 +47,18 @@ export function useShows() {
         const unsubscribe = onSnapshot(
             q,
             (snapshot) => {
-                const showsData = snapshot.docs.map(doc => ({
+                let showsData = snapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data(),
                 }));
 
-                // Ordenar por fecha (más próximo primero)
-                showsData.sort((a, b) => {
-                    const dateA = new Date(formatDateToInput(a.date))
-                    const dateB = new Date(formatDateToInput(b.date));
-                    return dateA - dateB;
-                });
+                // Se filtra en el cliente porque los shows viejos todavía pueden no tener dateISO
+                if (upcomingOnly) {
+                    showsData = showsData.filter(show => !isPastShow(show));
+                }
+
+                // Más próximo primero; los que no tienen fecha válida van al final
+                showsData.sort((a, b) => (getShowISO(a) || '9999').localeCompare(getShowISO(b) || '9999'));
 
                 setShows(showsData);
                 setLoading(false);
@@ -61,19 +71,16 @@ export function useShows() {
         );
 
         return () => unsubscribe();
-    }, []);
+    }, [upcomingOnly]);
 
+    // data.date llega del input como "YYYY-MM-DD"
     const createShow = async (data) => {
         try {
-            // Convertir fecha de YYYY-MM-DD a "DD MMM YYYY"
-            const [year, month, day] = data.date.split('-');
-            const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-            const formattedDate = `${day} ${months[parseInt(month) - 1]} ${year}`;
-
             const docData = {
                 title: data.title,
                 status: data.status,
-                date: formattedDate,
+                date: formatDisplayDate(data.date),
+                dateISO: data.date,
                 time: data.time,
                 location: {
                     venue: data.venue,
@@ -98,7 +105,7 @@ export function useShows() {
 
     const updateShow = async (id, data) => {
         try {
-            await updateDoc(doc(db, 'shows', id), data)
+            await updateDoc(doc(db, 'shows', id), { ...data, updatedAt: serverTimestamp() })
             return true
         } catch (error) {
             console.error('Error updating show:', error);
@@ -116,7 +123,5 @@ export function useShows() {
         }
     }
 
-
-
-    return { shows, loading, error, createShow, updateShow, deleteShow, formatDateFromInput, formatDateToInput };
+    return { shows, loading, error, createShow, updateShow, deleteShow };
 }

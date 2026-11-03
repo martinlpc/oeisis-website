@@ -14,7 +14,8 @@ export function PhotoForm() {
     const { createPhoto } = usePhotos()
     const [formData, setFormData] = useState(INITIAL_FORM_DATA)
     const [loading, setLoading] = useState(false)
-    //const [uploading, setUploading] = useState(false)
+    const [uploading, setUploading] = useState(false)
+    const fileInputRef = useRef(null)
     const [message, setMessage] = useState('')
     const [preview, setPreview] = useState(null)
 
@@ -42,7 +43,7 @@ export function PhotoForm() {
             removeByUrl(uploadedRef.current).catch(() => {})
         }
 
-        //setUploading(true)
+        setUploading(true)
         setMessage('')
 
         try {
@@ -55,6 +56,8 @@ export function PhotoForm() {
             setMessage('✅ Imagen pre-cargada')
         } catch (error) {
             setMessage(`❌ Error: ${error.message}`);
+        } finally {
+            setUploading(false)
         }
     }
 
@@ -66,6 +69,10 @@ export function PhotoForm() {
             await createPhoto(formData)
             committedRef.current = true
             uploadedRef.current = null
+            setFormData(INITIAL_FORM_DATA)
+            setPreview(null)
+            // Permite volver a elegir el mismo archivo
+            if (fileInputRef.current) fileInputRef.current.value = ''
             setMessage('✅ Imagen cargada al sitio')
         } catch (error) {
             setMessage(`❌ Error: ${error.message}`)
@@ -99,6 +106,8 @@ export function PhotoForm() {
                             type="file"
                             accept="image/*"
                             onChange={handleImageUpload}
+                            ref={fileInputRef}
+                            disabled={uploading}
                             id="photo-input"
                             className="hidden"
                         />
@@ -106,7 +115,7 @@ export function PhotoForm() {
                             htmlFor="photo-input"
                             className='w-full block bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white cursor-pointer text-center hover:bg-gray-800 transition'
                         >
-                            Seleccionar imagen
+                            {uploading ? 'Subiendo...' : 'Seleccionar imagen'}
                         </label>
                     </div>
 
@@ -161,7 +170,7 @@ export function PhotoForm() {
                     {/* Submit button */}
                     <button
                         type="submit"
-                        disabled={loading || !formData.imageUrl}
+                        disabled={loading || uploading || !formData.imageUrl}
                         className='w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 text-white font-bold py-3 rounded transition'
                     >
                         {loading ? 'Creando...' : 'Crear foto'}
