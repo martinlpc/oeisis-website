@@ -15,9 +15,11 @@ export function VideoGallery() {
     }
 
     if (error) {
-        <div className="min-h-screen flex items-center justify-center">
-            <p className="text-white text-xl">Error: {error}</p>
-        </div>
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <p className="text-red-500 text-xl">Error: {error}</p>
+            </div>
+        )
     }
 
     return (
@@ -36,8 +38,8 @@ export function VideoGallery() {
                 ) : (
                     <div className="flex flex-wrap justify-center items-center gap-6">
                         {videos.map((video) => (
-                            <div className="w-full max-w-sm">
-                                <VideoCard key={video.id} video={video} />
+                            <div key={video.id} className="w-full max-w-sm">
+                                <VideoCard video={video} />
                             </div>
                         ))}
                     </div>
