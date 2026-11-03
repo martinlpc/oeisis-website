@@ -83,7 +83,16 @@ export function ShowsManager() {
     }
 
     if (shows.length === 0) {
-        return <p className="text-gray-400">No hay shows aún</p>
+        return (
+            <div>
+                {message && (
+                    <div className="mb-6 p-4 rounded bg-gray-800 border border-gray-700">
+                        {message}
+                    </div>
+                )}
+                <p className="text-gray-400">No hay shows aún</p>
+            </div>
+        )
     }
 
     return (

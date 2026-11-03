@@ -76,7 +76,16 @@ export function PhotoManager() {
     }
 
     if (photos.length === 0) {
-        return <p className="text-gray-400">No hay fotos aún</p>;
+        return (
+            <div>
+                {message && (
+                    <div className="mb-6 p-4 rounded bg-gray-800 border border-gray-700">
+                        {message}
+                    </div>
+                )}
+                <p className="text-gray-400">No hay fotos aún</p>
+            </div>
+        );
     }
 
     return (
