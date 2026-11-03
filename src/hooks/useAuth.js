@@ -14,7 +14,7 @@ export function useAuth() {
         })
 
         return () => unsubscribe()
-    })
+    }, [])
 
     const login = async (email, password) => {
         setError(null)

@@ -65,7 +65,16 @@ export function VideoManager() {
     }
 
     if (videos.length === 0) {
-        return <p className="text-gray-400">No hay videos para mostrar (aun!)</p>
+        return (
+            <div>
+                {message && (
+                    <div className="mb-6 p-4 rounded bg-gray-800 border border-gray-700">
+                        {message}
+                    </div>
+                )}
+                <p className="text-gray-400">No hay videos aún</p>
+            </div>
+        )
     }
 
     return (

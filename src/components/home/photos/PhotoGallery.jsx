@@ -16,10 +16,10 @@ export function PhotoGallery() {
 
     if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <p className="text-red-500 text-xl">Error: {error}</p>
+            <div className="py-20 px-4 text-center">
+                <p className="text-gray-400 text-lg">No pudimos cargar las fotos. Probá recargar la página.</p>
             </div>
-        );
+        )
     }
 
     return (

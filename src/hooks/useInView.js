@@ -1,26 +1,25 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
-export function useInView(options = {}) {
-    const ref = useRef(null)
+// Devuelve un callback ref: varias secciones montan el elemento recién después del loading,
+// así que el observer se engancha cuando el nodo existe, no en el primer render.
+export function useInView({ threshold = 0.1, rootMargin = '0px' } = {}) {
+    const [node, setNode] = useState(null)
     const [isInView, setIsInView] = useState(false)
 
     useEffect(() => {
+        if (!node || isInView) return
+
         const observer = new IntersectionObserver(([entry]) => {
             if (entry.isIntersecting) {
                 setIsInView(true)
-                observer.unobserve(entry.target)
+                observer.disconnect()
             }
-        }, {
-            threshold: 0.1,
-            ...options,
-        })
+        }, { threshold, rootMargin })
 
-        if (ref.current) {
-            observer.observe(ref.current)
-        }
+        observer.observe(node)
 
         return () => observer.disconnect()
-    }, [options])
+    }, [node, isInView, threshold, rootMargin])
 
-    return [ref, isInView]
+    return [setNode, isInView]
 }

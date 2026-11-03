@@ -1,20 +1,30 @@
-import { useState } from 'react';
-import { useShows } from '../../hooks/useShows'
+import { useState, useEffect } from 'react';
+import { useShows, formatDisplayDate, getShowISO, isPastShow } from '../../hooks/useShows'
 import { ListItem } from './ListItem';
 import { ShowEditForm } from './ShowEditForm';
 
 export function ShowsManager() {
-    const { shows, loading, error, updateShow, deleteShow, formatDateFromInput, formatDateToInput } = useShows()
+    const { shows, loading, error, updateShow, deleteShow } = useShows()
     const [editingId, setEditingId] = useState(null)
     const [editData, setEditData] = useState(null)
     const [message, setMessage] = useState('')
     const [updating, setUpdating] = useState(false)
 
+    // Migración: completa dateISO en los shows creados antes de que existiera el campo
+    useEffect(() => {
+        shows
+            .filter(show => !show.dateISO && getShowISO(show))
+            .forEach(show => {
+                updateShow(show.id, { dateISO: getShowISO(show) })
+                    .catch(err => console.error('No se pudo migrar dateISO', show.id, err))
+            })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [shows])
+
     const handleEdit = (show) => {
         setEditingId(show.id)
 
-        // Convertir fecha de "09 ene 2026" a "2026-01-09" para el input
-        const dateValue = formatDateToInput(show.date)
+        const dateValue = getShowISO(show) || ''
 
         setEditData({
             ...show,
@@ -46,7 +56,8 @@ export function ShowsManager() {
 
         try {
             const { id, ...dataToUpdate } = editData
-            dataToUpdate.date = formatDateFromInput(dataToUpdate.date)
+            dataToUpdate.dateISO = dataToUpdate.date
+            dataToUpdate.date = formatDisplayDate(dataToUpdate.date)
             await updateShow(id, dataToUpdate)
             setMessage('✅ Show actualizado')
             setEditingId(null)
@@ -83,7 +94,16 @@ export function ShowsManager() {
     }
 
     if (shows.length === 0) {
-        return <p className="text-gray-400">No hay shows aún</p>
+        return (
+            <div>
+                {message && (
+                    <div className="mb-6 p-4 rounded bg-gray-800 border border-gray-700">
+                        {message}
+                    </div>
+                )}
+                <p className="text-gray-400">No hay shows aún</p>
+            </div>
+        )
     }
 
     return (
@@ -96,7 +116,10 @@ export function ShowsManager() {
 
             <div className="space-y-4">
                 {shows.map((show) => (
-                    <div key={show.id} className="border border-gray-700 rounded-lg p-4">
+                    <div key={show.id} className={`border border-gray-700 rounded-lg p-4 ${isPastShow(show) && editingId !== show.id ? 'opacity-60' : ''}`}>
+                        {isPastShow(show) && (
+                            <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">Pasado (no se muestra en la web)</p>
+                        )}
                         {editingId === show.id ? (
                             <ShowEditForm
                                 editData={editData}
