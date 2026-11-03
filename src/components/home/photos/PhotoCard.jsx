@@ -12,6 +12,8 @@ export function PhotoCard({ photo }) {
                 <img
                     src={photo.imageUrl}
                     alt={photo.title}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-110 transition duration-300"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition flex items-end p-4">
