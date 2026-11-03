@@ -4,7 +4,7 @@ import { ShowCard } from './ShowCard.jsx'
 
 export function UpcomingShows() {
     const [ref, isInView] = useInView()
-    const { shows, loading, error } = useShows()
+    const { shows, loading, error } = useShows({ upcomingOnly: true })
 
     if (loading) {
         return (
