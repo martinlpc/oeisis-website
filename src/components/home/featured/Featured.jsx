@@ -1,5 +1,6 @@
 import { useFeatured } from '../../../hooks/useFeatured'
 import { useInView } from '../../../hooks/useInView'
+import { YouTubeEmbed } from '../../common/YouTubeEmbed'
 
 export function Featured() {
     const { featured, loading, error } = useFeatured()
@@ -36,13 +37,7 @@ export function Featured() {
                     className="absolute inset-0 w-full h-full overflow-hidden"
                 >
                     {featured.type === 'video' && featured.videoUrl ? (
-                        <iframe
-                            src={`${featured.videoUrl}?rel=0`}
-                            className="w-full h-full object-contain"
-                            title={featured.title}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                        />
+                        <YouTubeEmbed url={featured.videoUrl} title={featured.title} />
                     ) : featured.image ? (
                         <img
                             src={featured.image}
