@@ -3,7 +3,6 @@ import { lazy, Suspense } from 'react';
 import './index.css';
 import { PrivateRoute } from './PrivateRoute';
 import { Home } from './pages/Home';
-import { Modality } from 'firebase/ai';
 
 //Lazy load
 const Admin = lazy(() => import('./pages/Admin').then(module => ({ default: module.Admin })))
