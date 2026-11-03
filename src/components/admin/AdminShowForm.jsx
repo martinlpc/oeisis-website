@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useShows } from '../../hooks/useShows';
+import { createShow } from '../../hooks/useShows';
 
 export function AdminShowForm() {
 
@@ -20,7 +20,6 @@ export function AdminShowForm() {
     const [formData, setFormData] = useState(INITIAL_FORM_DATA);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
-    const { createShow } = useShows()
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;

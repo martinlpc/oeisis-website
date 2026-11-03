@@ -1,9 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
-import { useNews } from '../../hooks/useNews'
+import { createNews } from '../../hooks/useNews';
 import { useSupabaseStorage } from '../../hooks/useSupabaseStorage'
 
 export function NewsForm() {
-    const { createNews } = useNews()
     const { upload, removeByUrl } = useSupabaseStorage()
 
     const [formData, setFormData] = useState({

@@ -8,7 +8,7 @@ const TRAILING_PUNCTUATION = /[.,;:!?)\]]+$/;
 
 export function NewsList() {
     const [ref, isInView] = useInView()
-    const { news, loading, error } = useNews();
+    const { news, loading, error } = useNews({ realtime: false });
 
     const renderContentWithLinks = (content) => {
         // split con grupo de captura: las URLs quedan siempre en las posiciones impares

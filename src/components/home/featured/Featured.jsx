@@ -3,7 +3,7 @@ import { useInView } from '../../../hooks/useInView'
 import { YouTubeEmbed } from '../../common/YouTubeEmbed'
 
 export function Featured() {
-    const { featured, loading, error } = useFeatured()
+    const { featured, loading, error } = useFeatured({ realtime: false })
     const [ref, isInView] = useInView()
 
     if (loading) {
