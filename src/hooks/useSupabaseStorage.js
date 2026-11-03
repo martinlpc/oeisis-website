@@ -1,4 +1,5 @@
 import { supabase } from "../utils/supabase";
+import { compressImage } from "../utils/compressImage";
 
 const BUCKET_MAP = {
     'image': 'images',
@@ -14,7 +15,8 @@ const sanitizeFileName = (name) => name
     .toLowerCase()
 
 export function useSupabaseStorage() {
-    const upload = async (file) => {
+    const upload = async (originalFile) => {
+        const file = await compressImage(originalFile)
         const type = file.type.split('/')[0]
         const bucket = BUCKET_MAP[type]
         const path = `${Date.now()}-${sanitizeFileName(file.name)}`

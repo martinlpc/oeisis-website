@@ -4,7 +4,7 @@ import { useInView } from "../../../hooks/useInView"
 
 export function VideoGallery() {
     const [ref, isInView] = useInView()
-    const { videos, loading, error } = useVideos()
+    const { videos, loading, error } = useVideos({ realtime: false })
 
     if (loading) {
         return (

@@ -1,15 +1,11 @@
+import { YouTubeEmbed } from '../../common/YouTubeEmbed'
+
 export function VideoCard({ video }) {
     return (
         <div className="bg-gray-900 rounded-lg overflow-hidden hover:transform hover:scale-105 transition">
             {/* Thumbnail del video */}
             <div className="relative w-full aspect-video bg-black">
-                <iframe
-                    src={`${video.embedUrl}?rel=0`}
-                    className="w-full h-full"
-                    title={video.title}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                />
+                <YouTubeEmbed url={video.embedUrl} title={video.title} />
             </div>
 
             {/* Info */}

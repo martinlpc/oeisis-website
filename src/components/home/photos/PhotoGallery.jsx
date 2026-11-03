@@ -4,7 +4,7 @@ import { useInView } from '../../../hooks/useInView';
 
 export function PhotoGallery() {
     const [ref, isInView] = useInView();
-    const { photos, loading, error } = usePhotos();
+    const { photos, loading, error } = usePhotos({ realtime: false });
 
     if (loading) {
         return (

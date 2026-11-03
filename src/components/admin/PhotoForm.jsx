@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useSupabaseStorage } from "../../hooks/useSupabaseStorage"
-import { usePhotos } from "../../hooks/usePhotos";
+import { createPhoto } from "../../hooks/usePhotos";
 
 export function PhotoForm() {
     const INITIAL_FORM_DATA = {
@@ -11,7 +11,6 @@ export function PhotoForm() {
     }
 
     const { upload, removeByUrl } = useSupabaseStorage()
-    const { createPhoto } = usePhotos()
     const [formData, setFormData] = useState(INITIAL_FORM_DATA)
     const [loading, setLoading] = useState(false)
     const [uploading, setUploading] = useState(false)

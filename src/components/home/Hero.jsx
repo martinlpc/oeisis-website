@@ -1,67 +1,69 @@
-import { useInView } from "../../hooks/useInView"
-import { useState, useEffect, useRef } from "react"
+import { useEffect, useRef } from "react"
+import { usePrefersReducedMotion } from "../../hooks/usePrefersReducedMotion"
+
+const HERO_VIDEO_URL = "/videos/hero-720.mp4"
+// Video para mobile (más liviano)
+const HERO_VIDEO_MOBILE_URL = "/videos/hero-360.mp4"
+// Poster optimizado (primer frame del video como JPG)
+const POSTER_URL = "/images/hero-poster.jpg"
 
 export function Hero() {
-    const [ref, isInView] = useInView()
-    const [scrollY, setScrollY] = useState(0)
-    const rafRef = useRef(null)
+    const parallaxRef = useRef(null)
+    const reducedMotion = usePrefersReducedMotion()
 
-    const HERO_VIDEO_URL = "/videos/hero-720.mp4";
-
-    // Video para mobile (más liviano)
-    const HERO_VIDEO_MOBILE_URL = "/videos/hero-360.mp4";
-
-    // Poster optimizado (primera frame del video como JPG)
-    const POSTER_URL = "/images/hero-poster.jpg";
-
-
-    // ⚡ Scroll con requestAnimationFrame (60fps smooth)
+    // Parallax: escribe el transform directo en el DOM, sin re-renderizar el componente
     useEffect(() => {
-        let ticking = false
+        const layer = parallaxRef.current
+        if (!layer) return
 
-        const handleScroll = () => {
-            if (!ticking) {
-                window.requestAnimationFrame(() => {
-                    setScrollY(window.scrollY)
-                    ticking = false
-                })
-                ticking = true
-            }
+        if (reducedMotion) {
+            layer.style.transform = ''
+            return
         }
 
-        window.addEventListener('scroll', handleScroll)
+        let frame = null
+
+        const update = () => {
+            frame = null
+            const y = window.scrollY
+            // Pasado el Hero no tiene sentido seguir moviéndolo
+            if (y > window.innerHeight) return
+            layer.style.transform = `translate3d(0, ${y * 0.5}px, 0)`
+        }
+
+        const onScroll = () => {
+            if (frame === null) frame = window.requestAnimationFrame(update)
+        }
+
+        update()
+        window.addEventListener('scroll', onScroll, { passive: true })
         return () => {
-            window.removeEventListener('scroll', handleScroll)
-            if (rafRef.current) {
-                cancelAnimationFrame(rafRef.current)
-            }
+            window.removeEventListener('scroll', onScroll)
+            if (frame !== null) window.cancelAnimationFrame(frame)
         }
-    }, [])
+    }, [reducedMotion])
 
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
     const videoUrl = isMobile ? HERO_VIDEO_MOBILE_URL : HERO_VIDEO_URL
 
     return (
-        <section
-            ref={ref}
-            className={`overflow-hidden relative w-full h-screen flex flex-col items-center justify-center transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
-        >
+        <section className="overflow-hidden relative w-full h-screen flex flex-col items-center justify-center">
             {/** Video background con parallax */}
             <div
-                className="absolute inset-0 w-full h-full"
-                style={{
-                    transform: `translate3D(0, ${scrollY * 0.5}px, 0)`,
-                    willChange: 'transform'
-                }}
+                ref={parallaxRef}
+                className="absolute inset-0 w-full h-full motion-safe:will-change-transform"
             >
+                {/* Con movimiento reducido queda el poster fijo, sin video */}
                 <video
-                    autoPlay
+                    key={reducedMotion ? 'static' : 'motion'}
+                    autoPlay={!reducedMotion}
                     muted
                     loop
                     playsInline
                     poster={POSTER_URL}
                     className="w-full h-full object-cover"
-                    preload="metadata"
+                    preload={reducedMotion ? 'none' : 'metadata'}
+                    aria-hidden="true"
                 >
                     <source src={videoUrl} type="video/mp4" />
                 </video>
@@ -82,9 +84,9 @@ export function Hero() {
             <button
                 onClick={() => {
                     const destination = document.getElementById('upcoming-shows');
-                    destination?.scrollIntoView({ behavior: 'smooth' });
+                    destination?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' });
                 }}
-                className="absolute bottom-16 bg-white/20 rounded-full p-3 hover:bg-white/30 transition opacity-70 animate-bounce flex flex-col items-center justify-center gap-2"
+                className="absolute bottom-16 bg-white/20 rounded-full p-3 hover:bg-white/30 transition opacity-70 motion-safe:animate-bounce flex flex-col items-center justify-center gap-2"
                 aria-label="Ir a shows"
             >
                 <span className="text-xs font-semibold tracking-widest uppercase">shows</span>

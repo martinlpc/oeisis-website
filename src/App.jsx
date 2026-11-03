@@ -1,12 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import './index.css';
-import { PrivateRoute } from './PrivateRoute';
 import { Home } from './pages/Home';
 
 //Lazy load
 const Admin = lazy(() => import('./pages/Admin').then(module => ({ default: module.Admin })))
 const Login = lazy(() => import('./pages/Login').then(module => ({ default: module.Login })))
+// PrivateRoute usa Firebase Auth: cargarlo lazy lo saca del bundle de la home
+const PrivateRoute = lazy(() => import('./PrivateRoute').then(module => ({ default: module.PrivateRoute })))
 
 //Loading mientras carga rutas Lazy
 function RouteLoader() {

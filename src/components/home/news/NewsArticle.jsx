@@ -28,6 +28,8 @@ export function NewsArticle({ item, renderContentWithLinks }) {
                             <img
                                 src={imageUrl}
                                 alt={`Noticia ${item.title} - imagen ${index + 1}`}
+                                loading="lazy"
+                                decoding="async"
                                 className="w-full h-full object-cover hover:scale-105 transition"
                             />
                         </div>

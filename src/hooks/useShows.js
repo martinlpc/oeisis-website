@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, doc, addDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, doc, addDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import { useCollection } from './useCollection';
 
 const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
@@ -36,92 +36,53 @@ export function isPastShow(show) {
     return iso ? iso < todayISO() : false;
 }
 
-export function useShows({ upcomingOnly = false } = {}) {
-    const [shows, setShows] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+const showsQuery = () => query(collection(db, 'shows'));
 
-    useEffect(() => {
-        const q = query(collection(db, 'shows'));
+// Más próximo primero; los que no tienen fecha válida van al final
+const sortByDate = (shows) =>
+    [...shows].sort((a, b) => (getShowISO(a) || '9999').localeCompare(getShowISO(b) || '9999'));
 
-        const unsubscribe = onSnapshot(
-            q,
-            (snapshot) => {
-                let showsData = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data(),
-                }));
+// Se filtra en el cliente porque los shows viejos todavía pueden no tener dateISO
+const upcomingSorted = (shows) => sortByDate(shows.filter(show => !isPastShow(show)));
 
-                // Se filtra en el cliente porque los shows viejos todavía pueden no tener dateISO
-                if (upcomingOnly) {
-                    showsData = showsData.filter(show => !isPastShow(show));
-                }
+// data.date llega del input como "YYYY-MM-DD"
+export async function createShow(data) {
+    await addDoc(collection(db, 'shows'), {
+        title: data.title,
+        status: data.status,
+        date: formatDisplayDate(data.date),
+        dateISO: data.date,
+        time: data.time,
+        location: {
+            venue: data.venue,
+            city: data.city,
+            province: data.province,
+            address: data.address,
+            country: data.country,
+        },
+        ticketLink: data.ticketLink,
+        description: data.description,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+    });
+    return true;
+}
 
-                // Más próximo primero; los que no tienen fecha válida van al final
-                showsData.sort((a, b) => (getShowISO(a) || '9999').localeCompare(getShowISO(b) || '9999'));
+export async function updateShow(id, data) {
+    await updateDoc(doc(db, 'shows', id), { ...data, updatedAt: serverTimestamp() });
+    return true;
+}
 
-                setShows(showsData);
-                setLoading(false);
-            },
-            (error) => {
-                console.error('Error fetching shows:', error);
-                setError(error.message);
-                setLoading(false);
-            }
-        );
+export async function deleteShow(id) {
+    await deleteDoc(doc(db, 'shows', id));
+    return true;
+}
 
-        return () => unsubscribe();
-    }, [upcomingOnly]);
-
-    // data.date llega del input como "YYYY-MM-DD"
-    const createShow = async (data) => {
-        try {
-            const docData = {
-                title: data.title,
-                status: data.status,
-                date: formatDisplayDate(data.date),
-                dateISO: data.date,
-                time: data.time,
-                location: {
-                    venue: data.venue,
-                    city: data.city,
-                    province: data.province,
-                    address: data.address,
-                    country: data.country,
-                },
-                ticketLink: data.ticketLink,
-                description: data.description,
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp(),
-            };
-
-            await addDoc(collection(db, 'shows'), docData);
-            return true;
-        } catch (error) {
-            console.error('Error creating show:', error);
-            throw error;
-        }
-    }
-
-    const updateShow = async (id, data) => {
-        try {
-            await updateDoc(doc(db, 'shows', id), { ...data, updatedAt: serverTimestamp() })
-            return true
-        } catch (error) {
-            console.error('Error updating show:', error);
-            throw error
-        }
-    }
-
-    const deleteShow = async (id) => {
-        try {
-            await deleteDoc(doc(db, 'shows', id))
-            return true
-        } catch (error) {
-            console.error('Error deleting show:', error);
-            throw error
-        }
-    }
-
+export function useShows({ upcomingOnly = false, realtime = true } = {}) {
+    const { data: shows, loading, error } = useCollection(showsQuery, {
+        realtime,
+        transform: upcomingOnly ? upcomingSorted : sortByDate,
+        label: 'shows',
+    });
     return { shows, loading, error, createShow, updateShow, deleteShow };
 }

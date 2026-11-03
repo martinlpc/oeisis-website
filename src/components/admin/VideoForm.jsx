@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useVideos } from "../../hooks/useVideos";
+import { createVideo } from "../../hooks/useVideos";
 
 export function VideoForm() {
     const INITIAL_FORM_DATA = {
@@ -10,7 +10,6 @@ export function VideoForm() {
         title: ''
     }
 
-    const { createVideo } = useVideos()
     const [formData, setFormData] = useState(INITIAL_FORM_DATA)
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState('')
