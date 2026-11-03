@@ -13,12 +13,9 @@ export function Featured() {
         )
     }
 
+    // El error queda en consola; si falla, la sección simplemente no se muestra
     if (error) {
-        return (
-            <div className='min-h-screen bg-black flex items-center justify-center'>
-                <p className='text-white text-xl'>Error: {error}</p>
-            </div>
-        )
+        return null
     }
 
     if (!featured) {
