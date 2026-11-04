@@ -46,6 +46,44 @@ export function useSupabaseStorage() {
         }
     }
 
+    // Lista todos los archivos de la raíz del bucket (la API pagina de a 100 como máximo)
+    const listAll = async (bucket) => {
+        const files = []
+        const pageSize = 100
+        for (let offset = 0; ; offset += pageSize) {
+            const { data, error } = await supabase.storage.from(bucket).list('', {
+                limit: pageSize,
+                offset,
+                sortBy: { column: 'name', order: 'asc' },
+            })
+            if (error) throw error
+            for (const item of data) {
+                // Las carpetas vienen sin id; el placeholder lo crea el dashboard
+                if (!item.id || item.name === '.emptyFolderPlaceholder') continue
+                files.push({
+                    bucket,
+                    path: item.name,
+                    size: item.metadata?.size ?? 0,
+                    createdAt: item.created_at,
+                    url: supabase.storage.from(bucket).getPublicUrl(item.name).data.publicUrl,
+                })
+            }
+            if (data.length < pageSize) break
+        }
+        return files
+    }
+
+    // Borra varios archivos del mismo bucket y devuelve cuántos se borraron de verdad
+    const removeMany = async (bucket, paths) => {
+        let deleted = 0
+        for (let i = 0; i < paths.length; i += 100) {
+            const { data, error } = await supabase.storage.from(bucket).remove(paths.slice(i, i + 100))
+            if (error) throw error
+            deleted += data?.length ?? 0
+        }
+        return deleted
+    }
+
     // Elimina el archivo a partir de la URL pública de Supabase.
     // Si la URL no es de Supabase (legacy, otro host), no hace nada.
     const removeByUrl = async (url) => {
@@ -55,5 +93,5 @@ export function useSupabaseStorage() {
         await remove(bucket, decodeURIComponent(encodedPath))
     }
 
-    return { upload, list, remove, removeByUrl }
+    return { upload, list, listAll, remove, removeMany, removeByUrl }
 }
