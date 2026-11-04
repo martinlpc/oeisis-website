@@ -1,25 +1,16 @@
-import { useShows } from '../../../hooks/useShows.js'
 import { useInView } from '../../../hooks/useInView.js'
+import { SectionSkeleton, SectionError } from '../SectionState.jsx'
 import { ShowCard } from './ShowCard.jsx'
 
-export function UpcomingShows() {
+export function UpcomingShows({ shows, loading, error }) {
     const [ref, isInView] = useInView()
-    const { shows, loading, error } = useShows({ upcomingOnly: true, realtime: false })
 
     if (loading) {
-        return (
-            <div className='min-h-screen  flex items-center justify-center'>
-                <p className='text-white text-xl'>Cargando shows...</p>
-            </div>
-        )
+        return <SectionSkeleton id='upcoming-shows' title='Próximos shows' />
     }
 
     if (error) {
-        return (
-            <div id="upcoming-shows" className="py-20 px-4 text-center">
-                <p className="text-gray-400 text-lg">No pudimos cargar los shows. Probá recargar la página.</p>
-            </div>
-        )
+        return <SectionError id='upcoming-shows' title='Próximos shows' what='los shows' />
     }
 
     return (
