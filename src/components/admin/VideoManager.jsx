@@ -1,112 +1,92 @@
-import { useState } from "react"
-import { useVideos } from "../../hooks/useVideos"
-import { ListItem } from "./ListItem"
-import { VideoEditForm } from "./VideoEditForm"
+import { useState } from 'react';
+import { EMPTY_VIDEO, fieldChange, isValidYouTube } from './formState'
+import { useVideos } from '../../hooks/useVideos';
+import { getThumbnailUrl } from '../../utils/youtube';
+import { useToast, useConfirm } from './useFeedback';
+import { ListItem, ListRow, EditActions } from './ListItem';
+import { VideoFields } from './VideoEditForm';
+import { Tag, StatusText } from './ui';
 
 export function VideoManager() {
-    const { videos, loading, error, updateVideo, deleteVideo } = useVideos()
-    const [editingId, setEditingId] = useState(null)
-    const [editData, setEditData] = useState(null)
-    const [message, setMessage] = useState('')
-    const [updating, setUpdating] = useState(false)
+    const { videos, loading, error, updateVideo, deleteVideo } = useVideos();
+    const [editingId, setEditingId] = useState(null);
+    const [editData, setEditData] = useState(null);
+    const [saving, setSaving] = useState(false);
+    const toast = useToast();
+    const confirm = useConfirm();
 
-    const handleEdit = (video) => {
-        setEditingId(video.id)
-        setEditData({ ...video })
-    }
+    const startEdit = (video) => {
+        setEditingId(video.id);
+        setEditData({
+            ...EMPTY_VIDEO,
+            title: video.title || '',
+            embedUrl: video.embedUrl || '',
+            description: video.description || '',
+            date: video.date || '',
+            featured: Boolean(video.featured),
+        });
+    };
 
-    const handleDataChange = (e) => {
-        const { name, value, type, checked } = e.target
-        setEditData(prev => ({
-            ...prev,
-            [name]: type === 'checkbok' ? checked : value
-        }))
-    }
+    const cancelEdit = () => {
+        setEditingId(null);
+        setEditData(null);
+    };
 
-    const handleSave = async () => {
-        setUpdating(true)
-        setMessage('')
-
+    const handleSave = async (e) => {
+        e.preventDefault();
+        if (!isValidYouTube(editData.embedUrl)) {
+            toast.error('Revisá el link de YouTube');
+            return;
+        }
+        setSaving(true);
         try {
-            const { id, ...dataToUpdate } = editData
-            await updateVideo(id, dataToUpdate)
-            setMessage('✅ Video actualizado')
-            setEditingId(null)
-            setEditData(null)
+            await updateVideo(editingId, editData);
+            toast.success('Video actualizado');
+            cancelEdit();
         } catch (error) {
-            setMessage(`❌ Error: ${error.message}`)
+            toast.error(`No se pudo guardar: ${error.message}`);
         } finally {
-            setUpdating(false)
+            setSaving(false);
         }
-    }
+    };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('¿Estás seguro de que querés eliminar este video?')) return
-
+    const handleDelete = async (video) => {
+        const ok = await confirm({ title: 'Eliminar video', message: `"${video.title}" se va a quitar del sitio. El video sigue en YouTube.` });
+        if (!ok) return;
         try {
-            await deleteVideo(id)
-            setMessage('✅ Video eliminado')
+            await deleteVideo(video.id);
+            toast.success('Video eliminado');
         } catch (error) {
-            setMessage(`❌ Error: ${error.message}`)
+            toast.error(`No se pudo eliminar: ${error.message}`);
         }
-    }
+    };
 
-    const handleCancel = () => {
-        setEditingId(null)
-        setEditData(null)
-    }
-
-    if (loading) {
-        return <p className="text-gray-400">"Need a little time to load the videos..."</p>
-    }
-
-    if (error) {
-        return <p className="text-red-500">Error: {error}</p>
-    }
-
-    if (videos.length === 0) {
-        return (
-            <div>
-                {message && (
-                    <div className="mb-6 p-4 rounded bg-gray-800 border border-gray-700">
-                        {message}
-                    </div>
-                )}
-                <p className="text-gray-400">No hay videos aún</p>
-            </div>
-        )
-    }
+    if (loading) return <StatusText>Cargando videos...</StatusText>;
+    if (error) return <StatusText error>Error: {error}</StatusText>;
+    if (videos.length === 0) return <StatusText>Todavía no hay videos.</StatusText>;
 
     return (
-        <div>
-            {message && (
-                <div className="mb-6 p-4 rounded bg-gray-800 border border-gray-700">
-                    {message}
-                </div>
-            )}
-
-            <div className="space-y-4">
-                {videos.map((video) => (
-                    <div key={video.id} className="border border-gray-700 rounded-lg p-4">
-                        {editingId === video.id ? (
-                            <VideoEditForm
-                                editData={editData}
-                                updating={updating}
-                                onSave={handleSave}
-                                onCancel={handleCancel}
-                                onDataChange={handleDataChange}
-                            />
-                        ) : (
-                            <ListItem
-                                item={video}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                            />
-                        )}
-                    </div>
-                ))}
-            </div>
-        </div>
-
-    )
+        <ul className="space-y-3">
+            {videos.map((video) => (
+                <ListRow key={video.id} editing={editingId === video.id}>
+                    {editingId === video.id ? (
+                        <form onSubmit={handleSave} className="space-y-4">
+                            <VideoFields data={editData} onChange={fieldChange(setEditData)} />
+                            <EditActions saving={saving} onCancel={cancelEdit} />
+                        </form>
+                    ) : (
+                        <ListItem
+                            title={video.title}
+                            meta={video.date}
+                            text={video.description}
+                            thumbnail={getThumbnailUrl(video.embedUrl, 'mqdefault')}
+                            tags={video.featured && <Tag>Destacado</Tag>}
+                            onEdit={() => startEdit(video)}
+                            onDelete={() => handleDelete(video)}
+                        />
+                    )}
+                </ListRow>
+            ))}
+        </ul>
+    );
 }

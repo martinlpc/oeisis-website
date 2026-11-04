@@ -1,122 +1,90 @@
 import { useState } from 'react';
+import { EMPTY_PHOTO, fieldChange } from './formState'
 import { usePhotos } from '../../hooks/usePhotos';
 import { useSupabaseStorage } from '../../hooks/useSupabaseStorage';
-import { ListItem } from './ListItem';
-import { PhotoEditForm } from './PhotoEditForm';
+import { useToast, useConfirm } from './useFeedback';
+import { ListItem, ListRow, EditActions } from './ListItem';
+import { PhotoFields } from './PhotoEditForm';
+import { StatusText } from './ui';
 
 export function PhotoManager() {
     const { photos, loading, error, updatePhoto, deletePhoto } = usePhotos();
     const { removeByUrl } = useSupabaseStorage();
     const [editingId, setEditingId] = useState(null);
     const [editData, setEditData] = useState(null);
-    const [message, setMessage] = useState('');
-    const [updating, setUpdating] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const toast = useToast();
+    const confirm = useConfirm();
 
-    const handleEdit = (photo) => {
+    const startEdit = (photo) => {
         setEditingId(photo.id);
-        setEditData({ ...photo });
+        setEditData({ ...EMPTY_PHOTO, title: photo.title || '', date: photo.date || '', album: photo.album || '', imageUrl: photo.imageUrl });
     };
 
-    const handleDataChange = (e) => {
-        const { name, value } = e.target;
-        setEditData(prev => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
-
-    const handleSave = async () => {
-        setUpdating(true);
-        setMessage('');
-
-        try {
-            const { id, ...dataToUpdate } = editData;
-            await updatePhoto(id, dataToUpdate);
-            setMessage('✅ Foto actualizada');
-            setEditingId(null);
-            setEditData(null);
-        } catch (error) {
-            setMessage(`❌ Error: ${error.message}`);
-        } finally {
-            setUpdating(false);
-        }
-    };
-
-    const handleDelete = async (id) => {
-        if (!window.confirm('¿Estás seguro de que querés eliminar esta foto?')) return;
-
-        const photo = photos.find(p => p.id === id);
-
-        try {
-            await deletePhoto(id);
-        } catch (error) {
-            setMessage(`❌ Error: ${error.message}`);
-            return;
-        }
-
-        try {
-            if (photo?.imageUrl) await removeByUrl(photo.imageUrl);
-            setMessage('✅ Foto eliminada');
-        } catch (error) {
-            setMessage(`⚠️ Foto eliminada del sitio, pero el archivo quedó en Supabase: ${error.message}`);
-        }
-    };
-
-    const handleCancel = () => {
+    const cancelEdit = () => {
         setEditingId(null);
         setEditData(null);
     };
 
-    if (loading) {
-        return <p className="text-gray-400">Cargando fotos...</p>;
-    }
+    const handleSave = async (e) => {
+        e.preventDefault();
+        setSaving(true);
+        try {
+            const { title, date, album } = editData;
+            await updatePhoto(editingId, { title, date, album });
+            toast.success('Foto actualizada');
+            cancelEdit();
+        } catch (error) {
+            toast.error(`No se pudo guardar: ${error.message}`);
+        } finally {
+            setSaving(false);
+        }
+    };
 
-    if (error) {
-        return <p className="text-red-500">Error: {error}</p>;
-    }
+    const handleDelete = async (photo) => {
+        const ok = await confirm({ title: 'Eliminar foto', message: `"${photo.title}" se va a borrar del sitio y del almacenamiento.` });
+        if (!ok) return;
 
-    if (photos.length === 0) {
-        return (
-            <div>
-                {message && (
-                    <div className="mb-6 p-4 rounded bg-gray-800 border border-gray-700">
-                        {message}
-                    </div>
-                )}
-                <p className="text-gray-400">No hay fotos aún</p>
-            </div>
-        );
-    }
+        try {
+            await deletePhoto(photo.id);
+        } catch (error) {
+            toast.error(`No se pudo eliminar: ${error.message}`);
+            return;
+        }
+
+        try {
+            if (photo.imageUrl) await removeByUrl(photo.imageUrl);
+            toast.success('Foto eliminada');
+        } catch (error) {
+            toast.warning(`La foto se quitó del sitio, pero el archivo quedó en Supabase: ${error.message}`);
+        }
+    };
+
+    if (loading) return <StatusText>Cargando fotos...</StatusText>;
+    if (error) return <StatusText error>Error: {error}</StatusText>;
+    if (photos.length === 0) return <StatusText>Todavía no hay fotos.</StatusText>;
 
     return (
-        <div>
-            {message && (
-                <div className="mb-6 p-4 rounded bg-gray-800 border border-gray-700">
-                    {message}
-                </div>
-            )}
-
-            <div className="space-y-4">
-                {photos.map((photo) => (
-                    <div key={photo.id} className="border border-gray-700 rounded-lg p-4">
-                        {editingId === photo.id ? (
-                            <PhotoEditForm
-                                editData={editData}
-                                updating={updating}
-                                onSave={handleSave}
-                                onCancel={handleCancel}
-                                onDataChange={handleDataChange}
-                            />
-                        ) : (
-                            <ListItem
-                                item={photo}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                            />
-                        )}
-                    </div>
-                ))}
-            </div>
-        </div>
+        <ul className="space-y-3">
+            {photos.map((photo) => (
+                <ListRow key={photo.id} editing={editingId === photo.id}>
+                    {editingId === photo.id ? (
+                        <form onSubmit={handleSave} className="space-y-4">
+                            <img src={editData.imageUrl} alt="" className="w-full max-h-56 object-contain bg-black rounded" />
+                            <PhotoFields data={editData} onChange={fieldChange(setEditData)} />
+                            <EditActions saving={saving} onCancel={cancelEdit} />
+                        </form>
+                    ) : (
+                        <ListItem
+                            title={photo.title}
+                            meta={[photo.date, photo.album].filter(Boolean).join(' · ')}
+                            thumbnail={photo.imageUrl}
+                            onEdit={() => startEdit(photo)}
+                            onDelete={() => handleDelete(photo)}
+                        />
+                    )}
+                </ListRow>
+            ))}
+        </ul>
     );
 }

@@ -1,118 +1,51 @@
-export function ShowEditForm({ editData, updating, onSave, onCancel, onLocationChange, onDataChange }) {
+import { Field, Checkbox, inputClass } from './ui'
+
+// Campos del show. data es el estado plano; onChange recibe el evento del input.
+export function ShowFields({ data, onChange }) {
     return (
         <div className="space-y-4">
-            <input
-                type="text"
-                name="title"
-                value={editData.title}
-                onChange={onDataChange}
-                className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
-            />
+            <Field label="Título">
+                <input name="title" value={data.title} onChange={onChange} required className={inputClass} placeholder="Ej: Oeisis en Club A" />
+            </Field>
 
-            <div className="grid md:grid-cols-2 gap-4">
-                <input
-                    type="date"
-                    name="date"
-                    value={editData?.date || ''}
-                    onChange={onDataChange}
-                    className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
-                    required
-                />
-                <input
-                    type="time"
-                    name="time"
-                    value={editData.time || ''}
-                    onChange={onDataChange}
-                    className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
-                    required
-                />
+            <div className="grid grid-cols-2 gap-4">
+                <Field label="Fecha">
+                    <input type="date" name="date" value={data.date} onChange={onChange} required className={inputClass} />
+                </Field>
+                <Field label="Hora">
+                    <input type="time" name="time" value={data.time} onChange={onChange} required className={inputClass} />
+                </Field>
             </div>
 
-            <input
-                type="text"
-                value={editData.location?.venue}
-                onChange={(e) => onLocationChange('venue', e.target.value)}
-                placeholder="Venue"
-                className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
-            />
+            <Field label="Lugar">
+                <input name="venue" value={data.venue} onChange={onChange} required className={inputClass} placeholder="Nombre del lugar" />
+            </Field>
 
-            <div className="grid md:grid-cols-2 gap-4">
-                <input
-                    type="text"
-                    value={editData.location?.city}
-                    onChange={(e) => onLocationChange('city', e.target.value)}
-                    placeholder="Ciudad"
-                    className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
-                />
-                <input
-                    type="text"
-                    value={editData.location?.address}
-                    onChange={(e) => onLocationChange('address', e.target.value)}
-                    placeholder="Domicilio"
-                    className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
-                />
+            <div className="grid sm:grid-cols-2 gap-4">
+                <Field label="Dirección">
+                    <input name="address" value={data.address} onChange={onChange} className={inputClass} placeholder="Calle y número" />
+                </Field>
+                <Field label="Ciudad">
+                    <input name="city" value={data.city} onChange={onChange} className={inputClass} />
+                </Field>
+                <Field label="Provincia">
+                    <input name="province" value={data.province} onChange={onChange} className={inputClass} />
+                </Field>
+                <Field label="País">
+                    <input name="country" value={data.country} onChange={onChange} className={inputClass} />
+                </Field>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-                <input
-                    type="text"
-                    value={editData.location?.province}
-                    onChange={(e) => onLocationChange('province', e.target.value)}
-                    placeholder="Provincia"
-                    className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
-                />
-                <input
-                    type="text"
-                    value={editData.location?.country}
-                    onChange={(e) => onLocationChange('country', e.target.value)}
-                    placeholder="País"
-                    className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
-                />
-            </div>
+            <Field label="Link de entradas" hint="Opcional. Si es entrada libre, puede ser un link para reservar lugar.">
+                <input type="url" name="ticketLink" value={data.ticketLink} onChange={onChange} className={inputClass} placeholder="https://" />
+            </Field>
 
-            <input
-                type="url"
-                value={editData.ticketLink || ''}
-                onChange={(e) => onDataChange({ target: { name: 'ticketLink', value: e.target.value } })}
-                placeholder="Link de las entradas"
-                className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
-            />
+            <Checkbox name="freeEntry" checked={data.freeEntry} onChange={onChange} label="Entrada libre" />
 
-            <label className="flex items-center gap-2 text-sm font-semibold">
-                <input
-                    type="checkbox"
-                    name="freeEntry"
-                    checked={Boolean(editData.freeEntry)}
-                    onChange={onDataChange}
-                    className="w-4 h-4"
-                />
-                Entrada libre
-            </label>
-
-            <textarea
-                name="description"
-                value={editData.description}
-                onChange={onDataChange}
-                placeholder="Descripción"
-                rows="3"
-                className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
-            />
-
-            <div className="flex gap-2">
-                <button
-                    onClick={onSave}
-                    disabled={updating}
-                    className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 text-white font-semibold py-2 rounded transition"
-                >
-                    {updating ? 'Guardando...' : 'Guardar'}
-                </button>
-                <button
-                    onClick={onCancel}
-                    className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 rounded transition"
-                >
-                    Cancelar
-                </button>
-            </div>
+            <Field label="Descripción" hint="Opcional. Se muestra debajo del lugar.">
+                <textarea name="description" value={data.description} onChange={onChange} rows={3} className={inputClass} />
+            </Field>
         </div>
-    );
+    )
 }
+

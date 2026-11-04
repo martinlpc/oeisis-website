@@ -1,98 +1,54 @@
 import { useState, useRef } from 'react';
-import { useNews } from '../../hooks/useNews'
-import { ListItem } from './ListItem';
-import { NewsEditForm } from './NewsEditForm';
-import { useSupabaseStorage } from '../../hooks/useSupabaseStorage'
+import { EMPTY_NEWS, fieldChange, isValidYouTube } from './formState'
+import { useNews } from '../../hooks/useNews';
+import { useSupabaseStorage } from '../../hooks/useSupabaseStorage';
+import { getThumbnailUrl } from '../../utils/youtube';
+import { useToast, useConfirm } from './useFeedback';
+import { ListItem, ListRow, EditActions } from './ListItem';
+import { NewsFields } from './NewsEditForm';
+import { Tag, StatusText } from './ui';
 
 export function NewsManager() {
-    const { news, loading, error, updateNews, deleteNews } = useNews()
-    const [editingId, setEditingId] = useState(null)
-    const [editData, setEditData] = useState(null)
-    const [message, setMessage] = useState('')
-    const [updating, setUpdating] = useState(false)
-    const [images, setImages] = useState([])
-    const [uploading, setUploading] = useState(false)
-    const { upload, removeByUrl } = useSupabaseStorage()
+    const { news, loading, error, updateNews, deleteNews } = useNews();
+    const { upload, removeByUrl } = useSupabaseStorage();
+    const toast = useToast();
+    const confirm = useConfirm();
+    const [editingId, setEditingId] = useState(null);
+    const [editData, setEditData] = useState(null);
+    const [images, setImages] = useState([]);
+    const [uploading, setUploading] = useState(false);
+    const [saving, setSaving] = useState(false);
 
-    // Imágenes borradas del form (se eliminan del bucket solo al guardar)
-    const removedRef = useRef([])
-    // Imágenes subidas en esta sesión de edición (se eliminan si se cancela)
-    const uploadedRef = useRef([])
+    // Imágenes quitadas en el formulario: se borran del bucket recién al guardar
+    const removedRef = useRef([]);
+    // Imágenes subidas en esta edición: se borran si se cancela
+    const uploadedRef = useRef([]);
 
-    const handleEdit = (item) => {
-        setEditingId(item.id)
-        setEditData({ ...item })
-        setImages(item.images || [])
-        removedRef.current = []
-        uploadedRef.current = []
-    }
+    const startEdit = (item) => {
+        setEditingId(item.id);
+        setEditData({
+            ...EMPTY_NEWS,
+            type: item.type || 'news',
+            title: item.title || '',
+            content: item.content || '',
+            externalLink: item.externalLink || '',
+            featured: Boolean(item.featured),
+        });
+        setImages(item.images || []);
+        removedRef.current = [];
+        uploadedRef.current = [];
+    };
 
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target
-        setEditData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value,
-        }))
-    }
+    const cancelEdit = () => {
+        uploadedRef.current.forEach(url => removeByUrl(url).catch(() => {}));
+        uploadedRef.current = [];
+        removedRef.current = [];
+        setEditingId(null);
+        setEditData(null);
+    };
 
-    const handleSave = async () => {
-        setUpdating(true)
-        setMessage('')
-
-        try {
-            const { id, ...dataToUpdate } = editData
-            dataToUpdate.images = images
-            await updateNews(id, dataToUpdate)
-
-            const toRemove = [...removedRef.current]
-            uploadedRef.current = []
-            removedRef.current = []
-            toRemove.forEach(url => removeByUrl(url).catch(() => {}))
-
-            setMessage('✅ Noticia actualizada')
-            setEditingId(null)
-            setEditData(null)
-        } catch (error) {
-            setMessage(`❌ Error: ${error.message}`)
-        } finally {
-            setUpdating(false)
-        }
-    }
-
-    const handleDelete = async (id) => {
-        if (!window.confirm('¿Estás seguro de que querés eliminar esta noticia?')) return
-
-        const item = news.find(n => n.id === id)
-
-        try {
-            await deleteNews(id)
-        } catch (error) {
-            setMessage(`❌ Error: ${error.message}`)
-            return
-        }
-
-        try {
-            await Promise.all((item?.images || []).map(url => removeByUrl(url)))
-            setMessage('✅ Noticia eliminada')
-        } catch (error) {
-            setMessage(`⚠️ Noticia eliminada del sitio, pero el archivo quedó en Supabase: ${error.message}`)
-        }
-    }
-
-    const handleCancel = () => {
-        // Al cancelar, las imágenes subidas en esta sesión quedan sin referencia: se limpian
-        const toClean = [...uploadedRef.current]
-        uploadedRef.current = []
-        removedRef.current = []
-        toClean.forEach(url => removeByUrl(url).catch(() => {}))
-        setEditingId(null)
-        setEditData(null)
-    }
-
-    const handleImageUpload = async (e) => {
-        const files = Array.from(e.target.files);
+    const handleImageFiles = async (files) => {
         setUploading(true);
-
         try {
             for (const file of files) {
                 const { url } = await upload(file);
@@ -100,73 +56,104 @@ export function NewsManager() {
                 setImages(prev => [...prev, url]);
             }
         } catch (error) {
-            setMessage(`❌ Error: ${error.message}`);
+            toast.error(`No se pudo subir una imagen: ${error.message}`);
         } finally {
             setUploading(false);
         }
     };
 
-    const handleRemoveImage = (index) => {
-        const url = images[index];
-        removedRef.current.push(url);
+    const removeImage = (index) => {
+        removedRef.current.push(images[index]);
         setImages(prev => prev.filter((_, i) => i !== index));
     };
 
+    const handleSave = async (e) => {
+        e.preventDefault();
+        const isInterview = editData.type === 'interview';
+        if (isInterview && editData.externalLink && !isValidYouTube(editData.externalLink)) {
+            toast.error('Revisá el link de YouTube');
+            return;
+        }
+        setSaving(true);
+        try {
+            await updateNews(editingId, {
+                ...editData,
+                externalLink: isInterview ? editData.externalLink : '',
+                images: isInterview ? [] : images,
+            });
+            // Al pasar a entrevista, las imágenes que tenía dejan de usarse
+            const toRemove = isInterview ? [...removedRef.current, ...images] : removedRef.current;
+            toRemove.forEach(url => removeByUrl(url).catch(() => {}));
+            uploadedRef.current = [];
+            removedRef.current = [];
+            toast.success('Noticia actualizada');
+            setEditingId(null);
+            setEditData(null);
+        } catch (error) {
+            toast.error(`No se pudo guardar: ${error.message}`);
+        } finally {
+            setSaving(false);
+        }
+    };
 
-    if (loading) {
-        return <p className="text-gray-400">Cargando noticias...</p>
-    }
+    const handleDelete = async (item) => {
+        const ok = await confirm({ title: 'Eliminar noticia', message: `"${item.title}" y sus imágenes se van a borrar del sitio.` });
+        if (!ok) return;
 
-    if (error) {
-        return <p className="text-red-500">Error: {error}</p>
-    }
+        try {
+            await deleteNews(item.id);
+        } catch (error) {
+            toast.error(`No se pudo eliminar: ${error.message}`);
+            return;
+        }
 
-    if (news.length === 0) {
-        return (
-            <div>
-                {message && (
-                    <div className="mb-6 p-4 rounded bg-gray-800 border border-gray-700">
-                        {message}
-                    </div>
-                )}
-                <p className="text-gray-400">No hay noticias aún</p>
-            </div>
-        )
-    }
+        try {
+            await Promise.all((item.images || []).map(url => removeByUrl(url)));
+            toast.success('Noticia eliminada');
+        } catch (error) {
+            toast.warning(`La noticia se quitó del sitio, pero quedaron archivos en Supabase: ${error.message}`);
+        }
+    };
+
+    if (loading) return <StatusText>Cargando noticias...</StatusText>;
+    if (error) return <StatusText error>Error: {error}</StatusText>;
+    if (news.length === 0) return <StatusText>Todavía no hay noticias.</StatusText>;
 
     return (
-        <div>
-            {message && (
-                <div className="mb-6 p-4 rounded bg-gray-800 border border-gray-700">
-                    {message}
-                </div>
-            )}
-
-            <div className="space-y-4">
-                {news.map((item) => (
-                    <div key={item.id} className="border border-gray-700 rounded-lg p-4">
-                        {editingId === item.id ? (
-                            <NewsEditForm
-                                editData={editData}
-                                updating={updating}
-                                onSave={handleSave}
-                                onCancel={handleCancel}
-                                onDataChange={handleChange}
-                                onImageUpload={handleImageUpload}
-                                uploading={uploading}
+        <ul className="space-y-3">
+            {news.map((item) => (
+                <ListRow key={item.id} editing={editingId === item.id}>
+                    {editingId === item.id ? (
+                        <form onSubmit={handleSave} className="space-y-4">
+                            <NewsFields
+                                idPrefix={`edit-${item.id}`}
+                                data={editData}
+                                onChange={fieldChange(setEditData)}
                                 images={images}
-                                onRemoveImage={handleRemoveImage}
+                                uploading={uploading}
+                                onImageFiles={handleImageFiles}
+                                onRemoveImage={removeImage}
                             />
-                        ) : (
-                            <ListItem
-                                item={item}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                            />
-                        )}
-                    </div>
-                ))}
-            </div>
-        </div>
+                            <EditActions saving={saving || uploading} onCancel={cancelEdit} />
+                        </form>
+                    ) : (
+                        <ListItem
+                            title={item.title}
+                            meta={item.date}
+                            text={item.content}
+                            thumbnail={item.images?.[0] || getThumbnailUrl(item.externalLink, 'mqdefault')}
+                            tags={
+                                <>
+                                    <Tag tone="muted">{item.type === 'interview' ? 'Entrevista' : 'Noticia'}</Tag>
+                                    {item.featured && <Tag>Destacada</Tag>}
+                                </>
+                            }
+                            onEdit={() => startEdit(item)}
+                            onDelete={() => handleDelete(item)}
+                        />
+                    )}
+                </ListRow>
+            ))}
+        </ul>
     );
 }

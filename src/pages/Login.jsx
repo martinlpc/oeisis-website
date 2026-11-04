@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../hooks/useAuth"
+import { Button, Field, inputClass } from "../components/admin/ui"
 
 export function Login() {
     const [email, setEmail] = useState('')
@@ -18,8 +19,7 @@ export function Login() {
         try {
             await login(email, password)
             navigate('/admin')
-            // eslint-disable-next-line no-unused-vars
-        } catch (error) {
+        } catch {
             setError('Email o contraseña incorrectos')
         } finally {
             setLoading(false)
@@ -27,50 +27,29 @@ export function Login() {
     }
 
     return (
-        <div className="min-h-screen  text-white flex items-center justify-center px-4">
-            <div className="max-w-md w-full">
+        <div className="min-h-screen text-white flex items-center justify-center px-4">
+            <div className="max-w-sm w-full">
                 <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold mb-2">OEISIS ADMIN</h1>
-                    <p className="text-gray-400">Iniciá sesión para continuar</p>
+                    <svg className="w-32 h-16 mx-auto mb-4" viewBox="0 30 100 50" aria-hidden="true"><image width="100" height="100" href="/logo.svg" /></svg>
+                    <h1 className="text-xl font-bold">Panel de administración</h1>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6 bg-gray-900 p-8 rounded-lg border border-gray-700">
+                <form onSubmit={handleSubmit} className="space-y-5 border border-white/10 bg-white/[0.02] rounded-lg p-6">
                     {error && (
-                        <div className="p-4 rounded bg-red-900 border border-red-700 text-red-200">
-                            {error}
-                        </div>
+                        <p role="alert" className="p-3 rounded border border-red-500/40 text-red-300 text-sm">{error}</p>
                     )}
 
-                    <div>
-                        <label className="block text-sm font-semibold mb-2">Email</label>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="tu@email.com"
-                            className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-white focus:border-blue-500 outline-none"
-                            required
-                        />
-                    </div>
+                    <Field label="Email">
+                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" className={inputClass} />
+                    </Field>
 
-                    <div>
-                        <label className="block text-sm font-semibold mb-2">Password</label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full bg-gray-800 border border-gray-700 rounded px-4 py-2 text-white focus:border-blue-500 outline-none"
-                            required
-                        />
-                    </div>
+                    <Field label="Contraseña">
+                        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" className={inputClass} />
+                    </Field>
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 text-white font-bold py-2 rounded transition"
-                    >
-                        {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
-                    </button>
+                    <Button type="submit" disabled={loading} className="w-full py-3">
+                        {loading ? 'Ingresando...' : 'Ingresar'}
+                    </Button>
                 </form>
             </div>
         </div>
