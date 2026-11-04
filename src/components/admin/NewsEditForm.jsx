@@ -1,109 +1,37 @@
-export function NewsEditForm({ editData, updating, onSave, onCancel, onDataChange, onImageUpload, uploading, images, onRemoveImage }) {
+import { Field, Checkbox, FilePicker, ImageThumbs, inputClass } from './ui'
+import { YouTubeField } from './YouTubeField'
+
+// Campos de la noticia, compartidos por crear y editar.
+// Las imágenes se manejan afuera (subida y borrado) y llegan por props.
+export function NewsFields({ idPrefix, data, onChange, images, uploading, onImageFiles, onRemoveImage }) {
     return (
         <div className="space-y-4">
-            <input
-                type="text"
-                name="title"
-                value={editData.title}
-                onChange={onDataChange}
-                placeholder="Título"
-                className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
-            />
+            <Field label="Tipo">
+                <select name="type" value={data.type} onChange={onChange} className={inputClass}>
+                    <option value="news">Noticia (con imágenes)</option>
+                    <option value="interview">Entrevista (con video)</option>
+                </select>
+            </Field>
 
-            <textarea
-                name="content"
-                value={editData.content}
-                onChange={onDataChange}
-                placeholder="Contenido"
-                rows="4"
-                className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
-            />
+            <Field label="Título">
+                <input name="title" value={data.title} onChange={onChange} required className={inputClass} />
+            </Field>
 
-            <select
-                name="type"
-                value={editData.type || 'news'}
-                onChange={onDataChange}
-                className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
-            >
-                <option value="news">Noticia</option>
-                <option value="interview">Entrevista</option>
-            </select>
+            <Field label="Texto" hint="Dejá una línea en blanco entre párrafos. Los links se convierten solos.">
+                <textarea name="content" value={data.content} onChange={onChange} required rows={7} className={inputClass} />
+            </Field>
 
-            {editData.type === 'interview' && (
-                <input
-                    type="url"
-                    name="externalLink"
-                    value={editData.externalLink || ''}
-                    onChange={onDataChange}
-                    placeholder="Link YouTube"
-                    className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
-                />
-            )}
-
-            {editData.type === 'news' && (
+            {data.type === 'interview' ? (
+                <YouTubeField label="Video de la entrevista" name="externalLink" value={data.externalLink} onChange={onChange} />
+            ) : (
                 <div>
-                    <label className="block text-sm font-semibold mb-2">Imágenes</label>
-                    <input
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        onChange={onImageUpload}
-                        disabled={uploading}
-                        id="edit-file-input"
-                        className="hidden"
-                    />
-                    <label
-                        htmlFor="edit-file-input"
-                        className='w-full block bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white cursor-pointer text-center hover:bg-gray-800 transition'
-                    >
-                        {uploading ? 'Subiendo...' : 'Agregar imágenes'}
-                    </label>
-
-                    {images && images.length > 0 && (
-                        <div className='mt-4 grid grid-cols-3 gap-4'>
-                            {images.map((url, index) => (
-                                <div key={index} className='relative'>
-                                    <img src={url} alt={`preview-${index}`} className='w-full h-24 object-cover rounded' />
-                                    <button
-                                        type="button"
-                                        onClick={() => onRemoveImage(index)}
-                                        className='absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm'
-                                    >
-                                        x
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                    <span className="block text-xs uppercase tracking-widest text-gray-400 mb-1.5">Imágenes</span>
+                    <FilePicker id={`${idPrefix}-images`} label="Agregar imágenes" multiple uploading={uploading} onFiles={onImageFiles} />
+                    <ImageThumbs urls={images} onRemove={onRemoveImage} />
                 </div>
             )}
 
-            <label className="flex items-center">
-                <input
-                    type="checkbox"
-                    name="featured"
-                    checked={editData.featured}
-                    onChange={(e) => onDataChange({ target: { name: 'featured', type: 'checkbox', checked: e.target.checked } })}
-                    className="w-4 h-4 mr-2"
-                />
-                <span className="text-sm font-semibold">Destacar</span>
-            </label>
-
-            <div className="flex gap-2">
-                <button
-                    onClick={onSave}
-                    disabled={updating}
-                    className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 text-white font-semibold py-2 rounded transition"
-                >
-                    {updating ? 'Guardando...' : 'Guardar'}
-                </button>
-                <button
-                    onClick={onCancel}
-                    className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 rounded transition"
-                >
-                    Cancelar
-                </button>
-            </div>
+            <Checkbox name="featured" checked={data.featured} onChange={onChange} label="Destacada (aparece primero)" />
         </div>
-    );
+    )
 }

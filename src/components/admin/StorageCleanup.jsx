@@ -3,6 +3,8 @@ import { collection, getDocs } from 'firebase/firestore'
 import { db } from '../../firebase/config'
 import { useSupabaseStorage } from '../../hooks/useSupabaseStorage'
 import { extractStorageRefs, findOrphans } from '../../utils/storageRefs'
+import { useToast, useConfirm } from './useFeedback'
+import { Button } from './ui'
 
 const BUCKETS = ['images', 'videos', 'audio']
 const COLLECTIONS = ['photos', 'news', 'featured', 'shows', 'videos']
@@ -17,11 +19,11 @@ export function StorageCleanup() {
     const { listAll, removeMany } = useSupabaseStorage()
     const [status, setStatus] = useState('idle') // idle | scanning | ready | deleting
     const [result, setResult] = useState(null)
-    const [message, setMessage] = useState('')
+    const toast = useToast()
+    const confirm = useConfirm()
 
     const scan = async () => {
         setStatus('scanning')
-        setMessage('')
         setResult(null)
 
         try {
@@ -46,14 +48,19 @@ export function StorageCleanup() {
             setResult({ ...findOrphans(files, refs), total: files.length, skipped })
             setStatus('ready')
         } catch (error) {
-            setMessage(`❌ Error: ${error.message}`)
+            toast.error(`No se pudo revisar el almacenamiento: ${error.message}`)
             setStatus('idle')
         }
     }
 
     const deleteOrphans = async () => {
         const { orphans } = result
-        if (!window.confirm(`¿Borrar ${orphans.length} archivos (${formatSize(totalSize(orphans))}) de Supabase? No se puede deshacer.`)) return
+        const ok = await confirm({
+            title: `Borrar ${orphans.length} archivos`,
+            message: `Se liberan ${formatSize(totalSize(orphans))} en Supabase. No se puede deshacer.`,
+            confirmLabel: 'Borrar archivos',
+        })
+        if (!ok) return
 
         setStatus('deleting')
         try {
@@ -62,12 +69,11 @@ export function StorageCleanup() {
                 const paths = orphans.filter(f => f.bucket === bucket).map(f => f.path)
                 if (paths.length) deleted += await removeMany(bucket, paths)
             }
-            setMessage(deleted === orphans.length
-                ? `✅ Se borraron ${deleted} archivos`
-                : `⚠️ Se borraron ${deleted} de ${orphans.length} archivos. Revisá las policies de Supabase.`)
+            if (deleted === orphans.length) toast.success(`Se borraron ${deleted} archivos`)
+            else toast.warning(`Se borraron ${deleted} de ${orphans.length} archivos. Revisá las policies de Supabase.`)
             setResult(null)
         } catch (error) {
-            setMessage(`❌ Error: ${error.message}`)
+            toast.error(`No se pudieron borrar los archivos: ${error.message}`)
         } finally {
             setStatus('idle')
         }
@@ -80,18 +86,9 @@ export function StorageCleanup() {
                 Los subidos en las últimas 24 horas no se tocan.
             </p>
 
-            {message && (
-                <div className="p-4 rounded bg-gray-800 border border-gray-700">{message}</div>
-            )}
-
-            <button
-                type="button"
-                onClick={scan}
-                disabled={status === 'scanning' || status === 'deleting'}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 text-white font-semibold px-6 py-2 rounded transition"
-            >
-                {status === 'scanning' ? 'Buscando...' : 'Buscar archivos huérfanos'}
-            </button>
+            <Button onClick={scan} disabled={status === 'scanning' || status === 'deleting'}>
+                {status === 'scanning' ? 'Buscando...' : 'Buscar archivos sin uso'}
+            </Button>
 
             {result && (
                 <div className="space-y-4">
@@ -109,11 +106,11 @@ export function StorageCleanup() {
                         <>
                             <ul className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 max-h-96 overflow-y-auto">
                                 {result.orphans.map(file => (
-                                    <li key={`${file.bucket}/${file.path}`} className="bg-gray-800 rounded overflow-hidden text-xs">
+                                    <li key={`${file.bucket}/${file.path}`} className="border border-white/10 rounded overflow-hidden text-xs">
                                         {file.bucket === 'images' ? (
                                             <img src={file.url} alt="" loading="lazy" className="w-full h-24 object-cover" />
                                         ) : (
-                                            <div className="w-full h-24 flex items-center justify-center text-gray-500">{file.bucket}</div>
+                                            <div className="w-full h-24 flex items-center justify-center text-gray-500 bg-white/5">{file.bucket}</div>
                                         )}
                                         <p className="p-2 truncate" title={file.path}>{file.path}</p>
                                         <p className="px-2 pb-2 text-gray-400">{formatSize(file.size)}</p>
@@ -121,14 +118,9 @@ export function StorageCleanup() {
                                 ))}
                             </ul>
 
-                            <button
-                                type="button"
-                                onClick={deleteOrphans}
-                                disabled={status === 'deleting'}
-                                className="bg-red-600 hover:bg-red-700 disabled:bg-gray-700 text-white font-semibold px-6 py-2 rounded transition"
-                            >
+                            <Button variant="danger" onClick={deleteOrphans} disabled={status === 'deleting'}>
                                 {status === 'deleting' ? 'Borrando...' : `Borrar ${result.orphans.length} archivos`}
-                            </button>
+                            </Button>
                         </>
                     )}
                 </div>
