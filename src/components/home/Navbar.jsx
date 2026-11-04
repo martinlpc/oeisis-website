@@ -33,6 +33,9 @@ export function Navbar({ nextShow }) {
     const ticketsButton = ticketLink && (
         <a
             href={ticketLink}
+            data-umami-event="entradas"
+            data-umami-event-show={nextShow.title}
+            data-umami-event-origen="menu"
             target="_blank"
             rel="noopener noreferrer"
             className="btn-double-border text-white text-sm font-semibold px-4 py-2"

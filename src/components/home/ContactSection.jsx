@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { track } from '../../utils/analytics'
 
 const BOOKING_EMAIL = 'jeronimo.blazer@gmail.com'
 
@@ -31,6 +32,7 @@ export function ContactSection() {
             })
             if (!response.ok) throw new Error(`HTTP ${response.status}`)
             setStatus('sent')
+            track('contacto-enviado', { motivo: form.motivo })
             setForm(INITIAL)
         } catch (error) {
             console.error('Error enviando el formulario:', error)
