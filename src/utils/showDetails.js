@@ -25,11 +25,25 @@ export function getPlace(show) {
     return { venue, address, city, province, country }
 }
 
+const mapsQuery = (show) => {
+    const { venue, address, city, province, country } = getPlace(show)
+    return [venue, address, city, province, country].filter(Boolean).join(', ')
+}
+
 // Link de búsqueda de Google Maps (no necesita API key)
 export function getMapsUrl(show) {
-    const { venue, address, city, province, country } = getPlace(show)
-    const query = [venue, address, city, province, country].filter(Boolean).join(', ')
+    const query = mapsQuery(show)
     return query ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}` : null
+}
+
+// Mapa embebido (Maps Embed API: gratis, pero necesita key). Sin key devuelve null y no se muestra.
+const EMBED_KEY = import.meta.env.VITE_GOOGLE_MAPS_EMBED_KEY
+
+export function getMapEmbedUrl(show) {
+    const query = mapsQuery(show)
+    if (!EMBED_KEY || !query) return null
+    const params = new URLSearchParams({ key: EMBED_KEY, q: query, language: 'es' })
+    return `https://www.google.com/maps/embed/v1/place?${params}`
 }
 
 // Inicio y fin reales del show. Fecha y hora están en la hora local del lugar.

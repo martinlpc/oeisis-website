@@ -5,7 +5,7 @@ import { Footer } from '../components/home/Footer';
 import { TicketAction } from '../components/home/shows/TicketAction';
 import { useShow, isPastShow } from '../hooks/useShows';
 import {
-    getDateParts, getPlace, getMapsUrl, getGoogleCalendarUrl, getIcsContent, getEventJsonLd, formatShowTime,
+    getDateParts, getPlace, getMapsUrl, getMapEmbedUrl, getGoogleCalendarUrl, getIcsContent, getEventJsonLd, formatShowTime,
 } from '../utils/showDetails';
 
 const secondaryButton = 'inline-flex items-center justify-center gap-2 border border-white/25 hover:bg-white/10 px-4 py-3 text-sm font-semibold transition';
@@ -92,6 +92,7 @@ export function ShowPage() {
     const date = getDateParts(show);
     const { venue, address, city, province } = getPlace(show);
     const mapsUrl = getMapsUrl(show);
+    const mapEmbedUrl = getMapEmbedUrl(show);
     const calendarUrl = getGoogleCalendarUrl(show, pageUrl);
     const jsonLd = getEventJsonLd(show, pageUrl);
     const description = `${date?.long || show.date}${venue ? ` en ${venue}` : ''}${city ? `, ${city}` : ''}.`;
@@ -145,6 +146,19 @@ export function ShowPage() {
                             Descargar evento (.ics)
                         </button>
                         <ShareButton title={`Oeisis: ${show.title}`} url={pageUrl} />
+                    </div>
+                )}
+                {/* El mapa carga recién cuando se acerca a la pantalla */}
+                {mapEmbedUrl && (
+                    <div className="mt-12 aspect-[4/3] sm:aspect-[16/9] md:aspect-[21/9] overflow-hidden rounded-lg border border-white/10 bg-white/5">
+                        <iframe
+                            src={mapEmbedUrl}
+                            title={`Mapa: ${venue || city || show.title}`}
+                            loading="lazy"
+                            referrerPolicy="no-referrer-when-downgrade"
+                            allowFullScreen
+                            className="w-full h-full border-0"
+                        />
                     </div>
                 )}
             </article>
