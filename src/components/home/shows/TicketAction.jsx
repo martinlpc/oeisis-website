@@ -8,6 +8,9 @@ export function TicketAction({ show, className = 'w-full md:w-64' }) {
                 href={show.ticketLink}
                 target="_blank"
                 rel="noopener noreferrer"
+                data-umami-event="entradas"
+                data-umami-event-show={show.title}
+                data-umami-event-tipo={show.freeEntry ? 'reserva' : 'compra'}
                 className={`btn-double-border text-white transition ${base}`}
             >
                 {/* Un show libre puede tener link para reservar lugar */}

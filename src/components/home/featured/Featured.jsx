@@ -70,6 +70,8 @@ export function Featured() {
                                     href={cta.url}
                                     target='_blank'
                                     rel='noopener noreferrer'
+                                    data-umami-event='destacado-boton'
+                                    data-umami-event-boton={cta.label}
                                     className={`text-white text-center font-bold py-3 px-6 transition ${index === 0 ? 'btn-double-border' : 'border border-white/30 hover:bg-white/10'}`}
                                 >
                                     {cta.label}

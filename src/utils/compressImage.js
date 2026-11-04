@@ -6,7 +6,8 @@ function canvasToBlob(canvas, type, quality) {
     return new Promise(resolve => canvas.toBlob(resolve, type, quality))
 }
 
-export async function compressImage(file, { maxSize = 1920, quality = 0.82 } = {}) {
+// type: 'image/jpeg' fuerza JPEG (para imágenes de vista previa en redes, que no siempre aceptan WebP)
+export async function compressImage(file, { maxSize = 1920, quality = 0.82, type = 'image/webp' } = {}) {
     if (!file.type.startsWith('image/') || SKIP_TYPES.includes(file.type)) return file
 
     let bitmap
@@ -28,7 +29,7 @@ export async function compressImage(file, { maxSize = 1920, quality = 0.82 } = {
     bitmap.close()
 
     // Algunos Safari no codifican WebP y devuelven PNG: en ese caso se usa JPEG
-    let blob = await canvasToBlob(canvas, 'image/webp', quality)
+    let blob = type === 'image/webp' ? await canvasToBlob(canvas, 'image/webp', quality) : null
     if (!blob || blob.type !== 'image/webp') {
         blob = await canvasToBlob(canvas, 'image/jpeg', quality)
     }

@@ -4,6 +4,7 @@ import { Footer } from '../components/home/Footer';
 import { YouTubeEmbed } from '../components/common/YouTubeEmbed';
 import { usePress, downloadUrl } from '../hooks/usePress';
 import { useVideos } from '../hooks/useVideos';
+import { track } from '../utils/analytics';
 
 const BOOKING_EMAIL = 'jeronimo.blazer@gmail.com';
 const DEFAULT_PRESS_KIT = '/oeisis-gacetilla.pdf';
@@ -20,7 +21,7 @@ function CopyButton({ text }) {
         setTimeout(() => setCopied(false), 2500);
     };
     return (
-        <button type="button" onClick={copy} className="text-sm underline underline-offset-4 text-gray-300 hover:text-white">
+        <button type="button" onClick={() => { copy(); track('prensa-bio-copiada'); }} className="text-sm underline underline-offset-4 text-gray-300 hover:text-white">
             {copied ? 'Copiada' : 'Copiar bio corta'}
         </button>
     );
@@ -75,8 +76,8 @@ export function PressPage() {
                         )}
                         <div className="flex flex-col sm:flex-row flex-wrap gap-3 mt-10">
                             <a href={`mailto:${BOOKING_EMAIL}`} className="btn-double-border text-white text-center font-bold py-3 px-6">Escribir para contrataciones</a>
-                            {p.riderUrl && <a href={downloadUrl(p.riderUrl)} className={fileButton}>Descargar rider (PDF)</a>}
-                            <a href={downloadUrl(pressKit)} download={pressKit === DEFAULT_PRESS_KIT ? true : undefined} className={fileButton}>Descargar gacetilla (PDF)</a>
+                            {p.riderUrl && <a href={downloadUrl(p.riderUrl)} data-umami-event="prensa-descarga" data-umami-event-archivo="rider" className={fileButton}>Descargar rider (PDF)</a>}
+                            <a href={downloadUrl(pressKit)} download={pressKit === DEFAULT_PRESS_KIT ? true : undefined} data-umami-event="prensa-descarga" data-umami-event-archivo="gacetilla" className={fileButton}>Descargar gacetilla (PDF)</a>
                         </div>
                     </header>
 
@@ -105,7 +106,7 @@ export function PressPage() {
                             <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {p.photos.map(photo => (
                                     <li key={photo.url}>
-                                        <a href={downloadUrl(photo.url)} className="group block" aria-label={`Descargar foto${photo.credit ? ` (${photo.credit})` : ''}`}>
+                                        <a href={downloadUrl(photo.url)} data-umami-event="prensa-descarga" data-umami-event-archivo="foto" className="group block" aria-label={`Descargar foto${photo.credit ? ` (${photo.credit})` : ''}`}>
                                             <img src={photo.previewUrl || photo.url} alt="" loading="lazy" className="w-full aspect-[4/3] object-cover rounded group-hover:opacity-80 transition" />
                                             <span className="flex justify-between gap-3 mt-2 text-sm">
                                                 <span className="text-gray-400 truncate">{photo.credit}</span>

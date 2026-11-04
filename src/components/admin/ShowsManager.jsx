@@ -7,6 +7,9 @@ import { ShowFields } from './ShowEditForm';
 import { Tag, StatusText } from './ui';
 import { DEFAULT_TIME_ZONE, isValidTimeZone } from '../../utils/timezones';
 import { formatShowTime } from '../../utils/showDetails';
+import { useTrackedUploads } from './useTrackedUploads';
+import { makeOgImage } from '../../utils/ogImage';
+import { useSupabaseStorage } from '../../hooks/useSupabaseStorage';
 
 // Documento de Firestore -> estado plano del formulario
 const toForm = (show) => ({
@@ -23,6 +26,8 @@ const toForm = (show) => ({
     ticketLink: show.ticketLink || '',
     freeEntry: Boolean(show.freeEntry),
     description: show.description || '',
+    flyer: show.flyer || '',
+    flyerOg: show.flyerOg || '',
 });
 
 // Estado plano -> campos a actualizar en Firestore
@@ -42,6 +47,8 @@ const toUpdate = (form) => ({
     ticketLink: form.ticketLink,
     freeEntry: form.freeEntry,
     description: form.description,
+    flyer: form.flyer,
+    flyerOg: form.flyerOg,
 });
 
 export function ShowsManager() {
@@ -51,6 +58,8 @@ export function ShowsManager() {
     const [saving, setSaving] = useState(false);
     const toast = useToast();
     const confirm = useConfirm();
+    const files = useTrackedUploads();
+    const { removeByUrl } = useSupabaseStorage();
 
     // Migración: completa dateISO en los shows creados antes de que existiera el campo
     useEffect(() => {
@@ -69,8 +78,28 @@ export function ShowsManager() {
     };
 
     const cancelEdit = () => {
+        files.rollback();
         setEditingId(null);
         setEditData(null);
+    };
+
+    const handleFlyerFiles = async ([file]) => {
+        try {
+            const url = await files.uploadFile(file, { compressOptions: { type: 'image/jpeg', maxSize: 1200 } });
+            // Versión 1200x630 para la vista previa en redes (el flyer entero sobre fondo desenfocado)
+            const ogUrl = await files.uploadFile(await makeOgImage(file), { compress: false });
+            files.drop(editData.flyer);
+            files.drop(editData.flyerOg);
+            setEditData(prev => ({ ...prev, flyer: url, flyerOg: ogUrl }));
+        } catch (error) {
+            toast.error(`No se pudo subir el flyer: ${error.message}`);
+        }
+    };
+
+    const removeFlyer = () => {
+        files.drop(editData.flyer);
+        files.drop(editData.flyerOg);
+        setEditData(prev => ({ ...prev, flyer: '', flyerOg: '' }));
     };
 
     const handleSave = async (e) => {
@@ -82,8 +111,10 @@ export function ShowsManager() {
         setSaving(true);
         try {
             await updateShow(editingId, toUpdate(editData));
+            files.commit();
             toast.success('Show actualizado');
-            cancelEdit();
+            setEditingId(null);
+            setEditData(null);
         } catch (error) {
             toast.error(`No se pudo guardar: ${error.message}`);
         } finally {
@@ -99,6 +130,7 @@ export function ShowsManager() {
         if (!ok) return;
         try {
             await deleteShow(show.id);
+            [show.flyer, show.flyerOg].filter(Boolean).forEach(url => removeByUrl(url).catch(() => {}));
             toast.success('Show eliminado');
         } catch (error) {
             toast.error(`No se pudo eliminar: ${error.message}`);
@@ -118,8 +150,14 @@ export function ShowsManager() {
                     <ListRow key={show.id} editing={editingId === show.id} dimmed={past}>
                         {editingId === show.id ? (
                             <form onSubmit={handleSave} className="space-y-4">
-                                <ShowFields data={editData} onChange={fieldChange(setEditData)} />
-                                <EditActions saving={saving} onCancel={cancelEdit} />
+                                <ShowFields
+                                    data={editData}
+                                    onChange={fieldChange(setEditData)}
+                                    flyerUploading={files.uploading}
+                                    onFlyerFiles={handleFlyerFiles}
+                                    onFlyerRemove={removeFlyer}
+                                />
+                                <EditActions saving={saving || files.uploading} onCancel={cancelEdit} />
                             </form>
                         ) : (
                             <ListItem

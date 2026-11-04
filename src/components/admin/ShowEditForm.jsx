@@ -1,4 +1,5 @@
-import { Field, Checkbox, inputClass } from './ui'
+import { useId } from 'react'
+import { Field, Checkbox, FilePicker, Button, inputClass } from './ui'
 import { guessTimeZone, guessTimeZoneFromCity, canonicalTimeZone, listTimeZones, nowInZone } from '../../utils/timezones'
 
 // Zonas agrupadas por región (America, Europe...) para el selector
@@ -11,7 +12,8 @@ const ZONES_BY_REGION = listTimeZones().reduce((groups, zone) => {
 const zoneLabel = (zone) => zone.split('/').slice(1).join(' / ').replace(/_/g, ' ') || zone
 
 // Campos del show. data es el estado plano; onChange recibe el evento del input.
-export function ShowFields({ data, onChange }) {
+export function ShowFields({ data, onChange, flyerUploading = false, onFlyerFiles, onFlyerRemove }) {
+    const flyerInputId = useId()
     const setZone = (zone) => onChange({ target: { name: 'timeZone', value: zone } })
 
     // La zona se sugiere sola: primero por ciudad (Ciudad Juárez, Cancún...), si no por país.
@@ -86,6 +88,27 @@ export function ShowFields({ data, onChange }) {
             <Field label="Descripción" hint="Opcional. Se muestra debajo del lugar.">
                 <textarea name="description" value={data.description} onChange={onChange} rows={3} className={inputClass} />
             </Field>
+
+            {onFlyerFiles && (
+                <div>
+                    <span className="block text-xs uppercase tracking-widest text-gray-400 mb-1.5">Flyer (opcional)</span>
+                    {data.flyer ? (
+                        <div className="flex flex-wrap items-start gap-3">
+                            <img src={data.flyer} alt="" className="w-28 max-h-40 object-contain bg-black rounded" />
+                            {data.flyerOg && (
+                                <figure>
+                                    <img src={data.flyerOg} alt="" className="w-48 aspect-[1200/630] object-cover rounded border border-white/10" />
+                                    <figcaption className="text-xs text-gray-500 mt-1">Al compartir el link</figcaption>
+                                </figure>
+                            )}
+                            <Button variant="danger" onClick={onFlyerRemove}>Quitar flyer</Button>
+                        </div>
+                    ) : (
+                        <FilePicker id={flyerInputId} label="Subir flyer" uploading={flyerUploading} onFiles={onFlyerFiles} />
+                    )}
+                    <span className="block text-xs text-gray-500 mt-1">Se muestra en la página del show y en la vista previa al compartir el link.</span>
+                </div>
+            )}
         </div>
     )
 }
