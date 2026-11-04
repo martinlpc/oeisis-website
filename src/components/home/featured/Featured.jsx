@@ -16,66 +16,61 @@ export function Featured() {
     const [ref, isInView] = useInView()
 
     if (loading) {
-        return <SectionSkeleton className='bg-[#141414]' count={1} />
+        return <SectionSkeleton className='bg-[#141414]' count={1} fullHeight={false} />
     }
 
     // El error queda en consola; si falla, la sección simplemente no se muestra
-    if (error) {
+    if (error || !featured) {
         return null
     }
 
-    if (!featured) {
-        return null
-    }
+    const isVideo = featured.type === 'video' && featured.videoUrl
+    const ctas = featured.ctas || []
 
     return (
         <section
             id='featured-section'
             ref={ref}
-            className={`py-10 bg-[#141414] relative w-full min-h-screen text-white overflow-hidden transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
+            className={`bg-[#141414] text-white py-20 md:py-28 px-4 md:px-6 transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
         >
-            <h2 className='text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-8 text-center'>{SECTION_TITLES[featured.type] || 'Destacado'}</h2>
-
-            {/* Media (imagen o video) */}
-            <div className="relative w-full h-96 md:h-[500px] overflow-hidden">
-                <div
-                    className="absolute inset-0 w-full h-full overflow-hidden"
-                >
-                    {featured.type === 'video' && featured.videoUrl ? (
+            {/* Media a la izquierda y texto a la derecha. La imagen se limita por alto y por ancho:
+                un flyer vertical queda angosto y uno horizontal llega hasta el 60% del ancho,
+                sin recortes y sin esperar a medir la imagen. */}
+            <div className='max-w-6xl mx-auto flex flex-col md:flex-row md:items-center gap-10 md:gap-14'>
+                {isVideo ? (
+                    <div className='w-full md:w-3/5 shrink-0 aspect-video'>
                         <YouTubeEmbed url={featured.videoUrl} title={featured.title} />
-                    ) : featured.image ? (
-                        <img
-                            src={featured.image}
-                            alt={featured.title}
-                            className="w-full h-full object-contain"
-                        />
-                    ) : null}
+                    </div>
+                ) : featured.image ? (
+                    <img
+                        src={featured.image}
+                        alt={featured.title}
+                        className='w-auto h-auto max-w-full md:max-w-[60%] max-h-[75vh] mx-auto md:mx-0 shrink-0'
+                    />
+                ) : null}
 
-                </div>
-            </div>
-
-            {/* Contenido debajo */}
-            <div className="relative z-20 px-4 md:px-6 py-6 md:py-10">
-                <div className="max-w-3xl mx-auto text-center">
-                    <h3 className="text-xl md:text-2xl lg:text-5xl font-bold mb-4 md:mb-8 leading-tight">
+                <div className='md:flex-1 min-w-0'>
+                    <h2 className='text-xs uppercase tracking-[0.3em] text-gray-400 mb-4'>
+                        {SECTION_TITLES[featured.type] || 'Destacado'}
+                    </h2>
+                    <h3 className='text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-6'>
                         {featured.title}
                     </h3>
+                    {featured.description && (
+                        <p className='text-lg text-gray-300 leading-relaxed whitespace-pre-line mb-10'>
+                            {featured.description}
+                        </p>
+                    )}
 
-                    <p className="text-base md:text-lg lg:text-2xl text-gray-200 mb-8 md:mb-12 leading-relaxed">
-                        {featured.description}
-                    </p>
-
-                    {/** Call to action's (CTAs) */}
-                    {featured.ctas && featured.ctas.length > 0 && (
-                        <div className='flex flex-col sm:flex-row gap-4 justify-center items-center'>
-                            {featured.ctas.map((cta, index) => (
+                    {ctas.length > 0 && (
+                        <div className='flex flex-col sm:flex-row sm:flex-wrap gap-3'>
+                            {ctas.map((cta, index) => (
                                 <a
-                                    key={index}
+                                    key={`${cta.url}-${index}`}
                                     href={cta.url}
                                     target='_blank'
                                     rel='noopener noreferrer'
-                                    style={{ padding: '8px 16px' }}
-                                    className='w-fit bg-black text-white transition text-sm md:text-base btn-double-border'
+                                    className={`text-white text-center font-bold py-3 px-6 transition ${index === 0 ? 'btn-double-border' : 'border border-white/30 hover:bg-white/10'}`}
                                 >
                                     {cta.label}
                                 </a>
