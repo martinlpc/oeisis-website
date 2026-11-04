@@ -5,6 +5,8 @@ import { useToast, useConfirm } from './useFeedback';
 import { ListItem, ListRow, EditActions } from './ListItem';
 import { ShowFields } from './ShowEditForm';
 import { Tag, StatusText } from './ui';
+import { DEFAULT_TIME_ZONE, isValidTimeZone } from '../../utils/timezones';
+import { formatShowTime } from '../../utils/showDetails';
 
 // Documento de Firestore -> estado plano del formulario
 const toForm = (show) => ({
@@ -17,6 +19,7 @@ const toForm = (show) => ({
     city: show.location?.city || '',
     province: show.location?.province || '',
     country: show.location?.country || '',
+    timeZone: show.timeZone || DEFAULT_TIME_ZONE,
     ticketLink: show.ticketLink || '',
     freeEntry: Boolean(show.freeEntry),
     description: show.description || '',
@@ -28,6 +31,7 @@ const toUpdate = (form) => ({
     date: formatDisplayDate(form.date),
     dateISO: form.date,
     time: form.time,
+    timeZone: form.timeZone,
     location: {
         venue: form.venue,
         address: form.address,
@@ -71,6 +75,10 @@ export function ShowsManager() {
 
     const handleSave = async (e) => {
         e.preventDefault();
+        if (!isValidTimeZone(editData.timeZone)) {
+            toast.error('Revisá la zona horaria');
+            return;
+        }
         setSaving(true);
         try {
             await updateShow(editingId, toUpdate(editData));
@@ -116,7 +124,7 @@ export function ShowsManager() {
                         ) : (
                             <ListItem
                                 title={show.title}
-                                meta={[`${show.date}${show.time ? ` · ${show.time} hs` : ''}`, [venue, city].filter(Boolean).join(', ')].filter(Boolean).join(' · ')}
+                                meta={[show.date, formatShowTime(show), [venue, city].filter(Boolean).join(', ')].filter(Boolean).join(' · ')}
                                 tags={(past || show.freeEntry || !show.ticketLink) && (
                                     <>
                                         {past && <Tag tone="muted">Pasado, no se muestra</Tag>}

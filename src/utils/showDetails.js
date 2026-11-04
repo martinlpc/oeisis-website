@@ -1,4 +1,5 @@
 import { getShowISO } from '../hooks/useShows'
+import { getShowTimeZone, timeZoneLabel, zonedTimeToDate } from './timezones'
 
 // Duración por defecto para el calendario (no se guarda en el show)
 const DEFAULT_DURATION_HOURS = 2
@@ -31,12 +32,12 @@ export function getMapsUrl(show) {
     return query ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}` : null
 }
 
-// Inicio y fin del show en UTC. Las fechas y horas se cargan en hora de Argentina (UTC-3).
+// Inicio y fin reales del show. Fecha y hora están en la hora local del lugar.
 export function getShowTimes(show) {
     const iso = getShowISO(show)
     if (!iso) return null
     const time = /^\d{2}:\d{2}$/.test(show.time || '') ? show.time : '21:00'
-    const start = new Date(`${iso}T${time}:00-03:00`)
+    const start = zonedTimeToDate(iso, time, getShowTimeZone(show))
     const end = new Date(start.getTime() + DEFAULT_DURATION_HOURS * 3600 * 1000)
     return { start, end }
 }
@@ -115,4 +116,11 @@ export function getEventJsonLd(show, pageUrl) {
             : undefined,
         isAccessibleForFree: show.freeEntry || undefined,
     }
+}
+
+// "21:00 hs" o, fuera de Argentina, "21:00 hs (hora de Madrid)"
+export function formatShowTime(show) {
+    if (!show.time) return ''
+    const label = timeZoneLabel(show)
+    return `${show.time} hs${label ? ` (${label})` : ''}`
 }

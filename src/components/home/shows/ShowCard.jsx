@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useInView } from "../../../hooks/useInView";
 import { getShowISO } from "../../../hooks/useShows";
-import { getDateParts } from "../../../utils/showDetails";
+import { getDateParts, formatShowTime } from "../../../utils/showDetails";
 import { TicketAction } from "./TicketAction";
 
 export function ShowCard({ show }) {
@@ -10,7 +10,7 @@ export function ShowCard({ show }) {
     const showYear = date && date.year !== new Date().getFullYear();
     const { venue, city, address } = show.location || {};
     const place = [venue, city].filter(Boolean).join(' · ');
-    const details = [show.time && `${show.time} hs`, address].filter(Boolean).join(' · ');
+    const details = [formatShowTime(show), address].filter(Boolean).join(' · ');
 
     return (
         <article

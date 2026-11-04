@@ -4,6 +4,7 @@ import { createShow } from '../../hooks/useShows';
 import { useToast } from './useFeedback';
 import { Button } from './ui';
 import { ShowFields } from './ShowEditForm';
+import { isValidTimeZone } from '../../utils/timezones';
 
 export function AdminShowForm() {
     const [formData, setFormData] = useState(EMPTY_SHOW);
@@ -12,6 +13,10 @@ export function AdminShowForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!isValidTimeZone(formData.timeZone)) {
+            toast.error('Revisá la zona horaria');
+            return;
+        }
         setSaving(true);
         try {
             await createShow(formData);

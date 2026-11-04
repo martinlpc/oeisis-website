@@ -5,7 +5,7 @@ import { Footer } from '../components/home/Footer';
 import { TicketAction } from '../components/home/shows/TicketAction';
 import { useShow, isPastShow } from '../hooks/useShows';
 import {
-    getDateParts, getPlace, getMapsUrl, getGoogleCalendarUrl, getIcsContent, getEventJsonLd,
+    getDateParts, getPlace, getMapsUrl, getGoogleCalendarUrl, getIcsContent, getEventJsonLd, formatShowTime,
 } from '../utils/showDetails';
 
 const secondaryButton = 'inline-flex items-center justify-center gap-2 border border-white/25 hover:bg-white/10 px-4 py-3 text-sm font-semibold transition';
@@ -113,7 +113,7 @@ export function ShowPage() {
                     <div>
                         <p className="text-xs uppercase tracking-widest text-gray-400 mb-2">Cuándo</p>
                         <p className="text-xl font-semibold first-letter:uppercase">{date?.long || show.date}</p>
-                        {show.time && <p className="text-gray-300">{show.time} hs</p>}
+                        {show.time && <p className="text-gray-300">{formatShowTime(show)}</p>}
                     </div>
                     <div>
                         <p className="text-xs uppercase tracking-widest text-gray-400 mb-2">Dónde</p>

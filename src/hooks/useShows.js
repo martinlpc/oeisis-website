@@ -2,6 +2,7 @@ import { collection, query, doc, getDoc, addDoc, updateDoc, deleteDoc, serverTim
 import { useEffect, useState } from 'react';
 import { db } from '../firebase/config';
 import { useCollection } from './useCollection';
+import { DEFAULT_TIME_ZONE, getShowTimeZone, todayInZone } from '../utils/timezones';
 
 const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
@@ -27,14 +28,10 @@ export function getShowISO(show) {
     return show.dateISO || parseLegacyDate(show.date);
 }
 
-// Fecha de hoy en Argentina como "YYYY-MM-DD"
-function todayISO() {
-    return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }).format(new Date());
-}
-
+// Un show pasa a "anterior" cuando termina su día en la zona horaria del lugar
 export function isPastShow(show) {
     const iso = getShowISO(show);
-    return iso ? iso < todayISO() : false;
+    return iso ? iso < todayInZone(getShowTimeZone(show)) : false;
 }
 
 const showsQuery = () => query(collection(db, 'shows'));
@@ -53,6 +50,7 @@ export async function createShow(data) {
         date: formatDisplayDate(data.date),
         dateISO: data.date,
         time: data.time,
+        timeZone: data.timeZone || DEFAULT_TIME_ZONE,
         location: {
             venue: data.venue,
             city: data.city,
