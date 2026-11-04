@@ -7,19 +7,21 @@ import { Footer } from '../components/home/Footer';
 import { VideoGallery } from '../components/home/videos/VideoGallery';
 import { PhotoGallery } from '../components/home/photos/PhotoGallery';
 import { ContactSection } from '../components/home/ContactSection';
-import { useShows } from '../hooks/useShows';
+import { useShows, isPastShow } from '../hooks/useShows';
 
 export function Home() {
-    // Una sola lectura de shows: la usan la sección de shows y el botón "Entradas" del menú
-    const showsState = useShows({ upcomingOnly: true, realtime: false });
+    // Una sola lectura de shows: próximos (sección y botón "Entradas" del menú) y anteriores
+    const { shows, loading, error } = useShows({ realtime: false });
+    const upcoming = shows.filter(show => !isPastShow(show));
+    const past = shows.filter(isPastShow).reverse();
 
     return (
         <div id="top" className="min-h-screen text-white">
-            <Navbar nextShow={showsState.shows[0]} />
+            <Navbar nextShow={upcoming[0]} />
             <main>
                 <Hero />
                 <Featured />
-                <UpcomingShows {...showsState} />
+                <UpcomingShows shows={upcoming} pastShows={past} loading={loading} error={error} />
                 <NewsList />
                 <VideoGallery />
                 <PhotoGallery />
