@@ -40,11 +40,11 @@ export function NewsList() {
     }
 
     if (loading) {
-        return <SectionSkeleton id='noticias' title='Últimas Noticias' className='bg-[#141414]' fullHeight={false} />
+        return <SectionSkeleton id='noticias' title='Últimas noticias' className='bg-[#141414]' fullHeight={false} />
     }
 
     if (error) {
-        return <SectionError id='noticias' title='Últimas Noticias' className='bg-[#141414]' what='las noticias' />
+        return <SectionError id='noticias' title='Últimas noticias' className='bg-[#141414]' what='las noticias' />
     }
 
     return (
@@ -54,7 +54,7 @@ export function NewsList() {
             className={`bg-[#141414] text-white py-20 md:py-28 px-4 md:px-6 transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
         >
             <div className="max-w-4xl mx-auto">
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8 md:mb-12 text-center">Últimas Noticias</h2>
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8 md:mb-12 text-center">Últimas noticias</h2>
 
                 {news.length === 0 ? (
                     <p className="text-center text-gray-400 text-lg">No hay noticias aún</p>

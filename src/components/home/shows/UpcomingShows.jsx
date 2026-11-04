@@ -23,7 +23,7 @@ export function UpcomingShows({ shows, loading, error }) {
                 <h2 className='text-3xl md:text-4xl lg:text-5xl font-bold mb-10 md:mb-14 text-center'>Próximos shows</h2>
 
                 {shows.length === 0 ? (
-                    <p className='text-center text-gray-400 text-lg'>No hay shows programados</p>
+                    <p className='text-center text-gray-400 text-lg'>No hay shows programados por ahora</p>
                 ) : (
                     <div className='border-b border-white/10'>
                         {shows.map((show) => (

@@ -28,7 +28,7 @@ function TicketAction({ show }) {
                 className={`btn-double-border text-white transition ${base}`}
             >
                 {/* Un show libre puede tener link para reservar lugar */}
-                {show.freeEntry ? 'Entrada libre · Reservar' : 'Comprar Entradas'}
+                {show.freeEntry ? 'Entrada libre · Reservar' : 'Comprar entradas'}
             </a>
         );
     }
