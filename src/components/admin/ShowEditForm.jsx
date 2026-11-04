@@ -78,6 +78,17 @@ export function ShowEditForm({ editData, updating, onSave, onCancel, onLocationC
                 className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
             />
 
+            <label className="flex items-center gap-2 text-sm font-semibold">
+                <input
+                    type="checkbox"
+                    name="freeEntry"
+                    checked={Boolean(editData.freeEntry)}
+                    onChange={onDataChange}
+                    className="w-4 h-4"
+                />
+                Entrada libre
+            </label>
+
             <textarea
                 name="description"
                 value={editData.description}

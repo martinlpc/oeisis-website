@@ -33,10 +33,10 @@ export function ShowsManager() {
     }
 
     const handleDataChange = (e) => {
-        const { name, value } = e.target
+        const { name, value, type, checked } = e.target
         setEditData(prev => ({
             ...prev,
-            [name]: value,
+            [name]: type === 'checkbox' ? checked : value,
         }))
     }
 

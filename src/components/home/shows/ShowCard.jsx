@@ -6,7 +6,7 @@ export function ShowCard({ show }) {
     return (
         <div
             ref={ref}
-            className={`border border-gray-700 rounded-lg p-6 hover:border-blue-500 transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`
+            className={`border border-gray-700 rounded-lg p-6 hover:border-white/60 transition-[opacity,border-color] duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`
             }>
             <h3 className="text-2xl text-center font-bold text-white border-b border-gray-700 pb-6">
                 {show.title}
@@ -38,12 +38,17 @@ export function ShowCard({ show }) {
                             rel="noopener noreferrer"
                             className="btn-double-border w-full text-white font-bold py-3 px-6 transition text-center"
                         >
-                            Comprar Entradas
+                            {/* Un show libre puede tener link para reservar lugar */}
+                            {show.freeEntry ? 'Entrada libre · Reservar' : 'Comprar Entradas'}
                         </a>
+                    ) : show.freeEntry ? (
+                        <p className="w-full text-center text-white font-bold py-3 px-6 border border-white">
+                            Entrada libre
+                        </p>
                     ) : (
-                        <button className="w-full bg-gray-700 text-gray-400 font-bold py-3 px-6 cursor-not-allowed">
-                            Próximamente
-                        </button>
+                        <p className="w-full text-center text-gray-400 font-semibold py-3 px-6 border border-gray-700">
+                            Entradas próximamente
+                        </p>
                     )}
                 </div>
             </div>

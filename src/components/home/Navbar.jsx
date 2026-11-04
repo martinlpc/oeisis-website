@@ -37,7 +37,7 @@ export function Navbar({ nextShow }) {
             rel="noopener noreferrer"
             className="btn-double-border text-white text-sm font-semibold px-4 py-2"
         >
-            Entradas
+            {nextShow.freeEntry ? 'Reservar' : 'Entradas'}
         </a>
     )
 

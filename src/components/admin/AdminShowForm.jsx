@@ -5,7 +5,6 @@ export function AdminShowForm() {
 
     const INITIAL_FORM_DATA = {
         title: '',
-        status: 'disponible',
         date: '',
         time: '',
         venue: '',
@@ -14,6 +13,7 @@ export function AdminShowForm() {
         address: '',
         country: 'Argentina',
         ticketLink: '',
+        freeEntry: false,
         description: '',
     }
 
@@ -173,6 +173,16 @@ export function AdminShowForm() {
                                 placeholder="Link de venta de entradas..."
                                 className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white focus:border-blue-500 outline-none"
                             />
+                            <label className="flex items-center gap-2 text-sm font-semibold">
+                                <input
+                                    type="checkbox"
+                                    name="freeEntry"
+                                    checked={formData.freeEntry}
+                                    onChange={handleChange}
+                                    className="w-4 h-4"
+                                />
+                                Entrada libre (el link es opcional, para reservar lugar)
+                            </label>
                         </div>
                     </div>
 
