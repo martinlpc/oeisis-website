@@ -87,6 +87,17 @@
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Netlify Forms: copia estática del formulario de contacto para que Netlify lo detecte al hacer deploy -->
+    <form name="contacto" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input type="text" name="bot-field" />
+      <input type="text" name="nombre" />
+      <input type="email" name="email" />
+      <select name="motivo"><option>Contratación</option><option>Prensa</option><option>Otro</option></select>
+      <input type="date" name="fecha" />
+      <input type="text" name="ciudad" />
+      <textarea name="mensaje"></textarea>
+    </form>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
