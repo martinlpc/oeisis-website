@@ -16,6 +16,7 @@ export const EMPTY_SHOW = {
     ticketLink: '',
     freeEntry: false,
     description: '',
+    flyer: '',
 }
 
 export const EMPTY_VIDEO = { title: '', embedUrl: '', description: '', date: '', featured: false }

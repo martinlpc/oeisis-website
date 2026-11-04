@@ -124,6 +124,7 @@ export function getEventJsonLd(show, pageUrl) {
                 addressCountry: country || 'AR',
             },
         },
+        image: show.flyer || undefined,
         performer: { '@type': 'MusicGroup', name: 'Oeisis' },
         offers: show.ticketLink
             ? { '@type': 'Offer', url: show.ticketLink, availability: 'https://schema.org/InStock', ...(show.freeEntry ? { price: 0, priceCurrency: 'ARS' } : {}) }

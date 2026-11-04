@@ -7,6 +7,8 @@ import { ShowFields } from './ShowEditForm';
 import { Tag, StatusText } from './ui';
 import { DEFAULT_TIME_ZONE, isValidTimeZone } from '../../utils/timezones';
 import { formatShowTime } from '../../utils/showDetails';
+import { useTrackedUploads } from './useTrackedUploads';
+import { useSupabaseStorage } from '../../hooks/useSupabaseStorage';
 
 // Documento de Firestore -> estado plano del formulario
 const toForm = (show) => ({
@@ -23,6 +25,7 @@ const toForm = (show) => ({
     ticketLink: show.ticketLink || '',
     freeEntry: Boolean(show.freeEntry),
     description: show.description || '',
+    flyer: show.flyer || '',
 });
 
 // Estado plano -> campos a actualizar en Firestore
@@ -42,6 +45,7 @@ const toUpdate = (form) => ({
     ticketLink: form.ticketLink,
     freeEntry: form.freeEntry,
     description: form.description,
+    flyer: form.flyer,
 });
 
 export function ShowsManager() {
@@ -51,6 +55,8 @@ export function ShowsManager() {
     const [saving, setSaving] = useState(false);
     const toast = useToast();
     const confirm = useConfirm();
+    const files = useTrackedUploads();
+    const { removeByUrl } = useSupabaseStorage();
 
     // Migración: completa dateISO en los shows creados antes de que existiera el campo
     useEffect(() => {
@@ -69,8 +75,24 @@ export function ShowsManager() {
     };
 
     const cancelEdit = () => {
+        files.rollback();
         setEditingId(null);
         setEditData(null);
+    };
+
+    const handleFlyerFiles = async ([file]) => {
+        try {
+            const url = await files.uploadFile(file, { compressOptions: { type: 'image/jpeg', maxSize: 1200 } });
+            files.drop(editData.flyer);
+            setEditData(prev => ({ ...prev, flyer: url }));
+        } catch (error) {
+            toast.error(`No se pudo subir el flyer: ${error.message}`);
+        }
+    };
+
+    const removeFlyer = () => {
+        files.drop(editData.flyer);
+        setEditData(prev => ({ ...prev, flyer: '' }));
     };
 
     const handleSave = async (e) => {
@@ -82,8 +104,10 @@ export function ShowsManager() {
         setSaving(true);
         try {
             await updateShow(editingId, toUpdate(editData));
+            files.commit();
             toast.success('Show actualizado');
-            cancelEdit();
+            setEditingId(null);
+            setEditData(null);
         } catch (error) {
             toast.error(`No se pudo guardar: ${error.message}`);
         } finally {
@@ -99,6 +123,7 @@ export function ShowsManager() {
         if (!ok) return;
         try {
             await deleteShow(show.id);
+            if (show.flyer) removeByUrl(show.flyer).catch(() => {});
             toast.success('Show eliminado');
         } catch (error) {
             toast.error(`No se pudo eliminar: ${error.message}`);
@@ -118,8 +143,14 @@ export function ShowsManager() {
                     <ListRow key={show.id} editing={editingId === show.id} dimmed={past}>
                         {editingId === show.id ? (
                             <form onSubmit={handleSave} className="space-y-4">
-                                <ShowFields data={editData} onChange={fieldChange(setEditData)} />
-                                <EditActions saving={saving} onCancel={cancelEdit} />
+                                <ShowFields
+                                    data={editData}
+                                    onChange={fieldChange(setEditData)}
+                                    flyerUploading={files.uploading}
+                                    onFlyerFiles={handleFlyerFiles}
+                                    onFlyerRemove={removeFlyer}
+                                />
+                                <EditActions saving={saving || files.uploading} onCancel={cancelEdit} />
                             </form>
                         ) : (
                             <ListItem

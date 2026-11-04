@@ -17,8 +17,9 @@ const sanitizeFileName = (name) => name
 
 export function useSupabaseStorage() {
     // compress: false sube el archivo tal cual (fotos de prensa en alta)
-    const upload = async (originalFile, { compress = true } = {}) => {
-        const file = compress ? await compressImage(originalFile) : originalFile
+    // compressOptions se pasa a compressImage (ej: { type: 'image/jpeg', maxSize: 1200 })
+    const upload = async (originalFile, { compress = true, compressOptions } = {}) => {
+        const file = compress ? await compressImage(originalFile, compressOptions) : originalFile
         const type = file.type.split('/')[0]
         const bucket = BUCKET_MAP[type]
         if (!bucket) throw new Error(`Tipo de archivo no soportado: ${file.type || file.name}`)

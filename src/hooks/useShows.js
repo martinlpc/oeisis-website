@@ -61,6 +61,7 @@ export async function createShow(data) {
         ticketLink: data.ticketLink,
         freeEntry: Boolean(data.freeEntry),
         description: data.description,
+        flyer: data.flyer || '',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
     });

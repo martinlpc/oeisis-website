@@ -4,6 +4,7 @@ import { Navbar } from '../components/home/Navbar';
 import { Footer } from '../components/home/Footer';
 import { TicketAction } from '../components/home/shows/TicketAction';
 import { useShow, isPastShow } from '../hooks/useShows';
+import { track } from '../utils/analytics';
 import {
     getDateParts, getPlace, getMapsUrl, getMapEmbedUrl, getGoogleCalendarUrl, getIcsContent, getEventJsonLd, formatShowTime,
 } from '../utils/showDetails';
@@ -24,6 +25,7 @@ function ShareButton({ title, url }) {
     const [copied, setCopied] = useState(false);
 
     const share = async () => {
+        track('compartir-show');
         // En celulares abre el menú nativo para compartir (WhatsApp, Instagram, etc.)
         if (navigator.share) {
             try {
@@ -110,44 +112,55 @@ export function ShowPage() {
                 </p>
                 <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-8">{show.title}</h1>
 
-                <div className="grid sm:grid-cols-2 gap-8 border-y border-white/10 py-8 mb-8">
-                    <div>
-                        <p className="text-xs uppercase tracking-widest text-gray-400 mb-2">Cuándo</p>
-                        <p className="text-xl font-semibold first-letter:uppercase">{date?.long || show.date}</p>
-                        {show.time && <p className="text-gray-300">{formatShowTime(show)}</p>}
-                    </div>
-                    <div>
-                        <p className="text-xs uppercase tracking-widest text-gray-400 mb-2">Dónde</p>
-                        {venue && <p className="text-xl font-semibold">{venue}</p>}
-                        <p className="text-gray-300">{[address, city, province].filter(Boolean).join(', ')}</p>
-                        {mapsUrl && (
-                            <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-sm underline underline-offset-4 text-gray-300 hover:text-white">
-                                Ver en el mapa
-                            </a>
+                {/* Con flyer: flyer a la derecha en desktop y arriba en mobile */}
+                <div className={show.flyer ? 'md:grid md:grid-cols-[minmax(0,1fr)_16rem] md:gap-10 md:items-start' : ''}>
+                    {show.flyer && (
+                        <a href={show.flyer} target="_blank" rel="noopener noreferrer" className="block md:order-2 mb-8 md:mb-0 md:sticky md:top-24">
+                            <img src={show.flyer} alt={`Flyer de ${show.title}`} className="w-full max-h-[70vh] object-contain mx-auto rounded" />
+                        </a>
+                    )}
+                    <div className="md:order-1 min-w-0">
+                        <div className="grid sm:grid-cols-2 gap-8 border-y border-white/10 py-8 mb-8">
+                            <div>
+                                <p className="text-xs uppercase tracking-widest text-gray-400 mb-2">Cuándo</p>
+                                <p className="text-xl font-semibold first-letter:uppercase">{date?.long || show.date}</p>
+                                {show.time && <p className="text-gray-300">{formatShowTime(show)}</p>}
+                            </div>
+                            <div>
+                                <p className="text-xs uppercase tracking-widest text-gray-400 mb-2">Dónde</p>
+                                {venue && <p className="text-xl font-semibold">{venue}</p>}
+                                <p className="text-gray-300">{[address, city, province].filter(Boolean).join(', ')}</p>
+                                {mapsUrl && (
+                                    <a href={mapsUrl} target="_blank" rel="noopener noreferrer" data-umami-event="ver-mapa" className="inline-block mt-2 text-sm underline underline-offset-4 text-gray-300 hover:text-white">
+                                        Ver en el mapa
+                                    </a>
+                                )}
+                            </div>
+                        </div>
+
+                        {show.description && (
+                            <p className="text-lg text-gray-300 leading-relaxed whitespace-pre-line mb-10">{show.description}</p>
+                        )}
+
+                        {past ? (
+                            <p className="text-gray-400 mb-6">Este show ya pasó. Mirá los próximos en la lista de shows.</p>
+                        ) : (
+                            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
+                                <TicketAction show={show} className="w-full sm:w-auto sm:min-w-56" />
+                                {calendarUrl && (
+                                    <a href={calendarUrl} target="_blank" rel="noopener noreferrer" data-umami-event="agendar" data-umami-event-tipo="google" className={secondaryButton}>
+                                        Agregar a Google Calendar
+                                    </a>
+                                )}
+                                <button type="button" onClick={() => { downloadIcs(show, pageUrl); track('agendar', { tipo: 'ics' }); }} className={secondaryButton}>
+                                    Descargar evento (.ics)
+                                </button>
+                                <ShareButton title={`Oeisis: ${show.title}`} url={pageUrl} />
+                            </div>
                         )}
                     </div>
                 </div>
 
-                {show.description && (
-                    <p className="text-lg text-gray-300 leading-relaxed whitespace-pre-line mb-10">{show.description}</p>
-                )}
-
-                {past ? (
-                    <p className="text-gray-400 mb-6">Este show ya pasó. Mirá los próximos en la lista de shows.</p>
-                ) : (
-                    <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
-                        <TicketAction show={show} className="w-full sm:w-auto sm:min-w-56" />
-                        {calendarUrl && (
-                            <a href={calendarUrl} target="_blank" rel="noopener noreferrer" className={secondaryButton}>
-                                Agregar a Google Calendar
-                            </a>
-                        )}
-                        <button type="button" onClick={() => downloadIcs(show, pageUrl)} className={secondaryButton}>
-                            Descargar evento (.ics)
-                        </button>
-                        <ShareButton title={`Oeisis: ${show.title}`} url={pageUrl} />
-                    </div>
-                )}
                 {/* El mapa carga recién cuando se acerca a la pantalla */}
                 {mapEmbedUrl && (
                     <div className="mt-12 aspect-[4/3] sm:aspect-[16/9] md:aspect-[21/9] overflow-hidden rounded-lg border border-white/10 bg-white/5">
