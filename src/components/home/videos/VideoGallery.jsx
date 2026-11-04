@@ -26,8 +26,8 @@ export function VideoGallery() {
 
                 {videos.length === 0 ? (
                     <>
-                        <p className="text-center text-gray-400 text-lg">Videos proximamente</p>
-                        <p className="text-center text-gray-400 text-lg">¿Querés ver un video tuyo acá? Envialo a nuestro Instagram mas abajo</p>
+                        <p className="text-center text-gray-400 text-lg">Videos próximamente</p>
+                        <p className="text-center text-gray-400 text-lg">¿Tenés videos de algún show? Mandalos por Instagram y los sumamos.</p>
                     </>
                 ) : (
                     <div className="flex flex-wrap justify-center items-center gap-6">

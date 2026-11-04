@@ -49,7 +49,6 @@ const upcomingSorted = (shows) => sortByDate(shows.filter(show => !isPastShow(sh
 export async function createShow(data) {
     await addDoc(collection(db, 'shows'), {
         title: data.title,
-        status: data.status,
         date: formatDisplayDate(data.date),
         dateISO: data.date,
         time: data.time,
@@ -61,6 +60,7 @@ export async function createShow(data) {
             country: data.country,
         },
         ticketLink: data.ticketLink,
+        freeEntry: Boolean(data.freeEntry),
         description: data.description,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),

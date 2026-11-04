@@ -6,6 +6,7 @@ import { NewsList } from '../components/home/news/NewsList';
 import { Footer } from '../components/home/Footer';
 import { VideoGallery } from '../components/home/videos/VideoGallery';
 import { PhotoGallery } from '../components/home/photos/PhotoGallery';
+import { ContactSection } from '../components/home/ContactSection';
 import { useShows } from '../hooks/useShows';
 
 export function Home() {
@@ -22,6 +23,7 @@ export function Home() {
                 <NewsList />
                 <VideoGallery />
                 <PhotoGallery />
+                <ContactSection />
             </main>
             <Footer />
         </div>

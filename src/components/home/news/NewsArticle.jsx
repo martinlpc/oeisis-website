@@ -1,52 +1,107 @@
+import { useState } from "react"
 import { InterviewThumbnail } from "./InterviewThumbnail"
+import { Lightbox } from "../photos/Lightbox"
+
+// Textos más largos que esto se muestran recortados con "Leer más"
+const LONG_CONTENT = 320
+
+// Recorta por párrafos completos; si el primero ya es muy largo, corta en la última palabra
+function previewText(content) {
+    const paragraphs = content.split(/\n\s*\n/)
+    let preview = paragraphs[0]
+    for (const paragraph of paragraphs.slice(1)) {
+        if ((preview + paragraph).length > LONG_CONTENT) break
+        preview += '\n\n' + paragraph
+    }
+    if (preview.length > LONG_CONTENT) {
+        preview = preview.slice(0, preview.lastIndexOf(' ', LONG_CONTENT))
+    }
+    return preview.trimEnd().replace(/[.,;:]+$/, '') + '…'
+}
 
 export function NewsArticle({ item, renderContentWithLinks }) {
+    const [expanded, setExpanded] = useState(false)
+    const [openImage, setOpenImage] = useState(null)
+
+    const content = item.content || ''
+    const isLong = content.length > LONG_CONTENT
+    const shownContent = isLong && !expanded ? previewText(content) : content
+    const images = item.images || []
+    const lightboxPhotos = images.map((url) => ({
+        id: url,
+        imageUrl: url,
+        title: item.title,
+        date: item.date,
+    }))
+
     return (
-        <article
-            key={item.id}
-            className="border-l-4 border-white pl-6 pb-12"
-        >
-            {/* Fecha */}
-            <div className="flex items-center mb-4">
-                <span className="text-sm text-gray-400">📅</span>
-                <p className="text-gray-400 text-sm ml-2">{item.date}</p>
+        <article className="py-10 border-t border-white/10">
+            {/* Tipo, fecha y destacado */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3 text-xs uppercase tracking-widest text-gray-400">
+                <span>{item.type === 'interview' ? 'Entrevista' : 'Noticia'}</span>
+                <span aria-hidden="true">·</span>
+                <span>{item.date}</span>
+                {item.featured && (
+                    <span className="border border-white text-white px-2 py-0.5">Destacado</span>
+                )}
             </div>
 
-            {/* Título */}
-            <h3 className="text-3xl font-bold mb-4">{item.title}</h3>
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">{item.title}</h3>
 
-            {/* Contenido */}
-            <p className="text-gray-300 mb-6 leading-relaxed break-words">
-                {renderContentWithLinks(item.content)}
-            </p>
-
-            {/* Imágenes */}
-            {item.images && item.images.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                    {item.images.map((imageUrl, index) => (
-                        <div key={index} className="overflow-hidden rounded-lg h-48">
-                            <img
-                                src={imageUrl}
-                                alt={`Noticia ${item.title} - imagen ${index + 1}`}
-                                loading="lazy"
-                                decoding="async"
-                                className="w-full h-full object-cover hover:scale-105 transition"
-                            />
-                        </div>
-                    ))}
+            {/* Contenido: respeta los saltos de línea que se cargan en el admin */}
+            {content && (
+                <div className="mb-6">
+                    <p className="text-gray-300 leading-relaxed break-words whitespace-pre-line">
+                        {renderContentWithLinks(shownContent)}
+                    </p>
+                    {isLong && (
+                        <button
+                            type="button"
+                            onClick={() => setExpanded(e => !e)}
+                            className="mt-2 text-sm font-semibold underline underline-offset-4 text-white hover:text-gray-300"
+                            aria-expanded={expanded}
+                        >
+                            {expanded ? 'Leer menos' : 'Leer más'}
+                        </button>
+                    )}
                 </div>
             )}
 
-            {/* Video */}
+            {/* Imágenes: abren el mismo visor que la galería */}
+            {images.length > 0 && (
+                <ul className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+                    {images.map((imageUrl, index) => (
+                        <li key={imageUrl}>
+                            <button
+                                type="button"
+                                onClick={() => setOpenImage(index)}
+                                className="block w-full aspect-[4/3] overflow-hidden rounded-lg group"
+                                aria-label={`Ver imagen ${index + 1} de ${item.title}`}
+                            >
+                                <img
+                                    src={imageUrl}
+                                    alt=""
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="w-full h-full object-cover motion-safe:group-hover:scale-105 transition duration-300"
+                                />
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            )}
+
             {item.type === 'interview' && item.externalLink && (
                 <InterviewThumbnail externalLink={item.externalLink} title={item.title} />
             )}
 
-            {/* Badge */}
-            {item.featured && (
-                <div className="inline-block border border-color-white bg-black text-white px-4 py-1 rounded text-sm font-semibold">
-                    ⭐ Destacado
-                </div>
+            {openImage !== null && (
+                <Lightbox
+                    photos={lightboxPhotos}
+                    index={openImage}
+                    onClose={() => setOpenImage(null)}
+                    onChange={setOpenImage}
+                />
             )}
         </article>
     )

@@ -23,9 +23,9 @@ function SkeletonBlocks({ variant, count }) {
     )
 }
 
-export function SectionSkeleton({ id, title, className = '', variant = 'list', count = 2 }) {
+export function SectionSkeleton({ id, title, className = '', variant = 'list', count = 2, fullHeight = true }) {
     return (
-        <section id={id} aria-busy="true" className={`min-h-screen text-white py-20 px-4 ${className}`}>
+        <section id={id} aria-busy="true" className={`${fullHeight ? 'min-h-screen' : ''} text-white py-20 px-4 ${className}`}>
             <div className={`${variant === 'grid' ? 'max-w-6xl' : 'max-w-4xl'} mx-auto`}>
                 {title && <h2 className={TITLE_CLASS}>{title}</h2>}
                 <SkeletonBlocks variant={variant} count={count} />
