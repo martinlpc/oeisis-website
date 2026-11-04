@@ -1,65 +1,82 @@
 import { useInView } from "../../../hooks/useInView";
+import { getShowISO } from "../../../hooks/useShows";
+
+// "2026-11-20" -> { weekday: 'VIE', day: '20', month: 'NOV', year: 2026 }
+function getDateParts(show) {
+    const iso = getShowISO(show);
+    if (!iso) return null;
+    const [year, month, day] = iso.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    const short = (options) => date.toLocaleDateString('es-AR', options).replace('.', '').toUpperCase();
+    return {
+        weekday: short({ weekday: 'short' }),
+        day: String(day).padStart(2, '0'),
+        month: short({ month: 'short' }),
+        year,
+    };
+}
+
+function TicketAction({ show }) {
+    const base = 'block w-full md:w-64 text-center font-bold whitespace-nowrap py-3 px-4';
+
+    if (show.ticketLink) {
+        return (
+            <a
+                href={show.ticketLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`btn-double-border text-white transition ${base}`}
+            >
+                {/* Un show libre puede tener link para reservar lugar */}
+                {show.freeEntry ? 'Entrada libre · Reservar' : 'Comprar Entradas'}
+            </a>
+        );
+    }
+
+    if (show.freeEntry) {
+        return <p className={`text-white border border-white ${base}`}>Entrada libre</p>;
+    }
+
+    return <p className={`text-gray-400 font-semibold border border-white/15 ${base}`}>Entradas próximamente</p>;
+}
 
 export function ShowCard({ show }) {
-    const [ref, isInView] = useInView()
+    const [ref, isInView] = useInView();
+    const date = getDateParts(show);
+    const showYear = date && date.year !== new Date().getFullYear();
+    const { venue, city, address } = show.location || {};
+    const place = [venue, city].filter(Boolean).join(' · ');
+    const details = [show.time && `${show.time} hs`, address].filter(Boolean).join(' · ');
 
     return (
-        <div
+        <article
             ref={ref}
-            className={`border border-gray-700 rounded-lg p-6 hover:border-white/60 transition-[opacity,border-color] duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`
-            }>
-            <h3 className="text-2xl text-center font-bold text-white border-b border-gray-700 pb-6">
-                {show.title}
-            </h3>
-            <div className="grid md:grid-cols-3 gap-6 p-1">
-                {/* Fecha */}
-                <div>
-                    <p className="text-gray-400 text-sm mb-1">FECHA</p>
-                    <p className="text-xl font-bold">
-                        {show.date}
-                    </p>
-                    <p className="text-lg text-gray-300">{show.time}</p>
-                </div>
+            className={`grid grid-cols-[auto_1fr] md:grid-cols-[auto_1fr_auto] items-center gap-x-6 md:gap-x-10 gap-y-5 py-8 border-t border-white/10 transition-opacity duration-700 ${isInView ? 'opacity-100' : 'opacity-0'}`}
+        >
+            {/* Fecha */}
+            {date ? (
+                <time dateTime={getShowISO(show)} className="w-16 md:w-20 text-center leading-none">
+                    <span className="block text-xs tracking-widest text-gray-400">{date.weekday}</span>
+                    <span className="block text-4xl md:text-5xl font-bold my-1">{date.day}</span>
+                    <span className="block text-sm tracking-widest">{date.month}</span>
+                    {showYear && <span className="block text-xs text-gray-400 mt-1">{date.year}</span>}
+                </time>
+            ) : (
+                <span className="w-16 md:w-20 text-center text-gray-400">{show.date}</span>
+            )}
 
-                {/* Lugar */}
-                <div>
-                    <p className="text-gray-400 text-sm mb-1">LUGAR</p>
-                    <p className="text-xl font-semibold">{show.location?.venue}</p>
-                    <p className="text-gray-300">{show.location?.city}</p>
-                    <p className="text-sm text-gray-400">{show.location?.address}</p>
-                </div>
-
-                {/* Botón de entradas */}
-                <div className="flex items-center">
-                    {show.ticketLink ? (
-                        <a
-                            href={show.ticketLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn-double-border w-full text-white font-bold py-3 px-6 transition text-center"
-                        >
-                            {/* Un show libre puede tener link para reservar lugar */}
-                            {show.freeEntry ? 'Entrada libre · Reservar' : 'Comprar Entradas'}
-                        </a>
-                    ) : show.freeEntry ? (
-                        <p className="w-full text-center text-white font-bold py-3 px-6 border border-white">
-                            Entrada libre
-                        </p>
-                    ) : (
-                        <p className="w-full text-center text-gray-400 font-semibold py-3 px-6 border border-gray-700">
-                            Entradas próximamente
-                        </p>
-                    )}
-                </div>
+            {/* Título y lugar */}
+            <div className="min-w-0">
+                <h3 className="text-xl md:text-2xl font-bold text-white">{show.title}</h3>
+                {place && <p className="text-gray-200 mt-1">{place}</p>}
+                {details && <p className="text-sm text-gray-400 mt-1">{details}</p>}
+                {show.description && <p className="text-sm text-gray-400 mt-3">{show.description}</p>}
             </div>
 
-            {
-                show.description && (
-                    <p className="text-center mt-4 text-gray-300 border-t border-gray-700 pt-4">
-                        {show.description}
-                    </p>
-                )
-            }
-        </div >
+            {/* Entradas: abajo a lo ancho en mobile, a la derecha en desktop */}
+            <div className="col-span-2 md:col-span-1">
+                <TicketAction show={show} />
+            </div>
+        </article>
     );
 }

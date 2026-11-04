@@ -6,7 +6,7 @@ export function UpcomingShows({ shows, loading, error }) {
     const [ref, isInView] = useInView()
 
     if (loading) {
-        return <SectionSkeleton id='upcoming-shows' title='Próximos shows' />
+        return <SectionSkeleton id='upcoming-shows' title='Próximos shows' fullHeight={false} />
     }
 
     if (error) {
@@ -17,16 +17,15 @@ export function UpcomingShows({ shows, loading, error }) {
         <section
             id='upcoming-shows'
             ref={ref}
-            className={`min-h-screen bg-[#1f1f1f] text-white py-20 flex items-center justify-center px-4 md:px-6 lg:px-0 transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
+            className={`bg-[#1f1f1f] text-white py-20 md:py-28 px-4 md:px-6 transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
         >
-            <div className='max-w-4xl mx-auto' >
-                <h2 className='text-3xl md:text-4xl lg:text-5xl font-bold mb-8 md:mb-12 text-center'>Próximos shows</h2>
-                <div className='h-8'></div>
+            <div className='max-w-5xl mx-auto'>
+                <h2 className='text-3xl md:text-4xl lg:text-5xl font-bold mb-10 md:mb-14 text-center'>Próximos shows</h2>
 
                 {shows.length === 0 ? (
                     <p className='text-center text-gray-400 text-lg'>No hay shows programados</p>
                 ) : (
-                    <div className='flex flex-col gap-6'>
+                    <div className='border-b border-white/10'>
                         {shows.map((show) => (
                             <ShowCard key={show.id} show={show} />
                         ))}
