@@ -9,7 +9,7 @@ export function Footer() {
                     {/** Logo + copy + gacetilla */}
                     <div className="text-center md:text-left">
                         <div className="w-24 md:w-28 mx-auto md:mx-0 mb-6">
-                            <svg className="w-full" viewBox="0 30 100 50"><image width="100" height="100" href="/logo.svg" /></svg>
+                            <svg className="w-full" viewBox="0 30 100 50" role="img" aria-label="Oeisis"><image width="100" height="100" href="/logo.svg" /></svg>
                         </div>
 
                         <p className="text-sm leading-relaxed">
@@ -27,7 +27,7 @@ export function Footer() {
 
                     {/* Redes Sociales */}
                     <div className="text-center md:text-left">
-                        <h3 className="text-white font-bold text-lg mb-4">Seguinos</h3>
+                        <h2 className="text-white font-bold text-lg mb-4">Seguinos</h2>
                         <div className="flex gap-4">
                             {/* YOUTUBE */}
                             <a href="https://youtube.com/oeisis" target="_blank" rel="noopener noreferrer" className="hover:text-yellow-500 transition-colors" aria-label="Youtube logo">
@@ -50,7 +50,7 @@ export function Footer() {
 
                     {/* Contacto */}
                     <div className="text-center md:text-left">
-                        <h3 className="text-white font-bold text-lg mb-4">Contacto</h3>
+                        <h2 className="text-white font-bold text-lg mb-4">Contacto</h2>
                         <div className="space-y-2 text-sm">
                             <a
                                 href="mailto:jeronimo.blazer@gmail.com"

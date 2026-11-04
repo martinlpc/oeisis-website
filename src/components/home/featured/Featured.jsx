@@ -3,6 +3,14 @@ import { SectionSkeleton } from '../SectionState'
 import { useInView } from '../../../hooks/useInView'
 import { YouTubeEmbed } from '../../common/YouTubeEmbed'
 
+// Título de la sección según el tipo elegido en el admin
+const SECTION_TITLES = {
+    show: 'Próximamente',
+    video: 'Nuevo video',
+    news: 'Novedades',
+    custom: 'Destacado',
+}
+
 export function Featured() {
     const { featured, loading, error } = useFeatured({ realtime: false })
     const [ref, isInView] = useInView()
@@ -26,7 +34,7 @@ export function Featured() {
             ref={ref}
             className={`py-10 bg-[#141414] relative w-full min-h-screen text-white overflow-hidden transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
         >
-            <h2 className='text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-8 text-center'>Próximamente</h2>
+            <h2 className='text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-8 text-center'>{SECTION_TITLES[featured.type] || 'Destacado'}</h2>
 
             {/* Media (imagen o video) */}
             <div className="relative w-full h-96 md:h-[500px] overflow-hidden">
@@ -49,9 +57,9 @@ export function Featured() {
             {/* Contenido debajo */}
             <div className="relative z-20 px-4 md:px-6 py-6 md:py-10">
                 <div className="max-w-3xl mx-auto text-center">
-                    <h1 className="text-xl md:text-2xl lg:text-5xl font-bold mb-4 md:mb-8 leading-tight">
+                    <h3 className="text-xl md:text-2xl lg:text-5xl font-bold mb-4 md:mb-8 leading-tight">
                         {featured.title}
-                    </h1>
+                    </h3>
 
                     <p className="text-base md:text-lg lg:text-2xl text-gray-200 mb-8 md:mb-12 leading-relaxed">
                         {featured.description}

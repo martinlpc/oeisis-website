@@ -8,9 +8,9 @@ export function ShowCard({ show }) {
             ref={ref}
             className={`border border-gray-700 rounded-lg p-6 hover:border-blue-500 transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`
             }>
-            <p className="text-2xl text-center font-bold text-white border-b border-gray-700 pb-6">
+            <h3 className="text-2xl text-center font-bold text-white border-b border-gray-700 pb-6">
                 {show.title}
-            </p>
+            </h3>
             <div className="grid md:grid-cols-3 gap-6 p-1">
                 {/* Fecha */}
                 <div>
