@@ -1,10 +1,10 @@
-// Completa título, descripción e imagen de cada página para los bots que arman vistas previas
-// (WhatsApp, Instagram, Facebook, X, Telegram, Slack) y para los buscadores.
-// Las personas reciben la página sin cambios: el sitio es una SPA y los datos se cargan en el navegador.
+// Completa título, descripción e imagen de cada página en el HTML, para las vistas previas
+// (WhatsApp, Instagram, Facebook, X, Telegram, Slack, iMessage) y los buscadores.
+// Se aplica a todas las visitas: muchos servicios de vista previa se presentan como un navegador común.
+// Para las personas no cambia nada, la app se arma igual en el navegador.
+// La respuesta queda 5 minutos en la CDN de Netlify, así que la mayoría de las visitas no ejecutan la función.
 import { getDocument } from '../lib/firestore.js'
 import { timeZoneLabel } from '../../src/utils/timezones.js'
-
-const BOT = /bot|crawl|spider|slurp|facebookexternalhit|facebookcatalog|whatsapp|telegram|slack|discord|twitter|linkedin|pinterest|embedly|preview|skype|vkshare|redditbot|applebot|google|bing|yandex|duckduck|baidu/i
 
 const SITE = 'Oeisis'
 const DEFAULT_DESCRIPTION = 'Tributo a Oasis desde Argentina. La mejor experiencia del clásico británico con una propuesta única y memorable.'
@@ -102,9 +102,6 @@ function injectMeta(html, meta) {
 }
 
 export default async (request, context) => {
-    const userAgent = request.headers.get('user-agent') || ''
-    if (!BOT.test(userAgent)) return context.next()
-
     const url = new URL(request.url)
     const meta = await metaFor(url)
     const response = await context.next()
@@ -113,10 +110,14 @@ export default async (request, context) => {
     const html = injectMeta(await response.text(), meta)
     const headers = new Headers(response.headers)
     headers.delete('content-length')
-    headers.set('cache-control', 'public, max-age=300')
+    // El navegador siempre revalida (así un deploy nuevo se ve enseguida); la CDN guarda 5 minutos
+    headers.set('cache-control', 'public, max-age=0, must-revalidate')
+    headers.set('netlify-cdn-cache-control', 'public, s-maxage=300, stale-while-revalidate=600')
     return new Response(html, { status: response.status, headers })
 }
 
 export const config = {
     path: ['/', '/prensa', '/shows/*'],
+    // Permite que Netlify guarde la respuesta según los headers de arriba
+    cache: 'manual',
 }

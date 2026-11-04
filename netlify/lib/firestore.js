@@ -3,6 +3,9 @@
 
 const env = (name) => globalThis.Netlify?.env.get(name)
 
+// Si Firestore tarda, la página sale igual con los datos generales
+const TIMEOUT_MS = 1500
+
 function decodeValue(value) {
     if (!value) return null
     if ('stringValue' in value) return value.stringValue
@@ -30,7 +33,7 @@ export async function getDocument(path) {
     const base = baseUrl()
     if (!base) return null
     try {
-        const response = await fetch(`${base}/${path}?key=${env('VITE_FIREBASE_API_KEY')}`)
+        const response = await fetch(`${base}/${path}?key=${env('VITE_FIREBASE_API_KEY')}`, { signal: AbortSignal.timeout(TIMEOUT_MS) })
         if (!response.ok) return null
         const doc = await response.json()
         return { id: doc.name.split('/').pop(), updateTime: doc.updateTime, ...decodeFields(doc.fields) }
@@ -44,7 +47,7 @@ export async function listDocuments(collection) {
     const base = baseUrl()
     if (!base) return []
     try {
-        const response = await fetch(`${base}/${collection}?pageSize=300&key=${env('VITE_FIREBASE_API_KEY')}`)
+        const response = await fetch(`${base}/${collection}?pageSize=300&key=${env('VITE_FIREBASE_API_KEY')}`, { signal: AbortSignal.timeout(TIMEOUT_MS * 2) })
         if (!response.ok) return []
         const data = await response.json()
         return (data.documents || []).map(doc => ({ id: doc.name.split('/').pop(), updateTime: doc.updateTime, ...decodeFields(doc.fields) }))
