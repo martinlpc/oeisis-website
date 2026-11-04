@@ -90,7 +90,7 @@ export function ContactSection() {
                         </div>
                         <div className="sm:col-span-2">
                             <label htmlFor="c-motivo" className={labelClass}>Motivo</label>
-                            <select id="c-motivo" name="motivo" value={form.motivo} onChange={handleChange} className={inputClass}>
+                            <select id="c-motivo" name="motivo" value={form.motivo} onChange={handleChange} className={`${inputClass} [color-scheme:dark] [&_option]:bg-[#1f1f1f] [&_option]:text-white`}>
                                 <option>Contratación</option>
                                 <option>Prensa</option>
                                 <option>Otro</option>
