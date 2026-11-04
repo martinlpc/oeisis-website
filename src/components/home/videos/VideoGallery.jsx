@@ -1,4 +1,5 @@
 import { useVideos } from "../../../hooks/useVideos";
+import { SectionSkeleton, SectionError } from '../SectionState'
 import { VideoCard } from "./VideoCard";
 import { useInView } from "../../../hooks/useInView"
 
@@ -7,23 +8,16 @@ export function VideoGallery() {
     const { videos, loading, error } = useVideos({ realtime: false })
 
     if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <p className="text-white text-xl">Cargando videos...</p>
-            </div>
-        )
+        return <SectionSkeleton id='videos' title='Videos' variant='grid' count={3} />
     }
 
     if (error) {
-        return (
-            <div className="py-20 px-4 text-center">
-                <p className="text-gray-400 text-lg">No pudimos cargar los videos. Probá recargar la página.</p>
-            </div>
-        )
+        return <SectionError id='videos' title='Videos' what='los videos' />
     }
 
     return (
         <section
+            id='videos'
             ref={ref}
             className={`min-h-screen text-white py-20 px-4 transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
         >
