@@ -1,222 +1,198 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { fieldChange, isValidYouTube } from './formState'
 import { useFeatured } from "../../hooks/useFeatured";
+import { useSupabaseStorage } from "../../hooks/useSupabaseStorage";
+import { useToast } from "./useFeedback";
+import { Button, Field, FilePicker, inputClass } from "./ui";
+import { YouTubeField } from "./YouTubeField";
+
+const EMPTY = { type: 'show', title: '', description: '', image: '', videoUrl: '' };
 
 export function FeaturedForm() {
-    const [formData, setFormData] = useState({
-        type: 'show',
-        title: '',
-        description: '',
-        image: '',
-        videoUrl: ''
-    })
-    const { featured, updateFeatured } = useFeatured()
-    const [ctas, setCtas] = useState([])
-    const [newCta, setNewCta] = useState({ label: '', url: '' })
-    const [message, setMessage] = useState('')
-    const [loading, setLoading] = useState(false)
+    const { featured, loading, updateFeatured } = useFeatured();
+    const { upload, removeByUrl } = useSupabaseStorage();
+    const toast = useToast();
+    const [formData, setFormData] = useState(EMPTY);
+    const [ctas, setCtas] = useState([]);
+    const [newCta, setNewCta] = useState({ label: '', url: '' });
+    const [uploading, setUploading] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [showUrlInput, setShowUrlInput] = useState(false);
+
+    // Imagen subida en esta sesión y todavía no guardada
+    const pendingRef = useRef(null);
+
+    // Carga los datos guardados (y los recarga si cambian en Firestore)
+    useEffect(() => {
+        if (!featured) return;
+        setFormData({
+            type: featured.type || 'show',
+            title: featured.title || '',
+            description: featured.description || '',
+            image: featured.image || '',
+            videoUrl: featured.videoUrl || '',
+        });
+        setCtas(featured.ctas || []);
+    }, [featured]);
 
     useEffect(() => {
-        if (featured) {
-            setFormData({
-                type: featured.type || 'show',
-                title: featured.title || '',
-                description: featured.description || '',
-                image: featured.image || '',
-                videoUrl: featured.videoUrl || ''
-            })
-            setCtas(featured.ctas || [])
+        return () => {
+            if (pendingRef.current) removeByUrl(pendingRef.current).catch(() => {});
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const handleChange = fieldChange(setFormData);
+
+    const discardPending = () => {
+        if (pendingRef.current) removeByUrl(pendingRef.current).catch(() => {});
+        pendingRef.current = null;
+    };
+
+    const handleImageFiles = async ([file]) => {
+        discardPending();
+        setUploading(true);
+        try {
+            const { url } = await upload(file);
+            pendingRef.current = url;
+            setFormData(prev => ({ ...prev, image: url }));
+        } catch (error) {
+            toast.error(`No se pudo subir la imagen: ${error.message}`);
+        } finally {
+            setUploading(false);
         }
-    }, [featured])
+    };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }))
-    }
+    const removeImage = () => {
+        discardPending();
+        setFormData(prev => ({ ...prev, image: '' }));
+    };
 
-    const handleAddCta = () => {
-        if (newCta.label && newCta.url) {
-            setCtas(prev => [...prev, { ...newCta }])
-            setNewCta({ label: '', url: '' })
-        }
-    }
-
-    const handleRemoveCta = (index) => {
-        setCtas(prev => prev.filter((_, i) => i !== index))
-    }
+    const addCta = () => {
+        if (!newCta.label || !newCta.url) return;
+        setCtas(prev => [...prev, { ...newCta }]);
+        setNewCta({ label: '', url: '' });
+    };
 
     const handleSubmit = async (e) => {
-        e.preventDefault()
-        setLoading(true)
-        setMessage('')
-
-        try {
-            const docData = {
-                type: formData.type,
-                title: formData.title,
-                description: formData.description,
-                image: formData.image,
-                videoUrl: formData.videoUrl,
-                ctas: ctas
-            }
-
-            await updateFeatured(docData, featured?.id || 'current')
-            setMessage('Featured actualizado!')
-        } catch (error) {
-            setMessage(`Error: ${error.message}`)
-        } finally {
-            setLoading(false)
+        e.preventDefault();
+        if (formData.type === 'video' && !isValidYouTube(formData.videoUrl)) {
+            toast.error('Para un destacado de tipo video hace falta un link de YouTube válido');
+            return;
         }
-    }
+        setSaving(true);
+        try {
+            const previousImage = featured?.image;
+            await updateFeatured({ ...formData, ctas }, featured?.id || 'current');
+            pendingRef.current = null;
+            // La imagen anterior ya no se usa: se borra si era de Supabase
+            if (previousImage && previousImage !== formData.image) {
+                removeByUrl(previousImage).catch(() => {});
+            }
+            toast.success('Destacado actualizado');
+        } catch (error) {
+            toast.error(`No se pudo guardar: ${error.message}`);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (loading) return <p className="text-gray-400">Cargando...</p>;
+
+    const isVideo = formData.type === 'video';
 
     return (
-        <div className="border border-gray-700 rounded-lg p-6">
-            <h2 className="text-2xl font-bold mb-6">Editar Sección Destacada</h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
+            <Field label="Tipo" hint="Define el título de la sección en el sitio: Próximamente, Nuevo video, Novedades o Destacado.">
+                <select name="type" value={formData.type} onChange={handleChange} className={inputClass}>
+                    <option value="show">Show</option>
+                    <option value="video">Video</option>
+                    <option value="news">Noticia</option>
+                    <option value="custom">Personalizado</option>
+                </select>
+            </Field>
 
-            {message && (
-                <div className="mb-6 p-4 rounded bg-gray-800 border border-gray-700">
-                    {message}
+            <Field label="Título">
+                <input name="title" value={formData.title} onChange={handleChange} required className={inputClass} />
+            </Field>
+
+            <Field label="Descripción">
+                <textarea name="description" value={formData.description} onChange={handleChange} rows={4} required className={inputClass} />
+            </Field>
+
+            {isVideo ? (
+                <YouTubeField name="videoUrl" value={formData.videoUrl} onChange={handleChange} required />
+            ) : (
+                <div>
+                    <span className="block text-xs uppercase tracking-widest text-gray-400 mb-1.5">Imagen</span>
+                    {formData.image ? (
+                        <div className="space-y-2">
+                            <img src={formData.image} alt="" className="w-full max-h-72 object-contain bg-black rounded" />
+                            <div className="flex gap-2">
+                                <FilePickerButton uploading={uploading} onFiles={handleImageFiles} />
+                                <Button variant="danger" onClick={removeImage}>Quitar imagen</Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <FilePicker id="featured-image" label="Subir imagen (flyer, foto)" uploading={uploading} onFiles={handleImageFiles} />
+                            {showUrlInput ? (
+                                <input type="url" name="image" value={formData.image} onChange={handleChange} className={`${inputClass} mt-2`} placeholder="https://..." />
+                            ) : (
+                                <button type="button" onClick={() => setShowUrlInput(true)} className="mt-2 text-xs text-gray-400 underline hover:text-white">
+                                    o pegar el link de una imagen
+                                </button>
+                            )}
+                        </>
+                    )}
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Tipo */}
-                <div>
-                    <label className="block text-sm font-semibold mb-2">Tipo</label>
-                    <select
-                        name="type"
-                        value={formData.type}
-                        onChange={handleChange}
-                        className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white focus:border-blue-500 outline-none"
-                    >
-                        <option value="show">Show</option>
-                        <option value="video">Video</option>
-                        <option value="news">Noticia</option>
-                        <option value="custom">Personalizado</option>
-                    </select>
-                </div>
-
-                {/* Título */}
-                <div>
-                    <label className="block text-sm font-semibold mb-2">Título</label>
-                    <input
-                        type="text"
-                        name="title"
-                        value={formData.title}
-                        onChange={handleChange}
-                        placeholder="Título del destacado..."
-                        className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white focus:border-blue-500 outline-none"
-                        required
-                    />
-                </div>
-
-                {/* Descripción */}
-                <div>
-                    <label className="block text-sm font-semibold mb-2">Descripción</label>
-                    <textarea
-                        name="description"
-                        value={formData.description}
-                        onChange={handleChange}
-                        placeholder="Descripción del destacado..."
-                        rows="4"
-                        className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white focus:border-blue-500 outline-none"
-                        required
-                    />
-                </div>
-
-                {/* Imagen */}
-                <div>
-                    <label className="block text-sm font-semibold mb-2">URL de Imagen</label>
-                    <input
-                        type="url"
-                        name="image"
-                        value={formData.image}
-                        onChange={handleChange}
-                        placeholder="https://ejemplo.com/imagen.jpg"
-                        className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white focus:border-blue-500 outline-none"
-                    />
-                    {formData.image && (
-                        <img src={formData.image} alt="preview" className="mt-2 h-32 rounded" />
-                    )}
-                </div>
-
-                {/* Video URL */}
-                {formData.type === 'video' && (
-                    <div>
-                        <label className="block text-sm font-semibold mb-2">URL de Video (YouTube embed)</label>
-                        <input
-                            type="url"
-                            name="videoUrl"
-                            value={formData.videoUrl}
-                            onChange={handleChange}
-                            placeholder="https://www.youtube.com/embed/..."
-                            className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white focus:border-blue-500 outline-none"
-                        />
-                    </div>
-                )}
-
-                {/* CTAs */}
-                <div>
-                    <label className="block text-sm font-semibold mb-2">Llamadas a Acción (CTAs)</label>
-
-                    {/* Lista de CTAs existentes */}
-                    {ctas.length > 0 && (
-                        <div className="mb-4 space-y-2 bg-gray-800 p-4 rounded">
-                            {ctas.map((cta, index) => (
-                                <div key={index} className="flex justify-between items-center bg-gray-900 p-3 rounded">
-                                    <div>
-                                        <p className="font-semibold">{cta.label}</p>
-                                        <p className="text-sm text-gray-400 truncate">{cta.url}</p>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveCta(index)}
-                                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
-                                    >
-                                        Quitar
-                                    </button>
+            <div>
+                <span className="block text-xs uppercase tracking-widest text-gray-400 mb-1.5">Botones</span>
+                {ctas.length > 0 && (
+                    <ul className="space-y-2 mb-3">
+                        {ctas.map((cta, index) => (
+                            <li key={`${cta.url}-${index}`} className="flex items-center gap-3 border border-white/10 rounded px-3 py-2">
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-sm">{cta.label}</p>
+                                    <p className="text-xs text-gray-400 truncate">{cta.url}</p>
                                 </div>
-                            ))}
-                        </div>
-                    )}
-
-                    {/* Agregar CTA */}
-                    <div className="space-y-2 bg-gray-800 p-4 rounded">
-                        <input
-                            type="text"
-                            value={newCta.label}
-                            onChange={(e) => setNewCta(prev => ({ ...prev, label: e.target.value }))}
-                            placeholder="Label del botón (ej: Comprar Entradas)"
-                            className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white focus:border-blue-500 outline-none"
-                        />
-                        <input
-                            type="url"
-                            value={newCta.url}
-                            onChange={(e) => setNewCta(prev => ({ ...prev, url: e.target.value }))}
-                            placeholder="URL (ej: https://...)"
-                            className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white focus:border-blue-500 outline-none"
-                        />
-                        <button
-                            type="button"
-                            onClick={handleAddCta}
-                            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded transition"
-                        >
-                            + Agregar CTA
-                        </button>
-                    </div>
+                                <Button variant="danger" onClick={() => setCtas(prev => prev.filter((_, i) => i !== index))}>Quitar</Button>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+                <div className="grid sm:grid-cols-[1fr_1.5fr_auto] gap-2">
+                    <input value={newCta.label} onChange={(e) => setNewCta(prev => ({ ...prev, label: e.target.value }))} className={inputClass} placeholder="Texto (ej: Comprar entradas)" aria-label="Texto del botón" />
+                    <input type="url" value={newCta.url} onChange={(e) => setNewCta(prev => ({ ...prev, url: e.target.value }))} className={inputClass} placeholder="https://" aria-label="Link del botón" />
+                    <Button variant="secondary" onClick={addCta} disabled={!newCta.label || !newCta.url}>Agregar</Button>
                 </div>
+            </div>
 
-                {/* Submit */}
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 text-white font-bold py-3 rounded transition"
-                >
-                    {loading ? 'Guardando...' : 'Guardar Featured'}
-                </button>
-            </form>
-        </div>
+            <Button type="submit" disabled={saving || uploading} className="w-full py-3">
+                {saving ? 'Guardando...' : 'Guardar destacado'}
+            </Button>
+        </form>
+    );
+}
+
+// Variante chica del selector para reemplazar una imagen existente
+function FilePickerButton({ uploading, onFiles }) {
+    return (
+        <label className={`px-4 py-2 rounded font-semibold text-sm border border-white/20 ${uploading ? 'opacity-50' : 'cursor-pointer hover:bg-white/10'}`}>
+            {uploading ? 'Subiendo...' : 'Reemplazar'}
+            <input
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                disabled={uploading}
+                onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    e.target.value = '';
+                    if (files.length) onFiles(files);
+                }}
+            />
+        </label>
     );
 }
