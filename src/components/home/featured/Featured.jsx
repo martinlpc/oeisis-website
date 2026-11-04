@@ -1,4 +1,5 @@
 import { useFeatured } from '../../../hooks/useFeatured'
+import { SectionSkeleton } from '../SectionState'
 import { useInView } from '../../../hooks/useInView'
 import { YouTubeEmbed } from '../../common/YouTubeEmbed'
 
@@ -7,11 +8,7 @@ export function Featured() {
     const [ref, isInView] = useInView()
 
     if (loading) {
-        return (
-            <div className='min-h-screen bg-black flex items-center justify-center'>
-                <p className='text-white text-xl'>Cargando sección destacada...</p>
-            </div>
-        )
+        return <SectionSkeleton className='bg-[#141414]' count={1} />
     }
 
     // El error queda en consola; si falla, la sección simplemente no se muestra

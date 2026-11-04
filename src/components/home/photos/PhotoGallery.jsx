@@ -1,4 +1,5 @@
 import { usePhotos } from '../../../hooks/usePhotos';
+import { SectionSkeleton, SectionError } from '../SectionState';
 import { PhotoCard } from './PhotoCard';
 import { useInView } from '../../../hooks/useInView';
 
@@ -7,23 +8,16 @@ export function PhotoGallery() {
     const { photos, loading, error } = usePhotos({ realtime: false });
 
     if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <p className="text-white text-xl">Cargando fotos...</p>
-            </div>
-        );
+        return <SectionSkeleton id='fotos' title='Galería de Fotos' className='bg-[#141414]' variant='grid' count={6} />
     }
 
     if (error) {
-        return (
-            <div className="py-20 px-4 text-center">
-                <p className="text-gray-400 text-lg">No pudimos cargar las fotos. Probá recargar la página.</p>
-            </div>
-        )
+        return <SectionError id='fotos' title='Galería de Fotos' className='bg-[#141414]' what='las fotos' />
     }
 
     return (
         <section
+            id='fotos'
             ref={ref}
             className={`bg-[#141414] min-h-screen text-white py-20 px-4 transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
         >

@@ -1,4 +1,5 @@
 import { useNews } from '../../../hooks/useNews';
+import { SectionSkeleton, SectionError } from '../SectionState';
 import { useInView } from '../../../hooks/useInView';
 import { NewsArticle } from './NewsArticle';
 import { Fragment } from 'react';
@@ -36,23 +37,16 @@ export function NewsList() {
     }
 
     if (loading) {
-        return (
-            <div className="min-h-screen  flex items-center justify-center">
-                <p className="text-white text-xl">Cargando noticias...</p>
-            </div>
-        );
+        return <SectionSkeleton id='noticias' title='Últimas Noticias' className='bg-[#141414]' />
     }
 
     if (error) {
-        return (
-            <div className="py-20 px-4 text-center">
-                <p className="text-gray-400 text-lg">No pudimos cargar las noticias. Probá recargar la página.</p>
-            </div>
-        )
+        return <SectionError id='noticias' title='Últimas Noticias' className='bg-[#141414]' what='las noticias' />
     }
 
     return (
         <section
+            id='noticias'
             ref={ref}
             className={`bg-[#141414] min-h-screen text-white py-20 px-4 transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
         >

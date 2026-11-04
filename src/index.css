@@ -6,6 +6,17 @@ body,
   background-color: #1f1f1f;
 }
 
+/* Los links del menú no quedan tapados por el header fijo */
+html {
+  scroll-padding-top: 4rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, San Francisco, Helvetica Neue, Helvetica, Ubuntu, Roboto, Noto, Segoe UI, Arial, sans-serif;
 }
