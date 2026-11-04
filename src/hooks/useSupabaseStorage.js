@@ -4,7 +4,8 @@ import { compressImage } from "../utils/compressImage";
 const BUCKET_MAP = {
     'image': 'images',
     'video': 'videos',
-    'audio': 'audio'
+    'audio': 'audio',
+    'application': 'documents', // PDFs (rider, gacetilla)
 }
 
 // Supabase rechaza keys con tildes y algunos símbolos; los espacios terminan como %20 en la URL
@@ -15,10 +16,12 @@ const sanitizeFileName = (name) => name
     .toLowerCase()
 
 export function useSupabaseStorage() {
-    const upload = async (originalFile) => {
-        const file = await compressImage(originalFile)
+    // compress: false sube el archivo tal cual (fotos de prensa en alta)
+    const upload = async (originalFile, { compress = true } = {}) => {
+        const file = compress ? await compressImage(originalFile) : originalFile
         const type = file.type.split('/')[0]
         const bucket = BUCKET_MAP[type]
+        if (!bucket) throw new Error(`Tipo de archivo no soportado: ${file.type || file.name}`)
         const path = `${Date.now()}-${sanitizeFileName(file.name)}`
 
         const { error } = await supabase.storage.from(bucket).upload(path, file)

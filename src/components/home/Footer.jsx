@@ -17,11 +17,10 @@ export function Footer() {
                         </p>
 
                         <a
-                            href="/oeisis-gacetilla.pdf"
-                            download
+                            href="/prensa"
                             className="inline-block mt-4 text-gray-400 hover:text-white hover:underline transition text-sm"
                         >
-                            Descargar gacetilla (PDF)
+                            Kit de prensa: bio, fotos, rider y gacetilla
                         </a>
                     </div>
 

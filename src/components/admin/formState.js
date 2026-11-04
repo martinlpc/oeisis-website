@@ -1,4 +1,5 @@
 import { getYouTubeId } from '../../utils/youtube'
+import { DEFAULT_TIME_ZONE } from '../../utils/timezones'
 
 // Estados iniciales y helpers compartidos por los formularios del admin
 
@@ -11,6 +12,7 @@ export const EMPTY_SHOW = {
     city: '',
     province: 'Buenos Aires',
     country: 'Argentina',
+    timeZone: DEFAULT_TIME_ZONE,
     ticketLink: '',
     freeEntry: false,
     description: '',

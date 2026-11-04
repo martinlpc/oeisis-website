@@ -50,13 +50,13 @@ export function Panel({ title, children, className = '' }) {
 }
 
 // Botón que abre el selector de archivos
-export function FilePicker({ id, label, multiple = false, uploading = false, onFiles }) {
+export function FilePicker({ id, label, multiple = false, uploading = false, onFiles, accept = 'image/*' }) {
     return (
         <>
             <input
                 id={id}
                 type="file"
-                accept="image/*"
+                accept={accept}
                 multiple={multiple}
                 disabled={uploading}
                 className="sr-only"

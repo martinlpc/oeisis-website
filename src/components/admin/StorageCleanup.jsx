@@ -6,8 +6,8 @@ import { extractStorageRefs, findOrphans } from '../../utils/storageRefs'
 import { useToast, useConfirm } from './useFeedback'
 import { Button } from './ui'
 
-const BUCKETS = ['images', 'videos', 'audio']
-const COLLECTIONS = ['photos', 'news', 'featured', 'shows', 'videos']
+const BUCKETS = ['images', 'videos', 'audio', 'documents']
+const COLLECTIONS = ['photos', 'news', 'featured', 'shows', 'videos', 'press']
 
 const formatSize = (bytes) => bytes > 1024 * 1024
     ? `${(bytes / 1024 / 1024).toFixed(1)} MB`

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 
 const LINKS = [
-    { href: '#upcoming-shows', label: 'Shows' },
-    { href: '#noticias', label: 'Noticias' },
-    { href: '#videos', label: 'Videos' },
-    { href: '#fotos', label: 'Fotos' },
-    { href: '#contacto', label: 'Contacto' },
+    { href: '/#upcoming-shows', label: 'Shows' },
+    { href: '/#noticias', label: 'Noticias' },
+    { href: '/#videos', label: 'Videos' },
+    { href: '/#fotos', label: 'Fotos' },
+    { href: '/#contacto', label: 'Contacto' },
 ]
 
 // nextShow: el próximo show; si tiene link de entradas, aparece el botón "Entradas"
@@ -46,7 +46,7 @@ export function Navbar({ nextShow }) {
             className={`fixed inset-x-0 top-0 z-40 transition-colors duration-300 ${solid ? 'bg-[#141414]/95 backdrop-blur border-b border-white/10' : 'bg-transparent'}`}
         >
             <nav className="max-w-6xl mx-auto h-16 px-4 flex items-center justify-between" aria-label="Principal">
-                <a href="#top" className="block w-16 h-8" aria-label="Oeisis, ir al inicio" onClick={() => setOpen(false)}>
+                <a href="/#top" className="block w-16 h-8" aria-label="Oeisis, ir al inicio" onClick={() => setOpen(false)}>
                     <svg className="w-full h-full" viewBox="0 30 100 50" aria-hidden="true">
                         <image width="100" height="100" href="/logo.svg" />
                     </svg>

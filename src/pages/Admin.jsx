@@ -13,6 +13,7 @@ import { VideoManager } from '../components/admin/VideoManager';
 import { PhotoForm } from '../components/admin/PhotoForm';
 import { PhotoManager } from '../components/admin/PhotoManager';
 import { StorageCleanup } from '../components/admin/StorageCleanup';
+import { PressForm } from '../components/admin/PressForm';
 
 // Cada tab: formulario de alta a la izquierda y lista a la derecha
 function CreateAndList({ createTitle, create, listTitle, list }) {
@@ -30,6 +31,7 @@ const TABS = [
     { id: 'noticias', label: 'Noticias', render: () => <CreateAndList createTitle="Nueva noticia" create={<NewsForm />} listTitle="Noticias" list={<NewsManager />} /> },
     { id: 'videos', label: 'Videos', render: () => <CreateAndList createTitle="Nuevo video" create={<VideoForm />} listTitle="Videos" list={<VideoManager />} /> },
     { id: 'fotos', label: 'Fotos', render: () => <CreateAndList createTitle="Nueva foto" create={<PhotoForm />} listTitle="Fotos" list={<PhotoManager />} /> },
+    { id: 'prensa', label: 'Prensa', render: () => <Panel title="Kit de prensa" className="max-w-3xl"><PressForm /></Panel> },
     { id: 'mantenimiento', label: 'Mantenimiento', render: () => <Panel title="Archivos sin uso en Supabase" className="max-w-5xl"><StorageCleanup /></Panel> },
 ];
 

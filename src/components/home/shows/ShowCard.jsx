@@ -1,44 +1,8 @@
+import { Link } from "react-router-dom";
 import { useInView } from "../../../hooks/useInView";
 import { getShowISO } from "../../../hooks/useShows";
-
-// "2026-11-20" -> { weekday: 'VIE', day: '20', month: 'NOV', year: 2026 }
-function getDateParts(show) {
-    const iso = getShowISO(show);
-    if (!iso) return null;
-    const [year, month, day] = iso.split('-').map(Number);
-    const date = new Date(year, month - 1, day);
-    const short = (options) => date.toLocaleDateString('es-AR', options).replace('.', '').toUpperCase();
-    return {
-        weekday: short({ weekday: 'short' }),
-        day: String(day).padStart(2, '0'),
-        month: short({ month: 'short' }),
-        year,
-    };
-}
-
-function TicketAction({ show }) {
-    const base = 'block w-full md:w-64 text-center font-bold whitespace-nowrap py-3 px-4';
-
-    if (show.ticketLink) {
-        return (
-            <a
-                href={show.ticketLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`btn-double-border text-white transition ${base}`}
-            >
-                {/* Un show libre puede tener link para reservar lugar */}
-                {show.freeEntry ? 'Entrada libre · Reservar' : 'Comprar entradas'}
-            </a>
-        );
-    }
-
-    if (show.freeEntry) {
-        return <p className={`text-white border border-white ${base}`}>Entrada libre</p>;
-    }
-
-    return <p className={`text-gray-400 font-semibold border border-white/15 ${base}`}>Entradas próximamente</p>;
-}
+import { getDateParts, formatShowTime } from "../../../utils/showDetails";
+import { TicketAction } from "./TicketAction";
 
 export function ShowCard({ show }) {
     const [ref, isInView] = useInView();
@@ -46,7 +10,7 @@ export function ShowCard({ show }) {
     const showYear = date && date.year !== new Date().getFullYear();
     const { venue, city, address } = show.location || {};
     const place = [venue, city].filter(Boolean).join(' · ');
-    const details = [show.time && `${show.time} hs`, address].filter(Boolean).join(' · ');
+    const details = [formatShowTime(show), address].filter(Boolean).join(' · ');
 
     return (
         <article
@@ -65,12 +29,19 @@ export function ShowCard({ show }) {
                 <span className="w-16 md:w-20 text-center text-gray-400">{show.date}</span>
             )}
 
-            {/* Título y lugar */}
+            {/* Título y lugar; el título lleva a la página del show */}
             <div className="min-w-0">
-                <h3 className="text-xl md:text-2xl font-bold text-white">{show.title}</h3>
+                <h3 className="text-xl md:text-2xl font-bold text-white">
+                    <Link to={`/shows/${show.id}`} className="hover:underline underline-offset-4">
+                        {show.title}
+                    </Link>
+                </h3>
                 {place && <p className="text-gray-200 mt-1">{place}</p>}
                 {details && <p className="text-sm text-gray-400 mt-1">{details}</p>}
-                {show.description && <p className="text-sm text-gray-400 mt-3">{show.description}</p>}
+                {show.description && <p className="text-sm text-gray-400 mt-3 line-clamp-2">{show.description}</p>}
+                <Link to={`/shows/${show.id}`} className="inline-block mt-3 text-sm text-gray-300 underline underline-offset-4 hover:text-white">
+                    Cómo llegar y agendar
+                </Link>
             </div>
 
             {/* Entradas: abajo a lo ancho en mobile, a la derecha en desktop */}
