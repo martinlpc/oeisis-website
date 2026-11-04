@@ -8,6 +8,7 @@ import { ScrollManager } from './components/ScrollManager';
 const Admin = lazy(() => import('./pages/Admin').then(module => ({ default: module.Admin })))
 const Login = lazy(() => import('./pages/Login').then(module => ({ default: module.Login })))
 const ShowPage = lazy(() => import('./pages/ShowPage').then(module => ({ default: module.ShowPage })))
+const PressPage = lazy(() => import('./pages/PressPage').then(module => ({ default: module.PressPage })))
 const NotFound = lazy(() => import('./pages/NotFound').then(module => ({ default: module.NotFound })))
 // PrivateRoute usa Firebase Auth: cargarlo lazy lo saca del bundle de la home
 const PrivateRoute = lazy(() => import('./PrivateRoute').then(module => ({ default: module.PrivateRoute })))
@@ -29,6 +30,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/shows/:id" element={<ShowPage />} />
+          <Route path="/prensa" element={<PressPage />} />
           <Route path="/login" element={<Login />} />
           <Route
             path='/admin'
