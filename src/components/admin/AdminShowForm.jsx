@@ -6,6 +6,7 @@ import { Button } from './ui';
 import { ShowFields } from './ShowEditForm';
 import { isValidTimeZone } from '../../utils/timezones';
 import { useTrackedUploads } from './useTrackedUploads';
+import { makeOgImage } from '../../utils/ogImage';
 
 export function AdminShowForm() {
     const [formData, setFormData] = useState(EMPTY_SHOW);
@@ -17,8 +18,11 @@ export function AdminShowForm() {
     const handleFlyerFiles = async ([file]) => {
         try {
             const url = await files.uploadFile(file, { compressOptions: { type: 'image/jpeg', maxSize: 1200 } });
+            // Versión 1200x630 para la vista previa en redes (el flyer entero sobre fondo desenfocado)
+            const ogUrl = await files.uploadFile(await makeOgImage(file), { compress: false });
             files.drop(formData.flyer);
-            setFormData(prev => ({ ...prev, flyer: url }));
+            files.drop(formData.flyerOg);
+            setFormData(prev => ({ ...prev, flyer: url, flyerOg: ogUrl }));
         } catch (error) {
             toast.error(`No se pudo subir el flyer: ${error.message}`);
         }
@@ -26,7 +30,8 @@ export function AdminShowForm() {
 
     const removeFlyer = () => {
         files.drop(formData.flyer);
-        setFormData(prev => ({ ...prev, flyer: '' }));
+        files.drop(formData.flyerOg);
+        setFormData(prev => ({ ...prev, flyer: '', flyerOg: '' }));
     };
 
     const handleSubmit = async (e) => {

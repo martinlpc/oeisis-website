@@ -93,8 +93,14 @@ export function ShowFields({ data, onChange, flyerUploading = false, onFlyerFile
                 <div>
                     <span className="block text-xs uppercase tracking-widest text-gray-400 mb-1.5">Flyer (opcional)</span>
                     {data.flyer ? (
-                        <div className="flex items-start gap-3">
+                        <div className="flex flex-wrap items-start gap-3">
                             <img src={data.flyer} alt="" className="w-28 max-h-40 object-contain bg-black rounded" />
+                            {data.flyerOg && (
+                                <figure>
+                                    <img src={data.flyerOg} alt="" className="w-48 aspect-[1200/630] object-cover rounded border border-white/10" />
+                                    <figcaption className="text-xs text-gray-500 mt-1">Al compartir el link</figcaption>
+                                </figure>
+                            )}
                             <Button variant="danger" onClick={onFlyerRemove}>Quitar flyer</Button>
                         </div>
                     ) : (

@@ -65,7 +65,10 @@ async function metaFor(url) {
             title: `${show.title} · ${SITE}`,
             ogTitle: `${SITE}: ${show.title}`,
             description: describeShow(show),
-            ...(show.flyer ? { image: absolute(show.flyer, origin), imageIsDefault: false } : {}),
+            // flyerOg ya viene en 1200x630; los flyers viejos sin esa versión se usan tal cual
+            ...(show.flyerOg
+                ? { image: absolute(show.flyerOg, origin), imageIsDefault: false, imageSize: { width: 1200, height: 630, type: 'image/jpeg' } }
+                : show.flyer ? { image: absolute(show.flyer, origin), imageIsDefault: false } : {}),
         }
     }
 
@@ -76,10 +79,18 @@ function setTag(html, pattern, tag) {
     return pattern.test(html) ? html.replace(pattern, tag) : html.replace('</head>', `    ${tag}\n  </head>`)
 }
 
+// Corta en una palabra completa: las redes muestran ~125 caracteres, Google ~160
+function shorten(text, max) {
+    if (text.length <= max) return text
+    const cut = text.slice(0, max - 1)
+    return `${cut.slice(0, cut.lastIndexOf(' ')).replace(/[\s.,;:·-]+$/, '')}…`
+}
+
 function injectMeta(html, meta) {
     const title = escape(meta.title)
     const ogTitle = escape(meta.ogTitle || meta.title)
-    const description = escape(meta.description.length > 300 ? `${meta.description.slice(0, 297)}...` : meta.description)
+    const description = escape(shorten(meta.description, 160))
+    const socialDescription = escape(shorten(meta.description, 120))
     const image = escape(meta.image)
     const url = escape(meta.url)
 
@@ -89,12 +100,16 @@ function injectMeta(html, meta) {
     out = setTag(out, /<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${url}" />`)
     out = setTag(out, /<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${url}" />`)
     out = setTag(out, /<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${ogTitle}" />`)
-    out = setTag(out, /<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${description}" />`)
+    out = setTag(out, /<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${socialDescription}" />`)
     out = setTag(out, /<meta property="og:image" [^>]*>/, `<meta property="og:image" content="${image}" />`)
     out = setTag(out, /<meta name="twitter:title"[^>]*>/, `<meta name="twitter:title" content="${ogTitle}" />`)
-    out = setTag(out, /<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${description}" />`)
+    out = setTag(out, /<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${socialDescription}" />`)
     out = setTag(out, /<meta name="twitter:image"[^>]*>/, `<meta name="twitter:image" content="${image}" />`)
-    if (!meta.imageIsDefault) {
+    if (meta.imageSize) {
+        out = setTag(out, /<meta property="og:image:width"[^>]*>/, `<meta property="og:image:width" content="${meta.imageSize.width}" />`)
+        out = setTag(out, /<meta property="og:image:height"[^>]*>/, `<meta property="og:image:height" content="${meta.imageSize.height}" />`)
+        out = setTag(out, /<meta property="og:image:type"[^>]*>/, `<meta property="og:image:type" content="${meta.imageSize.type}" />`)
+    } else if (!meta.imageIsDefault) {
         // Las medidas declaradas son las de og-image.png; con otra imagen se quitan para que la red la mida
         out = out.replace(/\s*<meta property="og:image:(width|height|type)"[^>]*>/g, '')
     }

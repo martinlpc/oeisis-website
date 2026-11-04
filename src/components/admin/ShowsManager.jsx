@@ -8,6 +8,7 @@ import { Tag, StatusText } from './ui';
 import { DEFAULT_TIME_ZONE, isValidTimeZone } from '../../utils/timezones';
 import { formatShowTime } from '../../utils/showDetails';
 import { useTrackedUploads } from './useTrackedUploads';
+import { makeOgImage } from '../../utils/ogImage';
 import { useSupabaseStorage } from '../../hooks/useSupabaseStorage';
 
 // Documento de Firestore -> estado plano del formulario
@@ -26,6 +27,7 @@ const toForm = (show) => ({
     freeEntry: Boolean(show.freeEntry),
     description: show.description || '',
     flyer: show.flyer || '',
+    flyerOg: show.flyerOg || '',
 });
 
 // Estado plano -> campos a actualizar en Firestore
@@ -46,6 +48,7 @@ const toUpdate = (form) => ({
     freeEntry: form.freeEntry,
     description: form.description,
     flyer: form.flyer,
+    flyerOg: form.flyerOg,
 });
 
 export function ShowsManager() {
@@ -83,8 +86,11 @@ export function ShowsManager() {
     const handleFlyerFiles = async ([file]) => {
         try {
             const url = await files.uploadFile(file, { compressOptions: { type: 'image/jpeg', maxSize: 1200 } });
+            // Versión 1200x630 para la vista previa en redes (el flyer entero sobre fondo desenfocado)
+            const ogUrl = await files.uploadFile(await makeOgImage(file), { compress: false });
             files.drop(editData.flyer);
-            setEditData(prev => ({ ...prev, flyer: url }));
+            files.drop(editData.flyerOg);
+            setEditData(prev => ({ ...prev, flyer: url, flyerOg: ogUrl }));
         } catch (error) {
             toast.error(`No se pudo subir el flyer: ${error.message}`);
         }
@@ -92,7 +98,8 @@ export function ShowsManager() {
 
     const removeFlyer = () => {
         files.drop(editData.flyer);
-        setEditData(prev => ({ ...prev, flyer: '' }));
+        files.drop(editData.flyerOg);
+        setEditData(prev => ({ ...prev, flyer: '', flyerOg: '' }));
     };
 
     const handleSave = async (e) => {
@@ -123,7 +130,7 @@ export function ShowsManager() {
         if (!ok) return;
         try {
             await deleteShow(show.id);
-            if (show.flyer) removeByUrl(show.flyer).catch(() => {});
+            [show.flyer, show.flyerOg].filter(Boolean).forEach(url => removeByUrl(url).catch(() => {}));
             toast.success('Show eliminado');
         } catch (error) {
             toast.error(`No se pudo eliminar: ${error.message}`);
