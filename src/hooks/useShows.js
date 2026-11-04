@@ -1,4 +1,5 @@
-import { collection, query, doc, addDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, doc, getDoc, addDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 import { db } from '../firebase/config';
 import { useCollection } from './useCollection';
 
@@ -85,4 +86,28 @@ export function useShows({ upcomingOnly = false, realtime = true } = {}) {
         label: 'shows',
     });
     return { shows, loading, error, createShow, updateShow, deleteShow };
+}
+
+// Un show por id (página del show). status: loading | ready | not-found | error
+export function useShow(id) {
+    // Se guarda el id junto al resultado: si cambia el id, el resultado viejo no aplica y se ve "loading"
+    const [result, setResult] = useState({ id: null, show: null, status: 'loading' });
+
+    useEffect(() => {
+        let cancelled = false;
+        getDoc(doc(db, 'shows', id))
+            .then(snapshot => {
+                if (cancelled) return;
+                setResult(snapshot.exists()
+                    ? { id, show: { id: snapshot.id, ...snapshot.data() }, status: 'ready' }
+                    : { id, show: null, status: 'not-found' });
+            })
+            .catch(error => {
+                console.error('Error fetching show:', error);
+                if (!cancelled) setResult({ id, show: null, status: 'error' });
+            });
+        return () => { cancelled = true; };
+    }, [id]);
+
+    return result.id === id ? result : { show: null, status: 'loading' };
 }
