@@ -23,10 +23,15 @@ export const STRINGS = {
         'hero.showsLabel': 'shows',
 
         'footer.tagline': 'Tributo a Oasis, desde Argentina para todo el mundo. La mejor experiencia del clásico británico con una propuesta única y memorable.',
-        'footer.pressKit': 'Kit de prensa: bio, fotos, rider y gacetilla',
+        'footer.book': 'Contrataciones',
+        'footer.pressKit': 'Kit de prensa',
+        'footer.press': 'Prensa',
+        'footer.site': 'Sitio',
         'footer.follow': 'Seguinos',
         'footer.contact': 'Contacto',
+        'footer.bookingLabel': 'Contrataciones y prensa',
         'footer.rights': 'Todos los derechos reservados.',
+        'footer.disclaimer': 'Oasis, la banda mundialmente conocida, y todas las marcas relacionadas son marcas registradas y pertenecen a sus respectivos dueños. Este sitio no está afiliado, asociado, autorizado, respaldado ni patrocinado por los propietarios de la marca Oasis.',
 
         'featured.show': 'Próximamente',
         'featured.video': 'Nuevo video',
@@ -164,10 +169,15 @@ export const STRINGS = {
         'hero.showsLabel': 'shows',
 
         'footer.tagline': 'Oasis tribute from Argentina to the world. The best of the British classic, in a unique and memorable show.',
-        'footer.pressKit': 'Press kit: bio, photos, rider and press release',
+        'footer.book': 'Book the band',
+        'footer.pressKit': 'Press kit',
+        'footer.press': 'Press',
+        'footer.site': 'Site',
         'footer.follow': 'Follow us',
         'footer.contact': 'Contact',
+        'footer.bookingLabel': 'Booking and press',
         'footer.rights': 'All rights reserved.',
+        'footer.disclaimer': 'Oasis, the world-renowned band, and all related trademarks are registered trademarks and belong to their respective owners. This site is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the owners of the Oasis trademarks.',
 
         'featured.show': 'Coming up',
         'featured.video': 'New video',
