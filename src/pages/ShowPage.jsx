@@ -8,6 +8,8 @@ import { track } from '../utils/analytics';
 import {
     getDateParts, getPlace, getMapsUrl, getMapEmbedUrl, getGoogleCalendarUrl, getIcsContent, getEventJsonLd, formatShowTime,
 } from '../utils/showDetails';
+import { useLang } from '../i18n/lang';
+import { localize } from '../i18n/content';
 
 const secondaryButton = 'inline-flex items-center justify-center gap-2 border border-white/25 hover:bg-white/10 px-4 py-3 text-sm font-semibold transition';
 
@@ -23,6 +25,7 @@ function downloadIcs(show, pageUrl) {
 
 function ShareButton({ title, url }) {
     const [copied, setCopied] = useState(false);
+    const { t } = useLang();
 
     const share = async () => {
         track('compartir-show');
@@ -42,18 +45,19 @@ function ShareButton({ title, url }) {
 
     return (
         <button type="button" onClick={share} className={secondaryButton}>
-            {copied ? 'Link copiado' : 'Compartir'}
+            {copied ? t('show.copied') : t('show.share')}
         </button>
     );
 }
 
 function PageShell({ children }) {
+    const { t, path } = useLang();
     return (
         <div className="min-h-screen text-white flex flex-col">
             <Navbar />
             <main className="flex-1 pt-28 pb-20 md:pt-36 md:pb-28 px-4 md:px-6">
                 <div className="max-w-4xl mx-auto">
-                    <Link to="/#upcoming-shows" className="text-sm text-gray-400 hover:text-white">← Todos los shows</Link>
+                    <Link to={path('/#upcoming-shows')} className="text-sm text-gray-400 hover:text-white">{t('show.back')}</Link>
                     {children}
                 </div>
             </main>
@@ -64,7 +68,9 @@ function PageShell({ children }) {
 
 export function ShowPage() {
     const { id } = useParams();
-    const { show, status } = useShow(id);
+    const { show: raw, status } = useShow(id);
+    const { lang, t } = useLang();
+    const show = localize('shows', raw, lang);
 
     if (status === 'loading') {
         return (
@@ -80,35 +86,35 @@ export function ShowPage() {
     if (status !== 'ready') {
         return (
             <PageShell>
-                <title>Show no encontrado · Oeisis</title>
+                <title>{`${t('show.notFoundTitle')} · Oeisis`}</title>
                 <h1 className="text-3xl font-bold mt-10 mb-4">
-                    {status === 'not-found' ? 'No encontramos este show' : 'No pudimos cargar el show'}
+                    {status === 'not-found' ? t('show.notFound') : t('show.loadError')}
                 </h1>
-                <p className="text-gray-400">Puede que se haya borrado o que el link esté mal. Fijate en la lista de shows.</p>
+                <p className="text-gray-400">{t('show.notFoundHint')}</p>
             </PageShell>
         );
     }
 
     const pageUrl = window.location.href;
     const past = isPastShow(show);
-    const date = getDateParts(show);
+    const date = getDateParts(show, lang);
     const { venue, address, city, province } = getPlace(show);
     const mapsUrl = getMapsUrl(show);
-    const mapEmbedUrl = getMapEmbedUrl(show);
+    const mapEmbedUrl = getMapEmbedUrl(show, lang);
     const calendarUrl = getGoogleCalendarUrl(show, pageUrl);
     const jsonLd = getEventJsonLd(show, pageUrl);
-    const description = `${date?.long || show.date}${venue ? ` en ${venue}` : ''}${city ? `, ${city}` : ''}.`;
+    const description = `${date?.long || show.date}${venue ? t('show.at', { venue }) : ''}${city ? `, ${city}` : ''}.`;
 
     return (
         <PageShell>
             {/* React 19 lleva title y meta al <head> */}
             <title>{`${show.title} · Oeisis`}</title>
-            <meta name="description" content={`Oeisis, tributo a Oasis: ${description}`} />
+            <meta name="description" content={t('show.meta', { text: description })} />
             {jsonLd && <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>}
 
             <article className="mt-10">
                 <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-4">
-                    {past ? 'Show anterior' : 'Próximo show'}
+                    {past ? t('show.past') : t('show.upcoming')}
                 </p>
                 <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-8">{show.title}</h1>
 
@@ -116,23 +122,23 @@ export function ShowPage() {
                 <div className={show.flyer ? 'md:grid md:grid-cols-[minmax(0,1fr)_16rem] md:gap-10 md:items-start' : ''}>
                     {show.flyer && (
                         <a href={show.flyer} target="_blank" rel="noopener noreferrer" className="block md:order-2 mb-8 md:mb-0 md:sticky md:top-24">
-                            <img src={show.flyer} alt={`Flyer de ${show.title}`} className="w-full max-h-[70vh] object-contain mx-auto rounded" />
+                            <img src={show.flyer} alt={t('show.flyerAlt', { title: show.title })} className="w-full max-h-[70vh] object-contain mx-auto rounded" />
                         </a>
                     )}
                     <div className="md:order-1 min-w-0">
                         <div className="grid sm:grid-cols-2 gap-8 border-y border-white/10 py-8 mb-8">
                             <div>
-                                <p className="text-xs uppercase tracking-widest text-gray-400 mb-2">Cuándo</p>
+                                <p className="text-xs uppercase tracking-widest text-gray-400 mb-2">{t('show.when')}</p>
                                 <p className="text-xl font-semibold first-letter:uppercase">{date?.long || show.date}</p>
-                                {show.time && <p className="text-gray-300">{formatShowTime(show)}</p>}
+                                {show.time && <p className="text-gray-300">{formatShowTime(show, lang)}</p>}
                             </div>
                             <div>
-                                <p className="text-xs uppercase tracking-widest text-gray-400 mb-2">Dónde</p>
+                                <p className="text-xs uppercase tracking-widest text-gray-400 mb-2">{t('show.where')}</p>
                                 {venue && <p className="text-xl font-semibold">{venue}</p>}
                                 <p className="text-gray-300">{[address, city, province].filter(Boolean).join(', ')}</p>
                                 {mapsUrl && (
                                     <a href={mapsUrl} target="_blank" rel="noopener noreferrer" data-umami-event="ver-mapa" className="inline-block mt-2 text-sm underline underline-offset-4 text-gray-300 hover:text-white">
-                                        Ver en el mapa
+                                        {t('show.viewMap')}
                                     </a>
                                 )}
                             </div>
@@ -143,17 +149,17 @@ export function ShowPage() {
                         )}
 
                         {past ? (
-                            <p className="text-gray-400 mb-6">Este show ya pasó. Mirá los próximos en la lista de shows.</p>
+                            <p className="text-gray-400 mb-6">{t('show.pastNote')}</p>
                         ) : (
                             <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
                                 <TicketAction show={show} className="w-full sm:w-auto sm:min-w-56" />
                                 {calendarUrl && (
                                     <a href={calendarUrl} target="_blank" rel="noopener noreferrer" data-umami-event="agendar" data-umami-event-tipo="google" className={secondaryButton}>
-                                        Agregar a Google Calendar
+                                        {t('show.calendar')}
                                     </a>
                                 )}
                                 <button type="button" onClick={() => { downloadIcs(show, pageUrl); track('agendar', { tipo: 'ics' }); }} className={secondaryButton}>
-                                    Descargar evento (.ics)
+                                    {t('show.ics')}
                                 </button>
                                 <ShareButton title={`Oeisis: ${show.title}`} url={pageUrl} />
                             </div>
@@ -166,7 +172,7 @@ export function ShowPage() {
                     <div className="mt-12 aspect-[4/3] sm:aspect-[16/9] md:aspect-[21/9] overflow-hidden rounded-lg border border-white/10 bg-white/5">
                         <iframe
                             src={mapEmbedUrl}
-                            title={`Mapa: ${venue || city || show.title}`}
+                            title={t('show.map', { place: venue || city || show.title })}
                             loading="lazy"
                             referrerPolicy="no-referrer-when-downgrade"
                             allowFullScreen

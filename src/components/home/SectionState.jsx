@@ -1,3 +1,5 @@
+import { useLang } from '../../i18n/lang'
+
 // Estados de carga y error con la misma forma que la sección real:
 // mantienen el id (para los links del menú) y el alto, así la página no salta.
 
@@ -24,22 +26,24 @@ function SkeletonBlocks({ variant, count }) {
 }
 
 export function SectionSkeleton({ id, title, className = '', variant = 'list', count = 2, fullHeight = true }) {
+    const { t } = useLang()
     return (
         <section id={id} aria-busy="true" className={`${fullHeight ? 'min-h-screen' : ''} text-white py-20 px-4 ${className}`}>
             <div className={`${variant === 'grid' ? 'max-w-6xl' : 'max-w-4xl'} mx-auto`}>
                 {title && <h2 className={TITLE_CLASS}>{title}</h2>}
                 <SkeletonBlocks variant={variant} count={count} />
-                <span className="sr-only">Cargando…</span>
+                <span className="sr-only">{t('common.loading')}</span>
             </div>
         </section>
     )
 }
 
 export function SectionError({ id, title, className = '', what }) {
+    const { t } = useLang()
     return (
         <section id={id} className={`text-white py-20 px-4 text-center ${className}`}>
             {title && <h2 className={TITLE_CLASS}>{title}</h2>}
-            <p className="text-gray-400 text-lg">No pudimos cargar {what}. Probá recargar la página.</p>
+            <p className="text-gray-400 text-lg">{t('common.loadError', { what })}</p>
         </section>
     )
 }

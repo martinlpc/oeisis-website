@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react"
 import { usePrefersReducedMotion } from "../../hooks/usePrefersReducedMotion"
+import { useLang } from "../../i18n/lang"
 
 const HERO_VIDEO_URL = "/videos/hero-720.mp4"
 // Video para mobile (más liviano)
@@ -10,6 +11,7 @@ const POSTER_URL = "/images/hero-poster.jpg"
 export function Hero() {
     const parallaxRef = useRef(null)
     const reducedMotion = usePrefersReducedMotion()
+    const { lang, t } = useLang()
 
     // Parallax: escribe el transform directo en el DOM, sin re-renderizar el componente
     useEffect(() => {
@@ -78,8 +80,14 @@ export function Hero() {
                     <span className="sr-only">Oeisis</span>
                     <svg className="w-full" viewBox="0 30 100 50" aria-hidden="true"><image width="100" height="100" href="/logo.svg" /></svg>
                 </h1>
-                <p className="text-lg mb-2">Banda homenaje a Oasis</p>
-                <p className="text-lg mb-16">Oasis tribute band</p>
+                {lang === 'en' ? (
+                    <p className="text-lg mb-16">Oasis tribute band</p>
+                ) : (
+                    <>
+                        <p className="text-lg mb-2">Banda homenaje a Oasis</p>
+                        <p className="text-lg mb-16">Oasis tribute band</p>
+                    </>
+                )}
             </div>
 
             {/** Flecha abajo */}
@@ -89,9 +97,9 @@ export function Hero() {
                     destination?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' });
                 }}
                 className="absolute bottom-16 bg-white/20 rounded-full p-3 hover:bg-white/30 transition opacity-70 motion-safe:animate-bounce flex flex-col items-center justify-center gap-2"
-                aria-label="Ir a shows"
+                aria-label={t('hero.toShows')}
             >
-                <span className="text-xs font-semibold tracking-widest uppercase">shows</span>
+                <span className="text-xs font-semibold tracking-widest uppercase">{t('hero.showsLabel')}</span>
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-8 w-8 text-white"

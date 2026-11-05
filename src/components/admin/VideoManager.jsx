@@ -6,6 +6,8 @@ import { useToast, useConfirm } from './useFeedback';
 import { ListItem, ListRow, EditActions } from './ListItem';
 import { VideoFields } from './VideoEditForm';
 import { Tag, StatusText } from './ui';
+import { warnIfNotTranslated } from './englishFeedback';
+import { EnglishPanel, EnglishTag } from './EnglishPanel';
 
 export function VideoManager() {
     const { videos, loading, error, updateVideo, deleteVideo } = useVideos();
@@ -40,8 +42,9 @@ export function VideoManager() {
         }
         setSaving(true);
         try {
-            await updateVideo(editingId, editData);
+            const result = await updateVideo(editingId, editData);
             toast.success('Video actualizado');
+            warnIfNotTranslated(toast, result);
             cancelEdit();
         } catch (error) {
             toast.error(`No se pudo guardar: ${error.message}`);
@@ -72,6 +75,7 @@ export function VideoManager() {
                     {editingId === video.id ? (
                         <form onSubmit={handleSave} className="space-y-4">
                             <VideoFields data={editData} onChange={fieldChange(setEditData)} />
+                            <EnglishPanel key={video.enHash} collection="videos" item={video} path={['videos', video.id]} />
                             <EditActions saving={saving} onCancel={cancelEdit} />
                         </form>
                     ) : (
@@ -80,7 +84,7 @@ export function VideoManager() {
                             meta={video.date}
                             text={video.description}
                             thumbnail={getThumbnailUrl(video.embedUrl, 'mqdefault')}
-                            tags={video.featured && <Tag>Destacado</Tag>}
+                            tags={<>{video.featured && <Tag>Destacado</Tag>}<EnglishTag collection="videos" item={video} /></>}
                             onEdit={() => startEdit(video)}
                             onDelete={() => handleDelete(video)}
                         />

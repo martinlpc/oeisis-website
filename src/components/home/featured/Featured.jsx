@@ -2,18 +2,17 @@ import { useFeatured } from '../../../hooks/useFeatured'
 import { SectionSkeleton } from '../SectionState'
 import { useInView } from '../../../hooks/useInView'
 import { YouTubeEmbed } from '../../common/YouTubeEmbed'
+import { useLang } from '../../../i18n/lang'
+import { localize } from '../../../i18n/content'
 
 // Título de la sección según el tipo elegido en el admin
-const SECTION_TITLES = {
-    show: 'Próximamente',
-    video: 'Nuevo video',
-    news: 'Novedades',
-    custom: 'Destacado',
-}
+const SECTION_TITLES = ['show', 'video', 'news', 'custom']
 
 export function Featured() {
-    const { featured, loading, error } = useFeatured({ realtime: false })
+    const { featured: raw, loading, error } = useFeatured({ realtime: false })
     const [ref, isInView] = useInView()
+    const { lang, t } = useLang()
+    const featured = localize('featured', raw, lang)
 
     if (loading) {
         return <SectionSkeleton className='bg-[#141414]' count={1} fullHeight={false} />
@@ -51,7 +50,7 @@ export function Featured() {
 
                 <div className='md:flex-1 min-w-0'>
                     <h2 className='text-xs uppercase tracking-[0.3em] text-gray-400 mb-4'>
-                        {SECTION_TITLES[featured.type] || 'Destacado'}
+                        {t(`featured.${SECTION_TITLES.includes(featured.type) ? featured.type : 'custom'}`)}
                     </h2>
                     <h3 className='text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-6'>
                         {featured.title}

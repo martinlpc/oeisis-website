@@ -1,10 +1,13 @@
+import { useLang } from '../../../i18n/lang';
+
 export function PhotoCard({ photo, onOpen }) {
+    const { t } = useLang();
     return (
         <button
             type="button"
             onClick={onOpen}
             className="relative block w-full aspect-square overflow-hidden rounded-lg group focus-visible:outline-2 focus-visible:outline-white"
-            aria-label={`Ver foto: ${photo.title}`}
+            aria-label={t('photos.view', { title: photo.title })}
         >
             <img
                 src={photo.imageUrl}

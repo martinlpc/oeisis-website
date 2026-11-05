@@ -4,14 +4,17 @@ import { useInView } from '../../../hooks/useInView.js'
 import { getShowISO } from '../../../hooks/useShows.js'
 import { SectionSkeleton, SectionError } from '../SectionState.jsx'
 import { ShowCard } from './ShowCard.jsx'
+import { useLang } from '../../../i18n/lang'
+import { shortDate } from '../../../utils/showDetails'
 
 // Lista compacta de shows anteriores, agrupada por año (más recientes primero)
 function PastShows({ shows }) {
     const [open, setOpen] = useState(false)
+    const { lang, t, path } = useLang()
     if (shows.length === 0) return null
 
     const byYear = shows.reduce((groups, show) => {
-        const year = (getShowISO(show) || '').slice(0, 4) || 'Sin fecha'
+        const year = (getShowISO(show) || '').slice(0, 4) || t('shows.noDate')
         ;(groups[year] ||= []).push(show)
         return groups
     }, {})
@@ -25,7 +28,7 @@ function PastShows({ shows }) {
                 aria-controls='past-shows'
                 className='text-sm uppercase tracking-widest text-gray-300 hover:text-white border border-white/20 hover:border-white/50 px-6 py-3 transition'
             >
-                {open ? 'Ocultar shows anteriores' : `Ver shows anteriores (${shows.length})`}
+                {open ? t('shows.pastClose') : t('shows.pastOpen', { n: shows.length })}
             </button>
 
             {open && (
@@ -38,10 +41,10 @@ function PastShows({ shows }) {
                                 {list.map(show => (
                                     <li key={show.id} className='border-b border-white/10'>
                                         <Link
-                                            to={`/shows/${show.id}`}
+                                            to={path(`/shows/${show.id}`)}
                                             className='grid grid-cols-[5.5rem_1fr] sm:grid-cols-[6rem_1fr_auto] gap-x-4 gap-y-1 py-3 text-gray-300 hover:text-white'
                                         >
-                                            <span className='text-gray-400 tabular-nums'>{show.date?.replace(/ \d{4}$/, '')}</span>
+                                            <span className='text-gray-400 tabular-nums'>{shortDate(show, lang)}</span>
                                             <span className='font-semibold'>{show.title}</span>
                                             <span className='col-start-2 sm:col-start-auto text-sm text-gray-400'>
                                                 {[show.location?.venue, show.location?.city].filter(Boolean).join(', ')}
@@ -60,13 +63,14 @@ function PastShows({ shows }) {
 
 export function UpcomingShows({ shows, pastShows = [], loading, error }) {
     const [ref, isInView] = useInView()
+    const { t } = useLang()
 
     if (loading) {
-        return <SectionSkeleton id='upcoming-shows' title='Próximos shows' fullHeight={false} />
+        return <SectionSkeleton id='upcoming-shows' title={t('shows.title')} fullHeight={false} />
     }
 
     if (error) {
-        return <SectionError id='upcoming-shows' title='Próximos shows' what='los shows' />
+        return <SectionError id='upcoming-shows' title={t('shows.title')} what={t('shows.what')} />
     }
 
     return (
@@ -76,10 +80,10 @@ export function UpcomingShows({ shows, pastShows = [], loading, error }) {
             className={`bg-[#1f1f1f] text-white py-20 md:py-28 px-4 md:px-6 transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
         >
             <div className='max-w-5xl mx-auto'>
-                <h2 className='text-3xl md:text-4xl lg:text-5xl font-bold mb-10 md:mb-14 text-center'>Próximos shows</h2>
+                <h2 className='text-3xl md:text-4xl lg:text-5xl font-bold mb-10 md:mb-14 text-center'>{t('shows.title')}</h2>
 
                 {shows.length === 0 ? (
-                    <p className='text-center text-gray-400 text-lg'>No hay shows programados por ahora</p>
+                    <p className='text-center text-gray-400 text-lg'>{t('shows.empty')}</p>
                 ) : (
                     <div className='border-b border-white/10'>
                         {shows.map((show) => (

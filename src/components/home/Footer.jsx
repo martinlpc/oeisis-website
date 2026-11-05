@@ -1,5 +1,8 @@
+import { useLang } from '../../i18n/lang'
+
 export function Footer() {
     const currentYear = new Date().getFullYear()
+    const { lang, t, path } = useLang()
 
     return (
         <footer className="bg-[#141414] text-gray-300 border-t border-white/10">
@@ -13,20 +16,20 @@ export function Footer() {
                         </div>
 
                         <p className="text-sm leading-relaxed">
-                            Tributo a Oasis, desde Argentina para todo el mundo. La mejor experiencia del clásico británico con una propuesta única y memorable.
+                            {t('footer.tagline')}
                         </p>
 
                         <a
-                            href="/prensa"
+                            href={path('/prensa')}
                             className="inline-block mt-4 text-gray-400 hover:text-white hover:underline transition text-sm"
                         >
-                            Kit de prensa: bio, fotos, rider y gacetilla
+                            {t('footer.pressKit')}
                         </a>
                     </div>
 
                     {/* Redes Sociales */}
                     <div className="text-center md:text-left">
-                        <h2 className="text-white font-bold text-lg mb-4">Seguinos</h2>
+                        <h2 className="text-white font-bold text-lg mb-4">{t('footer.follow')}</h2>
                         <div className="flex gap-5 justify-center md:justify-start">
                             {/* YOUTUBE */}
                             <a href="https://www.youtube.com/@oeisis" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors" aria-label="YouTube">
@@ -49,7 +52,7 @@ export function Footer() {
 
                     {/* Contacto */}
                     <div className="text-center md:text-left">
-                        <h2 className="text-white font-bold text-lg mb-4">Contacto</h2>
+                        <h2 className="text-white font-bold text-lg mb-4">{t('footer.contact')}</h2>
                         <div className="space-y-2 text-sm">
                             <a
                                 href="mailto:jeronimo.blazer@gmail.com"
@@ -71,10 +74,14 @@ export function Footer() {
                 {/* Disclaimer */}
                 <div className="border-t border-white/10 pt-8 mb-8">
                     <p className="text-xs text-gray-500 leading-relaxed">
-                        Oasis, la banda mundialmente conocida, y todas las marcas relacionadas son marcas registradas y pertenecen a sus respectivos dueños. Este sitio no está
-                        afiliado, asociado, autorizado, respaldado ni patrocinado por los propietarios de la marca Oasis.
-                        <br />
-                        <br />
+                        {lang !== 'en' && (
+                            <>
+                                Oasis, la banda mundialmente conocida, y todas las marcas relacionadas son marcas registradas y pertenecen a sus respectivos dueños. Este sitio no está
+                                afiliado, asociado, autorizado, respaldado ni patrocinado por los propietarios de la marca Oasis.
+                                <br />
+                                <br />
+                            </>
+                        )}
                         Oasis, the world-renowned band, and all related trademarks are registered trademarks and belong to their respective owners. This site is not affiliated,
                         associated, authorized, endorsed by, or in any way officially connected with the owners of the Oasis trademarks.
                     </p>
@@ -82,7 +89,7 @@ export function Footer() {
 
                 {/* Copyright */}
                 <div className="border-t border-white/10 pt-8 text-center text-xs text-gray-500">
-                    <p>&copy; {currentYear} OEISIS. Todos los derechos reservados.</p>
+                    <p>&copy; {currentYear} OEISIS. {t('footer.rights')}</p>
                     <p className="mt-2">
                         Design & development by{' '}
                         <a href="https://martin-pacheco.vercel.app" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition">

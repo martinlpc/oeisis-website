@@ -1,12 +1,15 @@
 import { collection, query, limit, doc, setDoc } from 'firebase/firestore'
 import { db } from '../firebase/config'
 import { useCollection } from './useCollection'
+import { prepareEnglish } from '../i18n/prepareEnglish'
 
 const featuredQuery = () => query(collection(db, 'featured'), limit(1))
 
 export async function updateFeatured(data, id = 'current') {
-    await setDoc(doc(db, 'featured', id), data, { merge: true })
-    return true
+    const ref = doc(db, 'featured', id)
+    const { data: changes, translated } = await prepareEnglish('featured', data, ref)
+    await setDoc(ref, changes, { merge: true })
+    return { translated }
 }
 
 export function useFeatured({ realtime = true } = {}) {

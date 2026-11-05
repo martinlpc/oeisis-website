@@ -3,14 +3,18 @@ import { useInView } from "../../../hooks/useInView";
 import { getShowISO } from "../../../hooks/useShows";
 import { getDateParts, formatShowTime } from "../../../utils/showDetails";
 import { TicketAction } from "./TicketAction";
+import { useLang } from "../../../i18n/lang";
+import { localize } from "../../../i18n/content";
 
-export function ShowCard({ show }) {
+export function ShowCard({ show: raw }) {
     const [ref, isInView] = useInView();
-    const date = getDateParts(show);
+    const { lang, t, path } = useLang();
+    const show = localize('shows', raw, lang);
+    const date = getDateParts(show, lang);
     const showYear = date && date.year !== new Date().getFullYear();
     const { venue, city, address } = show.location || {};
     const place = [venue, city].filter(Boolean).join(' · ');
-    const details = [formatShowTime(show), address].filter(Boolean).join(' · ');
+    const details = [formatShowTime(show, lang), address].filter(Boolean).join(' · ');
 
     return (
         <article
@@ -32,15 +36,15 @@ export function ShowCard({ show }) {
             {/* Título y lugar; el título lleva a la página del show */}
             <div className="min-w-0">
                 <h3 className="text-xl md:text-2xl font-bold text-white">
-                    <Link to={`/shows/${show.id}`} className="hover:underline underline-offset-4">
+                    <Link to={path(`/shows/${show.id}`)} className="hover:underline underline-offset-4">
                         {show.title}
                     </Link>
                 </h3>
                 {place && <p className="text-gray-200 mt-1">{place}</p>}
                 {details && <p className="text-sm text-gray-400 mt-1">{details}</p>}
                 {show.description && <p className="text-sm text-gray-400 mt-3 line-clamp-2">{show.description}</p>}
-                <Link to={`/shows/${show.id}`} className="inline-block mt-3 text-sm text-gray-300 underline underline-offset-4 hover:text-white">
-                    Cómo llegar y agendar
+                <Link to={path(`/shows/${show.id}`)} className="inline-block mt-3 text-sm text-gray-300 underline underline-offset-4 hover:text-white">
+                    {t('shows.details')}
                 </Link>
             </div>
 

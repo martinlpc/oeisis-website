@@ -7,6 +7,7 @@ import { ShowFields } from './ShowEditForm';
 import { isValidTimeZone } from '../../utils/timezones';
 import { useTrackedUploads } from './useTrackedUploads';
 import { makeOgImage } from '../../utils/ogImage';
+import { warnIfNotTranslated } from './englishFeedback';
 
 export function AdminShowForm() {
     const [formData, setFormData] = useState(EMPTY_SHOW);
@@ -42,9 +43,10 @@ export function AdminShowForm() {
         }
         setSaving(true);
         try {
-            await createShow(formData);
+            const result = await createShow(formData);
             files.commit();
             toast.success(`Show "${formData.title}" creado`);
+            warnIfNotTranslated(toast, result);
             setFormData(EMPTY_SHOW);
         } catch (error) {
             toast.error(`No se pudo crear el show: ${error.message}`);

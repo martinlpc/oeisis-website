@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { doc, getDoc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase/config'
+import { prepareEnglish } from '../i18n/prepareEnglish'
 
 // Kit de prensa: un solo documento, press/current
 const pressDoc = () => doc(db, 'press', 'current')
@@ -16,8 +17,9 @@ export const EMPTY_PRESS = {
 }
 
 export async function updatePress(data) {
-    await setDoc(pressDoc(), { ...data, updatedAt: serverTimestamp() }, { merge: true })
-    return true
+    const { data: changes, translated } = await prepareEnglish('press', data, pressDoc())
+    await setDoc(pressDoc(), { ...changes, updatedAt: serverTimestamp() }, { merge: true })
+    return { translated }
 }
 
 // realtime para el admin; lectura única para la página pública

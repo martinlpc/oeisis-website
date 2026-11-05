@@ -1,17 +1,22 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
+import { useLang, alternatePath, rememberLang } from '../../i18n/lang'
 
 const LINKS = [
-    { href: '/#upcoming-shows', label: 'Shows' },
-    { href: '/#noticias', label: 'Noticias' },
-    { href: '/#videos', label: 'Videos' },
-    { href: '/#fotos', label: 'Fotos' },
-    { href: '/#contacto', label: 'Contacto' },
+    { href: '/#upcoming-shows', label: 'nav.shows' },
+    { href: '/#noticias', label: 'nav.news' },
+    { href: '/#videos', label: 'nav.videos' },
+    { href: '/#fotos', label: 'nav.photos' },
+    { href: '/#contacto', label: 'nav.contact' },
 ]
 
 // nextShow: el próximo show; si tiene link de entradas, aparece el botón "Entradas"
 export function Navbar({ nextShow }) {
     const [scrolled, setScrolled] = useState(false)
     const [open, setOpen] = useState(false)
+    const { lang, t, path } = useLang()
+    const { pathname } = useLocation()
+    const otherLang = lang === 'en' ? 'es' : 'en'
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 40)
@@ -40,7 +45,23 @@ export function Navbar({ nextShow }) {
             rel="noopener noreferrer"
             className="btn-double-border text-white text-sm font-semibold px-4 py-2"
         >
-            {nextShow.freeEntry ? 'Reservar' : 'Entradas'}
+            {nextShow.freeEntry ? t('nav.reserve') : t('nav.tickets')}
+        </a>
+    )
+
+    // Misma página en el otro idioma. Recarga la página para que el cambio se vea entero, incluido el <head>.
+    const langSwitch = (
+        <a
+            href={alternatePath(pathname, otherLang)}
+            onClick={() => rememberLang(otherLang)}
+            hrefLang={otherLang}
+            lang={otherLang}
+            aria-label={t('nav.switchLabel')}
+            data-umami-event="idioma"
+            data-umami-event-a={otherLang}
+            className="text-sm font-semibold tracking-widest text-gray-300 hover:text-white border border-white/20 hover:border-white/60 px-2 py-1 transition"
+        >
+            {t('nav.switch')}
         </a>
     )
 
@@ -48,8 +69,8 @@ export function Navbar({ nextShow }) {
         <header
             className={`fixed inset-x-0 top-0 z-40 transition-colors duration-300 ${solid ? 'bg-[#141414]/95 backdrop-blur border-b border-white/10' : 'bg-transparent'}`}
         >
-            <nav className="max-w-6xl mx-auto h-16 px-4 flex items-center justify-between" aria-label="Principal">
-                <a href="/#top" className="block w-16 h-8" aria-label="Oeisis, ir al inicio" onClick={() => setOpen(false)}>
+            <nav className="max-w-6xl mx-auto h-16 px-4 flex items-center justify-between" aria-label={t('nav.main')}>
+                <a href={path('/#top')} className="block w-16 h-8" aria-label={t('nav.home')} onClick={() => setOpen(false)}>
                     <svg className="w-full h-full" viewBox="0 30 100 50" aria-hidden="true">
                         <image width="100" height="100" href="/logo.svg" />
                     </svg>
@@ -60,23 +81,25 @@ export function Navbar({ nextShow }) {
                     <ul className="flex items-center gap-6 text-sm uppercase tracking-widest">
                         {LINKS.map(link => (
                             <li key={link.href}>
-                                <a href={link.href} className="text-gray-300 hover:text-white transition">
-                                    {link.label}
+                                <a href={path(link.href)} className="text-gray-300 hover:text-white transition">
+                                    {t(link.label)}
                                 </a>
                             </li>
                         ))}
                     </ul>
+                    {langSwitch}
                     {ticketsButton}
                 </div>
 
                 {/* Mobile */}
                 <div className="flex md:hidden items-center gap-3">
+                    {langSwitch}
                     {ticketsButton}
                     <button
                         type="button"
                         onClick={() => setOpen(o => !o)}
                         className="p-2 text-white"
-                        aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
+                        aria-label={open ? t('nav.closeMenu') : t('nav.openMenu')}
                         aria-expanded={open}
                         aria-controls="mobile-menu"
                     >
@@ -94,11 +117,11 @@ export function Navbar({ nextShow }) {
                     {LINKS.map(link => (
                         <li key={link.href}>
                             <a
-                                href={link.href}
+                                href={path(link.href)}
                                 onClick={() => setOpen(false)}
                                 className="block py-3 text-lg uppercase tracking-widest text-gray-200 hover:text-white"
                             >
-                                {link.label}
+                                {t(link.label)}
                             </a>
                         </li>
                     ))}

@@ -1,6 +1,7 @@
 import { collection, query, orderBy, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase/config'
 import { useCollection } from './useCollection'
+import { prepareEnglish } from '../i18n/prepareEnglish'
 
 const newsQuery = () => query(
     collection(db, 'news'),
@@ -9,17 +10,20 @@ const newsQuery = () => query(
 )
 
 export async function createNews(data) {
+    const { data: item, translated } = await prepareEnglish('news', data)
     await addDoc(collection(db, 'news'), {
-        ...data,
+        ...item,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
     })
-    return true
+    return { translated }
 }
 
 export async function updateNews(id, data) {
-    await updateDoc(doc(db, 'news', id), data)
-    return true
+    const ref = doc(db, 'news', id)
+    const { data: changes, translated } = await prepareEnglish('news', data, ref)
+    await updateDoc(ref, changes)
+    return { translated }
 }
 
 export async function deleteNews(id) {

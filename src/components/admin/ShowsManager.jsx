@@ -9,6 +9,8 @@ import { DEFAULT_TIME_ZONE, isValidTimeZone } from '../../utils/timezones';
 import { formatShowTime } from '../../utils/showDetails';
 import { useTrackedUploads } from './useTrackedUploads';
 import { makeOgImage } from '../../utils/ogImage';
+import { warnIfNotTranslated } from './englishFeedback';
+import { EnglishPanel, EnglishTag } from './EnglishPanel';
 import { useSupabaseStorage } from '../../hooks/useSupabaseStorage';
 
 // Documento de Firestore -> estado plano del formulario
@@ -110,9 +112,10 @@ export function ShowsManager() {
         }
         setSaving(true);
         try {
-            await updateShow(editingId, toUpdate(editData));
+            const result = await updateShow(editingId, toUpdate(editData));
             files.commit();
             toast.success('Show actualizado');
+            warnIfNotTranslated(toast, result);
             setEditingId(null);
             setEditData(null);
         } catch (error) {
@@ -157,14 +160,16 @@ export function ShowsManager() {
                                     onFlyerFiles={handleFlyerFiles}
                                     onFlyerRemove={removeFlyer}
                                 />
+                                <EnglishPanel key={show.enHash} collection="shows" item={show} path={['shows', show.id]} />
                                 <EditActions saving={saving || files.uploading} onCancel={cancelEdit} />
                             </form>
                         ) : (
                             <ListItem
                                 title={show.title}
                                 meta={[show.date, formatShowTime(show), [venue, city].filter(Boolean).join(', ')].filter(Boolean).join(' · ')}
-                                tags={(past || show.freeEntry || !show.ticketLink) && (
+                                tags={(
                                     <>
+                                        <EnglishTag collection="shows" item={show} />
                                         {past && <Tag tone="muted">Pasado, no se muestra</Tag>}
                                         {show.freeEntry && <Tag>Entrada libre</Tag>}
                                         {!show.freeEntry && !show.ticketLink && !past && <Tag tone="muted">Sin link de entradas</Tag>}

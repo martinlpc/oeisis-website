@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { track } from '../../utils/analytics'
+import { useLang } from '../../i18n/lang'
 
 const BOOKING_EMAIL = 'jeronimo.blazer@gmail.com'
 
 const INITIAL = { nombre: '', email: '', motivo: 'Contratación', fecha: '', ciudad: '', mensaje: '' }
+// Los valores del motivo quedan en español: así llegan a Netlify, se traduce solo lo que se ve
+const REASONS = ['Contratación', 'Prensa', 'Otro']
 
 // Netlify Forms: Netlify detecta el formulario "contacto" en index.html al hacer deploy
 // y recibe los envíos en "/". Los mails de aviso se configuran en el panel de Netlify.
@@ -15,6 +18,7 @@ const labelClass = 'block text-xs uppercase tracking-widest text-gray-400 mb-2'
 export function ContactSection() {
     const [form, setForm] = useState(INITIAL)
     const [status, setStatus] = useState('idle') // idle | sending | sent | error
+    const { lang, t } = useLang()
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -28,7 +32,8 @@ export function ContactSection() {
             const response = await fetch('/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: encode({ 'form-name': 'contacto', 'bot-field': '', ...form }),
+                // idioma: para saber en qué idioma responder
+                body: encode({ 'form-name': 'contacto', 'bot-field': '', ...form, idioma: lang === 'en' ? 'Inglés' : 'Español' }),
             })
             if (!response.ok) throw new Error(`HTTP ${response.status}`)
             setStatus('sent')
@@ -44,15 +49,15 @@ export function ContactSection() {
         <section id="contacto" className="bg-[#1f1f1f] text-white py-20 md:py-28 px-4 md:px-6">
             <div className="max-w-5xl mx-auto grid md:grid-cols-[1fr_1.4fr] gap-12 md:gap-16">
                 <div>
-                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Contacto</h2>
+                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">{t('contact.title')}</h2>
                     <p className="text-gray-300 leading-relaxed mb-8">
-                        Para contrataciones, prensa o cualquier consulta, escribinos por el formulario o directamente por mail.
+                        {t('contact.intro')}
                     </p>
-                    <p className={labelClass}>Mail</p>
+                    <p className={labelClass}>{t('contact.mail')}</p>
                     <a href={`mailto:${BOOKING_EMAIL}`} className="text-lg break-all underline underline-offset-4 hover:text-gray-300">
                         {BOOKING_EMAIL}
                     </a>
-                    <p className={`${labelClass} mt-6`}>Producción</p>
+                    <p className={`${labelClass} mt-6`}>{t('contact.production')}</p>
                     <a
                         href="https://instagram.com/ourmusicproductions"
                         target="_blank"
@@ -65,59 +70,59 @@ export function ContactSection() {
 
                 {status === 'sent' ? (
                     <div className="border border-white/15 p-8 self-start" role="status">
-                        <p className="text-2xl font-bold mb-3">Mensaje enviado</p>
-                        <p className="text-gray-300 mb-6">Gracias por escribirnos. Te respondemos por mail.</p>
+                        <p className="text-2xl font-bold mb-3">{t('contact.sentTitle')}</p>
+                        <p className="text-gray-300 mb-6">{t('contact.sentBody')}</p>
                         <button
                             type="button"
                             onClick={() => setStatus('idle')}
                             className="text-sm font-semibold underline underline-offset-4 hover:text-gray-300"
                         >
-                            Enviar otro mensaje
+                            {t('contact.sendAnother')}
                         </button>
                     </div>
                 ) : (
                     <form name="contacto" onSubmit={handleSubmit} className="grid sm:grid-cols-2 gap-5">
                         {/* Trampa para bots: los humanos no la ven */}
                         <p className="hidden">
-                            <label>No completar: <input name="bot-field" tabIndex={-1} autoComplete="off" /></label>
+                            <label>{t('contact.honeypot')} <input name="bot-field" tabIndex={-1} autoComplete="off" /></label>
                         </p>
 
                         <div>
-                            <label htmlFor="c-nombre" className={labelClass}>Nombre</label>
+                            <label htmlFor="c-nombre" className={labelClass}>{t('contact.name')}</label>
                             <input id="c-nombre" name="nombre" required value={form.nombre} onChange={handleChange} className={inputClass} autoComplete="name" />
                         </div>
                         <div>
-                            <label htmlFor="c-email" className={labelClass}>Email</label>
+                            <label htmlFor="c-email" className={labelClass}>{t('contact.email')}</label>
                             <input id="c-email" name="email" type="email" required value={form.email} onChange={handleChange} className={inputClass} autoComplete="email" />
                         </div>
                         <div className="sm:col-span-2">
-                            <label htmlFor="c-motivo" className={labelClass}>Motivo</label>
+                            <label htmlFor="c-motivo" className={labelClass}>{t('contact.reason')}</label>
                             <select id="c-motivo" name="motivo" value={form.motivo} onChange={handleChange} className={`${inputClass} [color-scheme:dark] [&_option]:bg-[#1f1f1f] [&_option]:text-white`}>
-                                <option>Contratación</option>
-                                <option>Prensa</option>
-                                <option>Otro</option>
+                                {REASONS.map(reason => (
+                                    <option key={reason} value={reason}>{t(`contact.reason.${reason}`)}</option>
+                                ))}
                             </select>
                         </div>
                         {form.motivo === 'Contratación' && (
                             <>
                                 <div>
-                                    <label htmlFor="c-fecha" className={labelClass}>Fecha tentativa (opcional)</label>
+                                    <label htmlFor="c-fecha" className={labelClass}>{t('contact.date')}</label>
                                     <input id="c-fecha" name="fecha" type="date" value={form.fecha} onChange={handleChange} className={`${inputClass} [color-scheme:dark]`} />
                                 </div>
                                 <div>
-                                    <label htmlFor="c-ciudad" className={labelClass}>Ciudad (opcional)</label>
+                                    <label htmlFor="c-ciudad" className={labelClass}>{t('contact.city')}</label>
                                     <input id="c-ciudad" name="ciudad" value={form.ciudad} onChange={handleChange} className={inputClass} />
                                 </div>
                             </>
                         )}
                         <div className="sm:col-span-2">
-                            <label htmlFor="c-mensaje" className={labelClass}>Mensaje</label>
+                            <label htmlFor="c-mensaje" className={labelClass}>{t('contact.message')}</label>
                             <textarea id="c-mensaje" name="mensaje" required rows={5} value={form.mensaje} onChange={handleChange} className={inputClass} />
                         </div>
 
                         {status === 'error' && (
                             <p className="sm:col-span-2 text-red-400" role="alert">
-                                No pudimos enviar el mensaje. Probá de nuevo o escribinos a {BOOKING_EMAIL}.
+                                {t('contact.error', { email: BOOKING_EMAIL })}
                             </p>
                         )}
 
@@ -127,7 +132,7 @@ export function ContactSection() {
                                 disabled={status === 'sending'}
                                 className="btn-double-border text-white font-bold py-3 px-10 disabled:opacity-60"
                             >
-                                {status === 'sending' ? 'Enviando...' : 'Enviar'}
+                                {status === 'sending' ? t('contact.sending') : t('contact.send')}
                             </button>
                         </div>
                     </form>

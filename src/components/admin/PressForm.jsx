@@ -5,6 +5,8 @@ import { useSupabaseStorage } from '../../hooks/useSupabaseStorage'
 import { compressImage } from '../../utils/compressImage'
 import { getThumbnailUrl } from '../../utils/youtube'
 import { useToast } from './useFeedback'
+import { warnIfNotTranslated } from './englishFeedback'
+import { EnglishPanel } from './EnglishPanel'
 import { Button, Checkbox, Field, FilePicker, inputClass } from './ui'
 
 const MAX_VIDEOS = 3
@@ -152,11 +154,12 @@ export function PressForm() {
         try {
             const { bioShort, bioLong, photos, riderUrl, pressKitUrl, videoIds } = form
             const facts = form.facts.filter(f => f.label.trim() && f.value.trim())
-            await updatePress({ bioShort, bioLong, facts, photos, riderUrl, pressKitUrl, videoIds })
+            const result = await updatePress({ bioShort, bioLong, facts, photos, riderUrl, pressKitUrl, videoIds })
             removedRef.current.forEach(url => removeByUrl(url).catch(() => {}))
             removedRef.current = []
             pendingRef.current = []
             toast.success('Kit de prensa actualizado')
+            warnIfNotTranslated(toast, result)
         } catch (err) {
             toast.error(`No se pudo guardar: ${err.message}`)
         } finally {
@@ -234,6 +237,8 @@ export function PressForm() {
             <Button type="submit" disabled={saving || Boolean(uploading)} className="w-full py-3">
                 {saving ? 'Guardando...' : 'Guardar kit de prensa'}
             </Button>
+
+            {press && <EnglishPanel key={press.enHash} collection="press" item={press} path={['press', 'current']} />}
         </form>
     )
 }
