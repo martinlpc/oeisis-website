@@ -4,6 +4,7 @@ import { createVideo } from '../../hooks/useVideos';
 import { useToast } from './useFeedback';
 import { Button } from './ui';
 import { VideoFields } from './VideoEditForm';
+import { warnIfNotTranslated } from './englishFeedback';
 
 export function VideoForm() {
     const [formData, setFormData] = useState(EMPTY_VIDEO);
@@ -18,8 +19,9 @@ export function VideoForm() {
         }
         setSaving(true);
         try {
-            await createVideo(formData);
+            const result = await createVideo(formData);
             toast.success(`Video "${formData.title}" agregado`);
+            warnIfNotTranslated(toast, result);
             setFormData(EMPTY_VIDEO);
         } catch (error) {
             toast.error(`No se pudo agregar el video: ${error.message}`);

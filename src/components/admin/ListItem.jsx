@@ -8,7 +8,7 @@ export function ListItem({ title, meta, text, thumbnail, tags, onEdit, onDelete 
                 <img src={thumbnail} alt="" loading="lazy" className="w-16 h-16 md:w-20 md:h-20 object-cover rounded shrink-0" />
             )}
             <div className="flex-1 min-w-0">
-                {tags && <div className="flex flex-wrap gap-1.5 mb-1.5">{tags}</div>}
+                {tags && <div className="flex flex-wrap gap-1.5 mb-1.5 empty:hidden">{tags}</div>}
                 <h3 className="font-bold truncate">{title}</h3>
                 {meta && <p className="text-sm text-gray-400 truncate">{meta}</p>}
                 {text && <p className="text-sm text-gray-400 line-clamp-2 mt-1">{text}</p>}

@@ -1,23 +1,36 @@
 import { getShowISO } from '../hooks/useShows'
-import { getShowTimeZone, timeZoneLabel, zonedTimeToDate } from './timezones'
+import { getShowTimeZone, formatShowTimeText, zonedTimeToDate } from './timezones'
+import { LOCALES } from '../i18n/lang'
 
 // Duración por defecto para el calendario (no se guarda en el show)
 const DEFAULT_DURATION_HOURS = 2
 
 // "2026-11-20" -> { weekday: 'VIE', day: '20', month: 'NOV', year: 2026, long: 'viernes 20 de noviembre de 2026' }
-export function getDateParts(show) {
+// En inglés: { weekday: 'FRI', ..., month: 'NOV', long: 'Friday, November 20, 2026' }
+export function getDateParts(show, lang = 'es') {
     const iso = getShowISO(show)
     if (!iso) return null
     const [year, month, day] = iso.split('-').map(Number)
     const date = new Date(year, month - 1, day)
-    const short = (options) => date.toLocaleDateString('es-AR', options).replace('.', '').toUpperCase()
+    const locale = LOCALES[lang] || LOCALES.es
+    const short = (options) => date.toLocaleDateString(locale, options).replace('.', '').toUpperCase()
     return {
         weekday: short({ weekday: 'short' }),
         day: String(day).padStart(2, '0'),
         month: short({ month: 'short' }),
         year,
-        long: date.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+        long: date.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
     }
+}
+
+// Fecha corta para la lista de shows anteriores: "09 ene" / "Jan 9"
+export function shortDate(show, lang = 'es') {
+    const iso = getShowISO(show)
+    if (!iso) return show.date || ''
+    const [year, month, day] = iso.split('-').map(Number)
+    const date = new Date(year, month - 1, day)
+    if (lang === 'en') return date.toLocaleDateString(LOCALES.en, { month: 'short', day: 'numeric' })
+    return `${String(day).padStart(2, '0')} ${date.toLocaleDateString(LOCALES.es, { month: 'short' }).replace('.', '')}`
 }
 
 export function getPlace(show) {
@@ -39,10 +52,10 @@ export function getMapsUrl(show) {
 // Mapa embebido (Maps Embed API: gratis, pero necesita key). Sin key devuelve null y no se muestra.
 const EMBED_KEY = import.meta.env.VITE_GOOGLE_MAPS_EMBED_KEY
 
-export function getMapEmbedUrl(show) {
+export function getMapEmbedUrl(show, lang = 'es') {
     const query = mapsQuery(show)
     if (!EMBED_KEY || !query) return null
-    const params = new URLSearchParams({ key: EMBED_KEY, q: query, language: 'es' })
+    const params = new URLSearchParams({ key: EMBED_KEY, q: query, language: lang })
     return `https://www.google.com/maps/embed/v1/place?${params}`
 }
 
@@ -133,9 +146,7 @@ export function getEventJsonLd(show, pageUrl) {
     }
 }
 
-// "21:00 hs" o, fuera de Argentina, "21:00 hs (hora de Madrid)"
-export function formatShowTime(show) {
-    if (!show.time) return ''
-    const label = timeZoneLabel(show)
-    return `${show.time} hs${label ? ` (${label})` : ''}`
+// "21:00 hs" o, fuera de Argentina, "21:00 hs (hora de Madrid)". En inglés: "9:00 PM (Madrid time)"
+export function formatShowTime(show, lang = 'es') {
+    return formatShowTimeText(show, lang)
 }

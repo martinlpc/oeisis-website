@@ -1,6 +1,9 @@
 import { useState } from "react"
 import { InterviewThumbnail } from "./InterviewThumbnail"
 import { Lightbox } from "../photos/Lightbox"
+import { useLang } from "../../../i18n/lang"
+import { localize } from "../../../i18n/content"
+import { formatNewsDate } from "../../../i18n/dates"
 
 // Textos más largos que esto se muestran recortados con "Leer más"
 const LONG_CONTENT = 320
@@ -19,9 +22,12 @@ function previewText(content) {
     return preview.trimEnd().replace(/[.,;:]+$/, '') + '…'
 }
 
-export function NewsArticle({ item, renderContentWithLinks }) {
+export function NewsArticle({ item: raw, renderContentWithLinks }) {
     const [expanded, setExpanded] = useState(false)
     const [openImage, setOpenImage] = useState(null)
+    const { lang, t } = useLang()
+    const item = localize('news', raw, lang)
+    const date = formatNewsDate(item, lang)
 
     const content = item.content || ''
     const isLong = content.length > LONG_CONTENT
@@ -31,18 +37,18 @@ export function NewsArticle({ item, renderContentWithLinks }) {
         id: url,
         imageUrl: url,
         title: item.title,
-        date: item.date,
+        date,
     }))
 
     return (
         <article className="py-10 border-t border-white/10">
             {/* Tipo, fecha y destacado */}
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3 text-xs uppercase tracking-widest text-gray-400">
-                <span>{item.type === 'interview' ? 'Entrevista' : 'Noticia'}</span>
+                <span>{item.type === 'interview' ? t('news.interview') : t('news.item')}</span>
                 <span aria-hidden="true">·</span>
-                <span>{item.date}</span>
+                <span>{date}</span>
                 {item.featured && (
-                    <span className="border border-white text-white px-2 py-0.5">Destacado</span>
+                    <span className="border border-white text-white px-2 py-0.5">{t('news.featured')}</span>
                 )}
             </div>
 
@@ -61,7 +67,7 @@ export function NewsArticle({ item, renderContentWithLinks }) {
                             className="mt-2 text-sm font-semibold underline underline-offset-4 text-white hover:text-gray-300"
                             aria-expanded={expanded}
                         >
-                            {expanded ? 'Leer menos' : 'Leer más'}
+                            {expanded ? t('news.readLess') : t('news.readMore')}
                         </button>
                     )}
                 </div>
@@ -76,7 +82,7 @@ export function NewsArticle({ item, renderContentWithLinks }) {
                                 type="button"
                                 onClick={() => setOpenImage(index)}
                                 className="block w-full aspect-[4/3] overflow-hidden rounded-lg group"
-                                aria-label={`Ver imagen ${index + 1} de ${item.title}`}
+                                aria-label={t('news.viewImage', { n: index + 1, title: item.title })}
                             >
                                 <img
                                     src={imageUrl}

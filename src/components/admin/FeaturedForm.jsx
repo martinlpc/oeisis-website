@@ -5,6 +5,8 @@ import { useSupabaseStorage } from "../../hooks/useSupabaseStorage";
 import { useToast } from "./useFeedback";
 import { Button, Field, FilePicker, inputClass } from "./ui";
 import { YouTubeField } from "./YouTubeField";
+import { warnIfNotTranslated } from "./englishFeedback";
+import { EnglishPanel } from "./EnglishPanel";
 
 const EMPTY = { type: 'show', title: '', description: '', image: '', videoUrl: '' };
 
@@ -83,13 +85,14 @@ export function FeaturedForm() {
         setSaving(true);
         try {
             const previousImage = featured?.image;
-            await updateFeatured({ ...formData, ctas }, featured?.id || 'current');
+            const result = await updateFeatured({ ...formData, ctas }, featured?.id || 'current');
             pendingRef.current = null;
             // La imagen anterior ya no se usa: se borra si era de Supabase
             if (previousImage && previousImage !== formData.image) {
                 removeByUrl(previousImage).catch(() => {});
             }
             toast.success('Destacado actualizado');
+            warnIfNotTranslated(toast, result);
         } catch (error) {
             toast.error(`No se pudo guardar: ${error.message}`);
         } finally {
@@ -173,6 +176,8 @@ export function FeaturedForm() {
             <Button type="submit" disabled={saving || uploading} className="w-full py-3">
                 {saving ? 'Guardando...' : 'Guardar destacado'}
             </Button>
+
+            {featured && <EnglishPanel key={featured.enHash} collection="featured" item={featured} path={['featured', featured.id]} />}
         </form>
     );
 }

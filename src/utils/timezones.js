@@ -137,11 +137,25 @@ export function zonedTimeToDate(dateISO, time, timeZone) {
     return new Date(result)
 }
 
-// Texto que acompaña la hora en shows fuera de Argentina: "hora de Madrid"
-export function timeZoneLabel(show) {
-    if (isDefaultTimeZone(getShowTimeZone(show))) return null
+// Texto que acompaña la hora: "hora de Madrid" en shows fuera de Argentina.
+// En inglés se aclara siempre, porque el visitante suele estar en otro país: "Buenos Aires time".
+export function timeZoneLabel(show, lang = 'es') {
     const city = show.location?.city
+    if (lang === 'en') return city ? `${city} time` : 'local time'
+    if (isDefaultTimeZone(getShowTimeZone(show))) return null
     return city ? `hora de ${city}` : 'hora local'
+}
+
+// "21:00 hs (hora de Madrid)" o, en inglés, "9:00 PM (Madrid time)"
+export function formatShowTimeText(show, lang = 'es') {
+    if (!show.time) return ''
+    const label = timeZoneLabel(show, lang)
+    let time = `${show.time} hs`
+    if (lang === 'en') {
+        const [h, m] = show.time.split(':').map(Number)
+        time = Number.isNaN(h) ? show.time : `${h % 12 || 12}:${String(m || 0).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`
+    }
+    return `${time}${label ? ` (${label})` : ''}`
 }
 
 // Hora actual en una zona, para confirmar en el admin que es la correcta

@@ -5,6 +5,7 @@ import { useSupabaseStorage } from '../../hooks/useSupabaseStorage'
 import { useToast } from './useFeedback'
 import { Button } from './ui'
 import { NewsFields } from './NewsEditForm'
+import { warnIfNotTranslated } from './englishFeedback'
 
 export function NewsForm() {
     const { upload, removeByUrl } = useSupabaseStorage()
@@ -55,7 +56,7 @@ export function NewsForm() {
         }
         setSaving(true)
         try {
-            await createNews({
+            const result = await createNews({
                 title: formData.title,
                 content: formData.content,
                 type: formData.type,
@@ -68,6 +69,7 @@ export function NewsForm() {
             if (isInterview) images.forEach(url => removeByUrl(url).catch(() => {}))
             pendingRef.current = []
             toast.success(`Noticia "${formData.title}" publicada`)
+            warnIfNotTranslated(toast, result)
             setFormData(EMPTY_NEWS)
             setImages([])
         } catch (error) {

@@ -1,23 +1,27 @@
 import { collection, query, orderBy, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore'
 import { db } from '../firebase/config'
 import { useCollection } from './useCollection'
+import { prepareEnglish } from '../i18n/prepareEnglish'
 
 const videosQuery = () => query(collection(db, 'videos'), orderBy('date', 'desc'))
 
 export async function createVideo(data) {
-    await addDoc(collection(db, 'videos'), {
+    const { data: video, translated } = await prepareEnglish('videos', {
         title: data.title,
         description: data.description,
         embedUrl: data.embedUrl,
         date: data.date,
         featured: data.featured || false,
     })
-    return true
+    await addDoc(collection(db, 'videos'), video)
+    return { translated }
 }
 
 export async function updateVideo(id, data) {
-    await updateDoc(doc(db, 'videos', id), data)
-    return true
+    const ref = doc(db, 'videos', id)
+    const { data: changes, translated } = await prepareEnglish('videos', data, ref)
+    await updateDoc(ref, changes)
+    return { translated }
 }
 
 export async function deleteVideo(id) {

@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { getEmbedUrl, getThumbnailUrl } from '../../utils/youtube'
+import { useLang } from '../../i18n/lang'
 
 // Muestra la miniatura y monta el iframe de YouTube recién al hacer click.
 // Cada iframe carga ~500 KB-1 MB de JS, así que la home no los carga hasta que hacen falta.
 export function YouTubeEmbed({ url, title, className = '' }) {
     const [active, setActive] = useState(false)
     const [lowRes, setLowRes] = useState(false)
+    const { t } = useLang()
     const thumbnail = getThumbnailUrl(url, lowRes ? 'hqdefault' : 'maxresdefault')
 
     if (!thumbnail) return null
@@ -27,7 +29,7 @@ export function YouTubeEmbed({ url, title, className = '' }) {
             type="button"
             onClick={() => setActive(true)}
             className={`group relative w-full h-full bg-black ${className}`}
-            aria-label={`Reproducir video: ${title}`}
+            aria-label={t('videos.play', { title })}
         >
             <img
                 src={thumbnail}

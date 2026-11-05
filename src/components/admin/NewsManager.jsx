@@ -7,6 +7,8 @@ import { useToast, useConfirm } from './useFeedback';
 import { ListItem, ListRow, EditActions } from './ListItem';
 import { NewsFields } from './NewsEditForm';
 import { Tag, StatusText } from './ui';
+import { warnIfNotTranslated } from './englishFeedback';
+import { EnglishPanel, EnglishTag } from './EnglishPanel';
 
 export function NewsManager() {
     const { news, loading, error, updateNews, deleteNews } = useNews();
@@ -76,7 +78,7 @@ export function NewsManager() {
         }
         setSaving(true);
         try {
-            await updateNews(editingId, {
+            const result = await updateNews(editingId, {
                 ...editData,
                 externalLink: isInterview ? editData.externalLink : '',
                 images: isInterview ? [] : images,
@@ -87,6 +89,7 @@ export function NewsManager() {
             uploadedRef.current = [];
             removedRef.current = [];
             toast.success('Noticia actualizada');
+            warnIfNotTranslated(toast, result);
             setEditingId(null);
             setEditData(null);
         } catch (error) {
@@ -134,6 +137,7 @@ export function NewsManager() {
                                 onImageFiles={handleImageFiles}
                                 onRemoveImage={removeImage}
                             />
+                            <EnglishPanel key={item.enHash} collection="news" item={item} path={['news', item.id]} />
                             <EditActions saving={saving || uploading} onCancel={cancelEdit} />
                         </form>
                     ) : (
@@ -146,6 +150,7 @@ export function NewsManager() {
                                 <>
                                     <Tag tone="muted">{item.type === 'interview' ? 'Entrevista' : 'Noticia'}</Tag>
                                     {item.featured && <Tag>Destacada</Tag>}
+                                    <EnglishTag collection="news" item={item} />
                                 </>
                             }
                             onEdit={() => startEdit(item)}

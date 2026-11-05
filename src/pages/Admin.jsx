@@ -14,6 +14,7 @@ import { PhotoForm } from '../components/admin/PhotoForm';
 import { PhotoManager } from '../components/admin/PhotoManager';
 import { StorageCleanup } from '../components/admin/StorageCleanup';
 import { PressForm } from '../components/admin/PressForm';
+import { EnglishMaintenance } from '../components/admin/EnglishMaintenance';
 
 // Cada tab: formulario de alta a la izquierda y lista a la derecha
 function CreateAndList({ createTitle, create, listTitle, list }) {
@@ -32,7 +33,16 @@ const TABS = [
     { id: 'videos', label: 'Videos', render: () => <CreateAndList createTitle="Nuevo video" create={<VideoForm />} listTitle="Videos" list={<VideoManager />} /> },
     { id: 'fotos', label: 'Fotos', render: () => <CreateAndList createTitle="Nueva foto" create={<PhotoForm />} listTitle="Fotos" list={<PhotoManager />} /> },
     { id: 'prensa', label: 'Prensa', render: () => <Panel title="Kit de prensa" className="max-w-3xl"><PressForm /></Panel> },
-    { id: 'mantenimiento', label: 'Mantenimiento', render: () => <Panel title="Archivos sin uso en Supabase" className="max-w-5xl"><StorageCleanup /></Panel> },
+    {
+        id: 'mantenimiento',
+        label: 'Mantenimiento',
+        render: () => (
+            <div className="space-y-6 max-w-5xl">
+                <Panel title="Versión en inglés"><EnglishMaintenance /></Panel>
+                <Panel title="Archivos sin uso en Supabase"><StorageCleanup /></Panel>
+            </div>
+        ),
+    },
 ];
 
 // La tab activa queda en la URL (#noticias), así sobrevive a un refresh

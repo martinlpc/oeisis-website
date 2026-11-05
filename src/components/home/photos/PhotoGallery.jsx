@@ -4,6 +4,7 @@ import { SectionSkeleton, SectionError } from '../SectionState';
 import { PhotoCard } from './PhotoCard';
 import { Lightbox } from './Lightbox';
 import { useInView } from '../../../hooks/useInView';
+import { useLang } from '../../../i18n/lang';
 
 export function PhotoGallery() {
     const [ref, isInView] = useInView();
@@ -11,13 +12,14 @@ export function PhotoGallery() {
     const [openIndex, setOpenIndex] = useState(null);
     const [album, setAlbum] = useState(null); // null = todas
     const closeLightbox = useCallback(() => setOpenIndex(null), []);
+    const { t } = useLang();
 
     if (loading) {
-        return <SectionSkeleton id='fotos' title='Galería de fotos' className='bg-[#141414]' variant='grid' count={6} />
+        return <SectionSkeleton id='fotos' title={t('photos.title')} className='bg-[#141414]' variant='grid' count={6} />
     }
 
     if (error) {
-        return <SectionError id='fotos' title='Galería de fotos' className='bg-[#141414]' what='las fotos' />
+        return <SectionError id='fotos' title={t('photos.title')} className='bg-[#141414]' what={t('photos.what')} />
     }
 
     // Álbumes en el orden en que aparecen (las fotos ya vienen de la más nueva a la más vieja)
@@ -38,19 +40,19 @@ export function PhotoGallery() {
             className={`bg-[#141414] min-h-screen text-white py-20 px-4 transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}
         >
             <div className="flex flex-col items-center">
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8 md:mb-12 text-center">Galería de fotos</h2>
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8 md:mb-12 text-center">{t('photos.title')}</h2>
 
                 {photos.length === 0 ? (
                     <>
-                        <p className="text-center text-gray-400 text-lg">No hay fotos aún</p>
-                        <p className="text-center text-gray-400 text-lg">¿Tenés fotos de algún show? Mandalas por Instagram y las sumamos.</p>
+                        <p className="text-center text-gray-400 text-lg">{t('photos.empty')}</p>
+                        <p className="text-center text-gray-400 text-lg">{t('photos.send')}</p>
                     </>
                 ) : (
                     <>
                     {albums.length > 0 && (
-                        <div role="group" aria-label="Filtrar por álbum" className="flex flex-wrap justify-center gap-2 mb-8 max-w-6xl">
+                        <div role="group" aria-label={t('photos.filter')} className="flex flex-wrap justify-center gap-2 mb-8 max-w-6xl">
                             <button type="button" onClick={() => selectAlbum(null)} aria-pressed={!album} className={chip(!album)}>
-                                Todas
+                                {t('photos.all')}
                             </button>
                             {albums.map(name => (
                                 <button key={name} type="button" onClick={() => selectAlbum(name)} aria-pressed={album === name} className={chip(album === name)}>

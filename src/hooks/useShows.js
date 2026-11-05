@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { db } from '../firebase/config';
 import { useCollection } from './useCollection';
 import { DEFAULT_TIME_ZONE, getShowTimeZone, todayInZone } from '../utils/timezones';
+import { prepareEnglish } from '../i18n/prepareEnglish';
 
 const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
@@ -43,9 +44,9 @@ const sortByDate = (shows) =>
 // Se filtra en el cliente porque los shows viejos todavía pueden no tener dateISO
 const upcomingSorted = (shows) => sortByDate(shows.filter(show => !isPastShow(show)));
 
-// data.date llega del input como "YYYY-MM-DD"
+// data.date llega del input como "YYYY-MM-DD". Devuelve { translated } (ver prepareEnglish).
 export async function createShow(data) {
-    await addDoc(collection(db, 'shows'), {
+    const { data: show, translated } = await prepareEnglish('shows', {
         title: data.title,
         date: formatDisplayDate(data.date),
         dateISO: data.date,
@@ -63,15 +64,16 @@ export async function createShow(data) {
         description: data.description,
         flyer: data.flyer || '',
         flyerOg: data.flyerOg || '',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
     });
-    return true;
+    await addDoc(collection(db, 'shows'), { ...show, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+    return { translated };
 }
 
 export async function updateShow(id, data) {
-    await updateDoc(doc(db, 'shows', id), { ...data, updatedAt: serverTimestamp() });
-    return true;
+    const ref = doc(db, 'shows', id);
+    const { data: changes, translated } = await prepareEnglish('shows', data, ref);
+    await updateDoc(ref, { ...changes, updatedAt: serverTimestamp() });
+    return { translated };
 }
 
 export async function deleteShow(id) {

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useLang } from '../../../i18n/lang';
 
 // Visor de fotos: Esc o click afuera cierra, flechas (teclado, botones o swipe) navegan
 export function Lightbox({ photos, index, onClose, onChange }) {
@@ -6,6 +7,7 @@ export function Lightbox({ photos, index, onClose, onChange }) {
     const touchStartX = useRef(null);
     const photo = photos[index];
     const hasMany = photos.length > 1;
+    const { t } = useLang();
 
     const go = (step) => onChange((index + step + photos.length) % photos.length);
 
@@ -59,16 +61,16 @@ export function Lightbox({ photos, index, onClose, onChange }) {
                 type="button"
                 onClick={onClose}
                 className="absolute top-4 right-4 p-2 text-white text-3xl leading-none hover:text-gray-300"
-                aria-label="Cerrar"
+                aria-label={t('photos.close')}
             >
                 ✕
             </button>
 
             {hasMany && (
                 <>
-                    <button type="button" className={`${navButton} left-2`} aria-label="Foto anterior"
+                    <button type="button" className={`${navButton} left-2`} aria-label={t('photos.prev')}
                         onClick={(e) => { e.stopPropagation(); go(-1); }}>‹</button>
-                    <button type="button" className={`${navButton} right-2`} aria-label="Foto siguiente"
+                    <button type="button" className={`${navButton} right-2`} aria-label={t('photos.next')}
                         onClick={(e) => { e.stopPropagation(); go(1); }}>›</button>
                 </>
             )}
