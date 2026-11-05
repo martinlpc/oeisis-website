@@ -41,3 +41,10 @@ export async function compressImage(file, { maxSize = 1920, quality = 0.82, type
     const name = file.name.replace(/\.[^.]+$/, '') + '.' + extension
     return new File([blob], name, { type: blob.type, lastModified: Date.now() })
 }
+
+// Miniatura para grillas: 640 px alcanza para una celda de la galería en pantallas de alta densidad.
+// Una foto de 1920 px pesa unos cientos de KB; la miniatura, unas decenas.
+export async function makeThumbnail(file) {
+    const named = new File([file], file.name.replace(/(\.[^.]+)?$/, '-thumb$1'), { type: file.type })
+    return compressImage(named, { maxSize: 640, quality: 0.75 })
+}

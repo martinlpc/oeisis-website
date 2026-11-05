@@ -1,5 +1,4 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
 
 // Reemplazá estos valores con los de tu proyecto Firebase
 const firebaseConfig = {
@@ -11,10 +10,9 @@ const firebaseConfig = {
     appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
+// Solo la app. Firestore se inicializa aparte:
+// - firebase/reads.js: versión liviana (firestore/lite) para leer en el sitio público
+// - firebase/db.js: versión completa (tiempo real y escrituras), solo la carga el admin
 const app = initializeApp(firebaseConfig);
-
-// Initialize Firestore
-export const db = getFirestore(app);
 
 export default app;

@@ -15,6 +15,7 @@ import { PhotoManager } from '../components/admin/PhotoManager';
 import { StorageCleanup } from '../components/admin/StorageCleanup';
 import { PressForm } from '../components/admin/PressForm';
 import { EnglishMaintenance } from '../components/admin/EnglishMaintenance';
+import { PhotoThumbnails } from '../components/admin/PhotoThumbnails';
 
 // Cada tab: formulario de alta a la izquierda y lista a la derecha
 function CreateAndList({ createTitle, create, listTitle, list }) {
@@ -39,6 +40,7 @@ const TABS = [
         render: () => (
             <div className="space-y-6 max-w-5xl">
                 <Panel title="Versión en inglés"><EnglishMaintenance /></Panel>
+                <Panel title="Miniaturas de la galería"><PhotoThumbnails /></Panel>
                 <Panel title="Archivos sin uso en Supabase"><StorageCleanup /></Panel>
             </div>
         ),

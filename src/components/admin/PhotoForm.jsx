@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { EMPTY_PHOTO, fieldChange } from './formState'
 import { useSupabaseStorage } from '../../hooks/useSupabaseStorage'
 import { createPhoto } from '../../hooks/usePhotos'
+import { makeThumbnail } from '../../utils/compressImage'
 import { useToast } from './useFeedback'
 import { Button, FilePicker } from './ui'
 import { PhotoFields } from './PhotoEditForm'
@@ -13,26 +14,29 @@ export function PhotoForm() {
     const [uploading, setUploading] = useState(false)
     const [saving, setSaving] = useState(false)
 
-    // Imagen subida pero todavía no guardada: se borra del bucket si se reemplaza o se abandona
-    const pendingRef = useRef(null)
+    // Foto y miniatura subidas pero todavía no guardadas: se borran del bucket si se reemplazan o se abandonan
+    const pendingRef = useRef([])
+
+    const discardPending = () => {
+        pendingRef.current.forEach(url => removeByUrl(url).catch(() => {}))
+        pendingRef.current = []
+    }
 
     useEffect(() => {
-        return () => {
-            if (pendingRef.current) removeByUrl(pendingRef.current).catch(() => {})
-        }
+        return discardPending
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const handleFiles = async ([file]) => {
-        if (pendingRef.current) {
-            removeByUrl(pendingRef.current).catch(() => {})
-            pendingRef.current = null
-        }
+        discardPending()
         setUploading(true)
         try {
             const { url } = await upload(file)
-            pendingRef.current = url
-            setFormData(prev => ({ ...prev, imageUrl: url }))
+            pendingRef.current.push(url)
+            // La grilla de la galería usa la miniatura; el visor, la foto completa
+            const { url: thumbUrl } = await upload(await makeThumbnail(file), { compress: false })
+            pendingRef.current.push(thumbUrl)
+            setFormData(prev => ({ ...prev, imageUrl: url, thumbUrl }))
         } catch (error) {
             toast.error(`No se pudo subir la imagen: ${error.message}`)
         } finally {
@@ -41,9 +45,8 @@ export function PhotoForm() {
     }
 
     const discardImage = () => {
-        if (pendingRef.current) removeByUrl(pendingRef.current).catch(() => {})
-        pendingRef.current = null
-        setFormData(prev => ({ ...prev, imageUrl: '' }))
+        discardPending()
+        setFormData(prev => ({ ...prev, imageUrl: '', thumbUrl: '' }))
     }
 
     const handleSubmit = async (e) => {
@@ -51,7 +54,7 @@ export function PhotoForm() {
         setSaving(true)
         try {
             await createPhoto(formData)
-            pendingRef.current = null
+            pendingRef.current = []
             toast.success(`Foto "${formData.title}" agregada`)
             setFormData(EMPTY_PHOTO)
         } catch (error) {

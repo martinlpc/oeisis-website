@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react'
-import { watchQuery } from '../firebase/watchQuery'
+import { watchQuery } from '../firebase/reads'
 
-// buildQuery tiene que ser estable (definido fuera del componente o memoizado)
-export function useCollection(buildQuery, { realtime = true, transform, label } = {}) {
+// spec describe la consulta (ver firebase/reads.js) y tiene que ser estable (constante del módulo)
+export function useCollection(spec, { realtime = true, transform, label } = {}) {
     const [data, setData] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
     useEffect(() => {
         return watchQuery(
-            buildQuery(),
+            spec,
             { realtime },
             (docs) => {
                 setData(transform ? transform(docs) : docs)
@@ -22,7 +22,7 @@ export function useCollection(buildQuery, { realtime = true, transform, label } 
             }
         )
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [buildQuery, realtime])
+    }, [spec, realtime])
 
     return { data, loading, error }
 }

@@ -22,7 +22,7 @@ export const EMPTY_SHOW = {
 
 export const EMPTY_VIDEO = { title: '', embedUrl: '', description: '', date: '', featured: false }
 
-export const EMPTY_PHOTO = { title: '', imageUrl: '', date: '', album: '' }
+export const EMPTY_PHOTO = { title: '', imageUrl: '', thumbUrl: '', date: '', album: '' }
 
 export const EMPTY_NEWS = { type: 'news', title: '', content: '', externalLink: '', featured: false }
 

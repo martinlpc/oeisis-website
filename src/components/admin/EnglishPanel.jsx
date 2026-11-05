@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { doc, updateDoc } from 'firebase/firestore'
-import { db } from '../../firebase/config'
+import { db } from '../../firebase/db'
 import { sourceTexts, translationStatus } from '../../i18n/content'
 import { useToast } from './useFeedback'
 import { Button, Tag, inputClass } from './ui'

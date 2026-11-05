@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { collection, getDocs } from 'firebase/firestore'
-import { db } from '../../firebase/config'
+import { db } from '../../firebase/db'
 import { useSupabaseStorage } from '../../hooks/useSupabaseStorage'
 import { extractStorageRefs, findOrphans } from '../../utils/storageRefs'
 import { useToast, useConfirm } from './useFeedback'

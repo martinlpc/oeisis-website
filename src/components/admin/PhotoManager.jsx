@@ -53,7 +53,7 @@ export function PhotoManager() {
         }
 
         try {
-            if (photo.imageUrl) await removeByUrl(photo.imageUrl);
+            await Promise.all([photo.imageUrl, photo.thumbUrl].filter(Boolean).map(url => removeByUrl(url)));
             toast.success('Foto eliminada');
         } catch (error) {
             toast.warning(`La foto se quitó del sitio, pero el archivo quedó en Supabase: ${error.message}`);
@@ -78,7 +78,7 @@ export function PhotoManager() {
                         <ListItem
                             title={photo.title}
                             meta={[photo.date, photo.album].filter(Boolean).join(' · ')}
-                            thumbnail={photo.imageUrl}
+                            thumbnail={photo.thumbUrl || photo.imageUrl}
                             onEdit={() => startEdit(photo)}
                             onDelete={() => handleDelete(photo)}
                         />
