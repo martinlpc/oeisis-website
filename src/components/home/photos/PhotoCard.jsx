@@ -10,7 +10,7 @@ export function PhotoCard({ photo, onOpen }) {
             aria-label={t('photos.view', { title: photo.title })}
         >
             <img
-                src={photo.imageUrl}
+                src={photo.thumbUrl || photo.imageUrl}
                 alt=""
                 loading="lazy"
                 decoding="async"

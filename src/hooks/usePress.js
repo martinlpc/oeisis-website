@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
-import { doc, getDoc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore'
-import { db } from '../firebase/config'
+import { watchDoc } from '../firebase/reads'
 import { prepareEnglish } from '../i18n/prepareEnglish'
 
 // Kit de prensa: un solo documento, press/current
-const pressDoc = () => doc(db, 'press', 'current')
+const PRESS = ['press', 'current']
 
 export const EMPTY_PRESS = {
     bioShort: '',
@@ -17,8 +16,9 @@ export const EMPTY_PRESS = {
 }
 
 export async function updatePress(data) {
-    const { data: changes, translated } = await prepareEnglish('press', data, pressDoc())
-    await setDoc(pressDoc(), { ...changes, updatedAt: serverTimestamp() }, { merge: true })
+    const { data: changes, translated } = await prepareEnglish('press', data, PRESS)
+    const fs = await import('../firebase/writes')
+    await fs.set(PRESS, { ...changes, updatedAt: fs.serverTimestamp() }, { merge: true })
     return { translated }
 }
 
@@ -26,25 +26,15 @@ export async function updatePress(data) {
 export function usePress({ realtime = true } = {}) {
     const [state, setState] = useState({ press: null, loading: true, error: null })
 
-    useEffect(() => {
-        const onData = (snapshot) => setState({
-            press: { ...EMPTY_PRESS, ...(snapshot.exists() ? snapshot.data() : {}) },
-            loading: false,
-            error: null,
-        })
-        const onError = (error) => {
+    useEffect(() => watchDoc(
+        PRESS,
+        { realtime },
+        data => setState({ press: { ...EMPTY_PRESS, ...(data || {}) }, loading: false, error: null }),
+        error => {
             console.error('Error fetching press:', error)
             setState({ press: null, loading: false, error: error.message })
-        }
-
-        if (realtime) return onSnapshot(pressDoc(), onData, onError)
-
-        let cancelled = false
-        getDoc(pressDoc())
-            .then(snapshot => { if (!cancelled) onData(snapshot) })
-            .catch(error => { if (!cancelled) onError(error) })
-        return () => { cancelled = true }
-    }, [realtime])
+        },
+    ), [realtime])
 
     return state
 }

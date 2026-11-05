@@ -1,7 +1,6 @@
-import { collection, query, doc, getDoc, addDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { db } from '../firebase/config';
 import { useCollection } from './useCollection';
+import { watchDoc } from '../firebase/reads';
 import { DEFAULT_TIME_ZONE, getShowTimeZone, todayInZone } from '../utils/timezones';
 import { prepareEnglish } from '../i18n/prepareEnglish';
 
@@ -35,7 +34,10 @@ export function isPastShow(show) {
     return iso ? iso < todayInZone(getShowTimeZone(show)) : false;
 }
 
-const showsQuery = () => query(collection(db, 'shows'));
+const SHOWS = { path: 'shows' };
+
+// Las escrituras usan el SDK completo, que se carga recién acá (el sitio público nunca escribe)
+const writes = () => import('../firebase/writes');
 
 // Más próximo primero; los que no tienen fecha válida van al final
 const sortByDate = (shows) =>
@@ -65,24 +67,26 @@ export async function createShow(data) {
         flyer: data.flyer || '',
         flyerOg: data.flyerOg || '',
     });
-    await addDoc(collection(db, 'shows'), { ...show, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+    const fs = await writes();
+    await fs.addTo('shows', { ...show, createdAt: fs.serverTimestamp(), updatedAt: fs.serverTimestamp() });
     return { translated };
 }
 
 export async function updateShow(id, data) {
-    const ref = doc(db, 'shows', id);
-    const { data: changes, translated } = await prepareEnglish('shows', data, ref);
-    await updateDoc(ref, { ...changes, updatedAt: serverTimestamp() });
+    const { data: changes, translated } = await prepareEnglish('shows', data, ['shows', id]);
+    const fs = await writes();
+    await fs.update(['shows', id], { ...changes, updatedAt: fs.serverTimestamp() });
     return { translated };
 }
 
 export async function deleteShow(id) {
-    await deleteDoc(doc(db, 'shows', id));
+    const fs = await writes();
+    await fs.remove(['shows', id]);
     return true;
 }
 
 export function useShows({ upcomingOnly = false, realtime = true } = {}) {
-    const { data: shows, loading, error } = useCollection(showsQuery, {
+    const { data: shows, loading, error } = useCollection(SHOWS, {
         realtime,
         transform: upcomingOnly ? upcomingSorted : sortByDate,
         label: 'shows',
@@ -95,21 +99,15 @@ export function useShow(id) {
     // Se guarda el id junto al resultado: si cambia el id, el resultado viejo no aplica y se ve "loading"
     const [result, setResult] = useState({ id: null, show: null, status: 'loading' });
 
-    useEffect(() => {
-        let cancelled = false;
-        getDoc(doc(db, 'shows', id))
-            .then(snapshot => {
-                if (cancelled) return;
-                setResult(snapshot.exists()
-                    ? { id, show: { id: snapshot.id, ...snapshot.data() }, status: 'ready' }
-                    : { id, show: null, status: 'not-found' });
-            })
-            .catch(error => {
-                console.error('Error fetching show:', error);
-                if (!cancelled) setResult({ id, show: null, status: 'error' });
-            });
-        return () => { cancelled = true; };
-    }, [id]);
+    useEffect(() => watchDoc(
+        ['shows', id],
+        { realtime: false },
+        show => setResult(show ? { id, show, status: 'ready' } : { id, show: null, status: 'not-found' }),
+        error => {
+            console.error('Error fetching show:', error);
+            setResult({ id, show: null, status: 'error' });
+        },
+    ), [id]);
 
     return result.id === id ? result : { show: null, status: 'loading' };
 }

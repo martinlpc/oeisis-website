@@ -1,13 +1,16 @@
-import { collection, query, orderBy, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore'
-import { db } from '../firebase/config'
 import { useCollection } from './useCollection'
 
-const photosQuery = () => query(collection(db, 'photos'), orderBy('date', 'desc'))
+const PHOTOS = { path: 'photos', orderBy: [['date', 'desc']] }
 
+// Las escrituras usan el SDK completo, que se carga recién acá (el sitio público nunca escribe)
+const writes = () => import('../firebase/writes')
+
+// thumbUrl: miniatura liviana para la grilla; imageUrl: la foto completa para el visor
 export async function createPhoto(data) {
-    await addDoc(collection(db, 'photos'), {
+    await (await writes()).addTo('photos', {
         title: data.title,
         imageUrl: data.imageUrl,
+        thumbUrl: data.thumbUrl || '',
         date: data.date,
         album: data.album || '',
     })
@@ -15,16 +18,16 @@ export async function createPhoto(data) {
 }
 
 export async function updatePhoto(id, data) {
-    await updateDoc(doc(db, 'photos', id), data)
+    await (await writes()).update(['photos', id], data)
     return true
 }
 
 export async function deletePhoto(id) {
-    await deleteDoc(doc(db, 'photos', id))
+    await (await writes()).remove(['photos', id])
     return true
 }
 
 export function usePhotos({ realtime = true } = {}) {
-    const { data: photos, loading, error } = useCollection(photosQuery, { realtime, label: 'photos' })
+    const { data: photos, loading, error } = useCollection(PHOTOS, { realtime, label: 'photos' })
     return { photos, loading, error, createPhoto, updatePhoto, deletePhoto }
 }

@@ -1,37 +1,34 @@
-import { collection, query, orderBy, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore'
-import { db } from '../firebase/config'
 import { useCollection } from './useCollection'
 import { prepareEnglish } from '../i18n/prepareEnglish'
 
-const newsQuery = () => query(
-    collection(db, 'news'),
-    orderBy('featured', 'desc'),
-    orderBy('createdAt', 'desc')
-)
+const NEWS = { path: 'news', orderBy: [['featured', 'desc'], ['createdAt', 'desc']] }
+
+// Las escrituras usan el SDK completo, que se carga recién acá (el sitio público nunca escribe)
+const writes = () => import('../firebase/writes')
 
 export async function createNews(data) {
     const { data: item, translated } = await prepareEnglish('news', data)
-    await addDoc(collection(db, 'news'), {
+    const fs = await writes()
+    await fs.addTo('news', {
         ...item,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
+        createdAt: fs.serverTimestamp(),
+        updatedAt: fs.serverTimestamp(),
     })
     return { translated }
 }
 
 export async function updateNews(id, data) {
-    const ref = doc(db, 'news', id)
-    const { data: changes, translated } = await prepareEnglish('news', data, ref)
-    await updateDoc(ref, changes)
+    const { data: changes, translated } = await prepareEnglish('news', data, ['news', id])
+    await (await writes()).update(['news', id], changes)
     return { translated }
 }
 
 export async function deleteNews(id) {
-    await deleteDoc(doc(db, 'news', id))
+    await (await writes()).remove(['news', id])
     return true
 }
 
 export function useNews({ realtime = true } = {}) {
-    const { data: news, loading, error } = useCollection(newsQuery, { realtime, label: 'news' })
+    const { data: news, loading, error } = useCollection(NEWS, { realtime, label: 'news' })
     return { news, loading, error, createNews, updateNews, deleteNews }
 }
