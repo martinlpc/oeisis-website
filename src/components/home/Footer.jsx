@@ -1,6 +1,6 @@
 import { useLang } from '../../i18n/lang'
+import { CONTACT_EMAIL } from '../../config/contact'
 
-const BOOKING_EMAIL = 'jeronimo.blazer@gmail.com'
 const DEV_EMAIL = 'mlpachecodev@gmail.com'
 
 const SITE_LINKS = [
@@ -37,7 +37,8 @@ const link = 'text-gray-300 hover:text-white transition'
 
 export function Footer() {
     const currentYear = new Date().getFullYear()
-    const { t, path } = useLang()
+    const { lang, t, path } = useLang()
+    const BOOKING_EMAIL = CONTACT_EMAIL[lang]
 
     return (
         <footer className="bg-[#141414] text-gray-300 border-t border-white/10">

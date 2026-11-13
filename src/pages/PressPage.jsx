@@ -7,8 +7,8 @@ import { useVideos } from '../hooks/useVideos';
 import { track } from '../utils/analytics';
 import { useLang } from '../i18n/lang';
 import { localize } from '../i18n/content';
+import { CONTACT_EMAIL } from '../config/contact';
 
-const BOOKING_EMAIL = 'jeronimo.blazer@gmail.com';
 const DEFAULT_PRESS_KIT = '/oeisis-gacetilla.pdf';
 
 const label = 'text-xs uppercase tracking-[0.3em] text-gray-400 mb-4';
@@ -43,6 +43,7 @@ export function PressPage() {
     const { press, loading } = usePress({ realtime: false });
     const { videos } = useVideos({ realtime: false });
     const { lang, t, path } = useLang();
+    const BOOKING_EMAIL = CONTACT_EMAIL[lang];
 
     if (loading) {
         return (

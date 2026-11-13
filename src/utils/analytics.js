@@ -6,7 +6,7 @@
 
 const WEBSITE_ID = import.meta.env.VITE_UMAMI_WEBSITE_ID
 const SCRIPT_SRC = import.meta.env.VITE_UMAMI_SRC || 'https://cloud.umami.is/script.js'
-// Opcional: dominios donde se mide, separados por coma (ej: "oeisis.netlify.app"). Sin valor, mide en todos.
+// Opcional: dominios donde se mide, separados por coma (ej: "oeisis.com"). Sin valor, mide en todos.
 const DOMAINS = import.meta.env.VITE_UMAMI_DOMAINS
 
 const PRIVATE_PATHS = /^\/(admin|login)(\/|$)/
