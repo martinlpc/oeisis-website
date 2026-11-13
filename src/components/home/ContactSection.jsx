@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { track } from '../../utils/analytics'
 import { useLang } from '../../i18n/lang'
+import { CONTACT_EMAIL } from '../../config/contact'
 
-const BOOKING_EMAIL = 'jeronimo.blazer@gmail.com'
 
 const INITIAL = { nombre: '', email: '', motivo: 'Contratación', fecha: '', ciudad: '', mensaje: '' }
 // Los valores del motivo quedan en español: así llegan a Netlify, se traduce solo lo que se ve
@@ -19,6 +19,7 @@ export function ContactSection() {
     const [form, setForm] = useState(INITIAL)
     const [status, setStatus] = useState('idle') // idle | sending | sent | error
     const { lang, t } = useLang()
+    const BOOKING_EMAIL = CONTACT_EMAIL[lang]
 
     const handleChange = (e) => {
         const { name, value } = e.target
