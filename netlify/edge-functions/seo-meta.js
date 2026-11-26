@@ -21,6 +21,7 @@ const TEXT = {
         pressDescription: 'Kit de prensa de Oeisis: bio, fotos, rider técnico y contacto de contrataciones.',
         free: 'Entrada libre.',
         tickets: 'Entradas a la venta.',
+        showNotFound: `Show no encontrado · ${SITE}`,
         locale: 'es_AR',
         htmlLang: 'es-AR',
         dateLocale: 'es-AR',
@@ -31,6 +32,7 @@ const TEXT = {
         pressDescription: 'Oeisis press kit: bio, photos, technical rider and booking contact.',
         free: 'Free entry.',
         tickets: 'Tickets on sale.',
+        showNotFound: `Show not found · ${SITE}`,
         locale: 'en_US',
         htmlLang: 'en-US',
         dateLocale: 'en-US',
@@ -106,12 +108,12 @@ async function metaFor(page, lang, origin) {
         imageIsDefault: true,
     }
 
-    if (page === '/') {
-        return { ...base, title: `${SITE} | Oasis Tribute`, description: text.homeDescription }
-    }
+    const generic = { ...base, title: `${SITE} | Oasis Tribute`, description: text.homeDescription }
+
+    if (page === '/') return generic
 
     if (page === '/prensa') {
-        const press = localizedDoc('press', await getDocument('press/current'), lang)
+        const press = localizedDoc('press', await getDocument('press/current').catch(() => null), lang)
         const photo = press?.photos?.[0]
         return {
             ...base,
@@ -123,8 +125,17 @@ async function metaFor(page, lang, origin) {
 
     const match = page.match(/^\/shows\/([^/]+)$/)
     if (match) {
-        const show = localizedDoc('shows', await getDocument(`shows/${encodeURIComponent(match[1])}`), lang)
-        if (!show) return null
+        let doc
+        try {
+            doc = await getDocument(`shows/${encodeURIComponent(match[1])}`)
+        } catch {
+            // Firestore no respondió: datos generales, con el canonical de esta misma página,
+            // y sin guardar en la CDN para que el próximo pedido lo vuelva a intentar
+            return { ...generic, noStore: true }
+        }
+        // El show no existe (se borró o el link está mal): 404 real, así Google lo saca del índice
+        if (!doc) return { ...generic, title: text.showNotFound, notFound: true }
+        const show = localizedDoc('shows', doc, lang)
         return {
             ...base,
             title: `${show.title} · ${SITE}`,
@@ -167,6 +178,7 @@ export function injectMeta(html, meta) {
     out = setTag(out, /<meta name="description"[^>]*>/, `<meta name="description" content="${description}" />`)
     out = setTag(out, /<meta name="language"[^>]*>/, `<meta name="language" content="${meta.lang}" />`)
     out = setTag(out, /<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${url}" />`)
+    if (meta.notFound) out = setTag(out, /<meta name="robots"[^>]*>/, '<meta name="robots" content="noindex" />')
     // La misma página en cada idioma; x-default (el español) para el resto
     out = out.replace(/\s*<link rel="alternate" hreflang="[^"]*"[^>]*>/g, '')
     out = out.replace('</head>', [
@@ -228,10 +240,10 @@ export default async (request, context) => {
     // Un bot que prefiere otro idioma no se redirige: esa copia no se guarda, porque una persona
     // con el mismo idioma sí tendría que redirigirse
     const preferred = preferredLang(request.headers.get('accept-language'))
-    headers.set('netlify-cdn-cache-control', !chosen && preferred && preferred !== lang
+    headers.set('netlify-cdn-cache-control', meta.noStore || (!chosen && preferred && preferred !== lang)
         ? 'no-store'
         : 'public, s-maxage=300, stale-while-revalidate=600')
-    return new Response(html, { status: response.status, headers })
+    return new Response(html, { status: meta.notFound ? 404 : response.status, headers })
 }
 
 export const config = {

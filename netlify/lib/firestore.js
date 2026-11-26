@@ -4,7 +4,7 @@
 const env = (name) => globalThis.Netlify?.env.get(name)
 
 // Si Firestore tarda, la página sale igual con los datos generales
-const TIMEOUT_MS = 1500
+const TIMEOUT_MS = 3000
 
 function decodeValue(value) {
     if (!value) return null
@@ -28,18 +28,17 @@ function baseUrl() {
     return project && `https://firestore.googleapis.com/v1/projects/${project}/databases/(default)/documents`
 }
 
-// Un documento como objeto plano, o null si no existe o falla
+// Un documento como objeto plano, o null si no existe.
+// Si Firestore falla o tarda, lanza un error: no es lo mismo que "no existe"
+// (un show que no existe responde 404; uno que no se pudo leer, no).
 export async function getDocument(path) {
     const base = baseUrl()
-    if (!base) return null
-    try {
-        const response = await fetch(`${base}/${path}?key=${env('VITE_FIREBASE_API_KEY')}`, { signal: AbortSignal.timeout(TIMEOUT_MS) })
-        if (!response.ok) return null
-        const doc = await response.json()
-        return { id: doc.name.split('/').pop(), updateTime: doc.updateTime, ...decodeFields(doc.fields) }
-    } catch {
-        return null
-    }
+    if (!base) throw new Error('Falta VITE_FIREBASE_PROJECT_ID')
+    const response = await fetch(`${base}/${path}?key=${env('VITE_FIREBASE_API_KEY')}`, { signal: AbortSignal.timeout(TIMEOUT_MS) })
+    if (response.status === 404) return null
+    if (!response.ok) throw new Error(`Firestore respondió ${response.status}`)
+    const doc = await response.json()
+    return { id: doc.name.split('/').pop(), updateTime: doc.updateTime, ...decodeFields(doc.fields) }
 }
 
 // Todos los documentos de una colección (hasta 300)
