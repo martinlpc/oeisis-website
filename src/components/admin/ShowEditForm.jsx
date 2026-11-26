@@ -1,6 +1,7 @@
 import { useId } from 'react'
 import { Field, Checkbox, FilePicker, Button, inputClass } from './ui'
 import { guessTimeZone, guessTimeZoneFromCity, canonicalTimeZone, listTimeZones, nowInZone } from '../../utils/timezones'
+import { CURRENCIES, guessCurrency } from '../../utils/currency'
 
 // Zonas agrupadas por región (America, Europe...) para el selector
 const ZONES_BY_REGION = listTimeZones().reduce((groups, zone) => {
@@ -31,6 +32,9 @@ export function ShowFields({ data, onChange, flyerUploading = false, onFlyerFile
 
     const zone = canonicalTimeZone(data.timeZone) || data.timeZone
     const now = nowInZone(zone)
+    // Se calcula del país (o de la zona horaria): euro en España y Portugal, pesos en Argentina...
+    // Si no se reconoce, o se quiere otra, se elige a mano
+    const guessed = guessCurrency({ location: { country: data.country }, timeZone: zone })
 
     return (
         <div className="space-y-4">
@@ -84,6 +88,30 @@ export function ShowFields({ data, onChange, flyerUploading = false, onFlyerFile
             </Field>
 
             <Checkbox name="freeEntry" checked={data.freeEntry} onChange={onChange} label="Entrada libre" />
+
+            {/* Para Google: precio, moneda y fecha de venta del evento. No se muestran en la página. */}
+            {!data.freeEntry && (
+                <div>
+                    <div className="grid grid-cols-[1fr_9.5rem] gap-4">
+                        <Field label="Precio de la entrada" hint="Opcional. Si cambia la fase de venta, actualizalo acá.">
+                            <input type="number" name="ticketPrice" value={data.ticketPrice} onChange={onChange} min="0" step="0.01" inputMode="decimal" className={inputClass} />
+                        </Field>
+                        <Field label="Moneda">
+                            <select name="ticketCurrency" value={data.ticketCurrency} onChange={onChange} className={inputClass}>
+                                <option value="">{guessed ? `${guessed} (auto)` : 'Elegir'}</option>
+                                {CURRENCIES.map(code => <option key={code} value={code}>{code}</option>)}
+                            </select>
+                        </Field>
+                    </div>
+                    {!guessed && !data.ticketCurrency && (
+                        <span className="block text-xs text-amber-300 mt-1">No reconozco la moneda de este país: elegila a mano.</span>
+                    )}
+                </div>
+            )}
+
+            <Field label="Venta desde" hint="Opcional. Día en que salieron las entradas a la venta.">
+                <input type="date" name="ticketsOnSale" value={data.ticketsOnSale} onChange={onChange} className={inputClass} />
+            </Field>
 
             <Field label="Descripción" hint="Opcional. Se muestra debajo del lugar.">
                 <textarea name="description" value={data.description} onChange={onChange} rows={3} className={inputClass} />

@@ -46,6 +46,9 @@ const sortByDate = (shows) =>
 // Se filtra en el cliente porque los shows viejos todavía pueden no tener dateISO
 const upcomingSorted = (shows) => sortByDate(shows.filter(show => !isPastShow(show)));
 
+// Precio desde el input: número, o null si quedó vacío
+export const toPrice = (value) => (value === '' || value == null || Number.isNaN(Number(value)) ? null : Number(value));
+
 // data.date llega del input como "YYYY-MM-DD". Devuelve { translated } (ver prepareEnglish).
 export async function createShow(data) {
     const { data: show, translated } = await prepareEnglish('shows', {
@@ -63,6 +66,9 @@ export async function createShow(data) {
         },
         ticketLink: data.ticketLink,
         freeEntry: Boolean(data.freeEntry),
+        ticketPrice: toPrice(data.ticketPrice),
+        ticketCurrency: data.ticketCurrency || '',
+        ticketsOnSale: data.ticketsOnSale || '',
         description: data.description,
         flyer: data.flyer || '',
         flyerOg: data.flyerOg || '',

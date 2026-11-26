@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { EMPTY_SHOW, fieldChange } from './formState'
-import { useShows, formatDisplayDate, getShowISO, isPastShow } from '../../hooks/useShows';
+import { useShows, formatDisplayDate, getShowISO, isPastShow, toPrice } from '../../hooks/useShows';
 import { useToast, useConfirm } from './useFeedback';
 import { ListItem, ListRow, EditActions } from './ListItem';
 import { ShowFields } from './ShowEditForm';
@@ -27,6 +27,9 @@ const toForm = (show) => ({
     timeZone: show.timeZone || DEFAULT_TIME_ZONE,
     ticketLink: show.ticketLink || '',
     freeEntry: Boolean(show.freeEntry),
+    ticketPrice: show.ticketPrice ?? '',
+    ticketCurrency: show.ticketCurrency || '',
+    ticketsOnSale: show.ticketsOnSale || '',
     description: show.description || '',
     flyer: show.flyer || '',
     flyerOg: show.flyerOg || '',
@@ -48,6 +51,9 @@ const toUpdate = (form) => ({
     },
     ticketLink: form.ticketLink,
     freeEntry: form.freeEntry,
+    ticketPrice: toPrice(form.ticketPrice),
+    ticketCurrency: form.ticketCurrency,
+    ticketsOnSale: form.ticketsOnSale,
     description: form.description,
     flyer: form.flyer,
     flyerOg: form.flyerOg,
