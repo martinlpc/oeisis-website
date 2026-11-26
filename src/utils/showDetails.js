@@ -1,6 +1,7 @@
 import { getShowISO } from '../hooks/useShows'
 import { getShowTimeZone, formatShowTimeText, zonedTimeToDate } from './timezones'
 import { LOCALES } from '../i18n/lang'
+import { buildEventJsonLd } from './eventJsonLd'
 
 // Duración por defecto para el calendario (no se guarda en el show)
 const DEFAULT_DURATION_HOURS = 2
@@ -114,36 +115,7 @@ export function getIcsContent(show, pageUrl) {
 
 // Datos estructurados para que Google muestre el show como evento
 export function getEventJsonLd(show, pageUrl) {
-    const times = getShowTimes(show)
-    if (!times) return null
-    const { venue, address, city, province, country } = getPlace(show)
-    return {
-        '@context': 'https://schema.org',
-        '@type': 'MusicEvent',
-        name: `Oeisis: ${show.title}`,
-        startDate: times.start.toISOString(),
-        eventStatus: 'https://schema.org/EventScheduled',
-        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-        url: pageUrl,
-        description: show.description || undefined,
-        location: {
-            '@type': 'Place',
-            name: venue || city,
-            address: {
-                '@type': 'PostalAddress',
-                streetAddress: address || undefined,
-                addressLocality: city || undefined,
-                addressRegion: province || undefined,
-                addressCountry: country || 'AR',
-            },
-        },
-        image: show.flyer || undefined,
-        performer: { '@type': 'MusicGroup', name: 'Oeisis' },
-        offers: show.ticketLink
-            ? { '@type': 'Offer', url: show.ticketLink, availability: 'https://schema.org/InStock', ...(show.freeEntry ? { price: 0, priceCurrency: 'ARS' } : {}) }
-            : undefined,
-        isAccessibleForFree: show.freeEntry || undefined,
-    }
+    return buildEventJsonLd(show, { iso: getShowISO(show), pageUrl })
 }
 
 // "21:00 hs" o, fuera de Argentina, "21:00 hs (hora de Madrid)". En inglés: "9:00 PM (Madrid time)"

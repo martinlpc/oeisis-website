@@ -11,6 +11,7 @@ import { getDocument } from '../lib/firestore.js'
 import { formatShowTimeText } from '../../src/utils/timezones.js'
 import { localize, translationStatus } from '../../src/i18n/content.js'
 import { localizePath, parsePath } from '../../src/i18n/paths.js'
+import { buildEventJsonLd } from '../../src/utils/eventJsonLd.js'
 
 const SITE = 'Oeisis'
 
@@ -21,6 +22,9 @@ const TEXT = {
         pressDescription: 'Kit de prensa de Oeisis: bio, fotos, rider técnico y contacto de contrataciones.',
         free: 'Entrada libre.',
         tickets: 'Entradas a la venta.',
+        showNotFound: `Show no encontrado · ${SITE}`,
+        allShows: 'Todos los shows',
+        buyTickets: 'Comprar entradas',
         locale: 'es_AR',
         htmlLang: 'es-AR',
         dateLocale: 'es-AR',
@@ -31,6 +35,9 @@ const TEXT = {
         pressDescription: 'Oeisis press kit: bio, photos, technical rider and booking contact.',
         free: 'Free entry.',
         tickets: 'Tickets on sale.',
+        showNotFound: `Show not found · ${SITE}`,
+        allShows: 'All shows',
+        buyTickets: 'Buy tickets',
         locale: 'en_US',
         htmlLang: 'en-US',
         dateLocale: 'en-US',
@@ -65,18 +72,21 @@ function cookieLang(request) {
     return match ? match[1] : null
 }
 
+function longDate(show, lang) {
+    if (!show.dateISO) return show.date || ''
+    const [y, m, d] = show.dateISO.split('-').map(Number)
+    const text = new Date(Date.UTC(y, m - 1, d, 12)).toLocaleDateString(TEXT[lang].dateLocale, {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
+    })
+    return `${text.charAt(0).toUpperCase()}${text.slice(1)}`
+}
+
 // "viernes 20 de noviembre · 21:00 hs (hora de Madrid) · Sala But, Madrid"
 function describeShow(show, lang) {
     const text = TEXT[lang]
     const parts = []
-    if (show.dateISO) {
-        const [y, m, d] = show.dateISO.split('-').map(Number)
-        parts.push(new Date(Date.UTC(y, m - 1, d, 12)).toLocaleDateString(text.dateLocale, {
-            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
-        }))
-    } else if (show.date) {
-        parts.push(show.date)
-    }
+    const date = longDate(show, lang)
+    if (date) parts.push(date)
     if (show.time) parts.push(formatShowTimeText(show, lang))
     const place = [show.location?.venue, show.location?.city].filter(Boolean).join(', ')
     if (place) parts.push(place)
@@ -95,6 +105,27 @@ function localizedDoc(collection, doc, lang) {
     return copy
 }
 
+// Contenido del show en el HTML, para buscadores y vistas previas que no ejecutan JavaScript
+// o cuando la lectura de Firestore del navegador falla. React lo reemplaza al cargar la página.
+function showBody(show, lang, pageUrl, origin) {
+    const text = TEXT[lang]
+    const { venue, address, city } = show.location || {}
+    const place = [venue, address, city].filter(Boolean).join(', ')
+    const when = [longDate(show, lang), show.time ? formatShowTimeText(show, lang) : ''].filter(Boolean).join(' · ')
+    const jsonLd = buildEventJsonLd(show, { iso: show.dateISO, pageUrl })
+    return [
+        '<main class="min-h-screen text-white pt-28 md:pt-36 pb-20 px-4"><article class="max-w-5xl mx-auto">',
+        `<p><a href="${escape(`${origin}${localizePath(lang, '/#upcoming-shows')}`)}" class="text-sm text-gray-400">← ${escape(text.allShows)}</a></p>`,
+        `<h1 class="text-4xl md:text-6xl font-bold mt-8 mb-8">${escape(show.title)}</h1>`,
+        when && `<p class="text-xl mb-2">${escape(when)}</p>`,
+        place && `<p class="text-xl text-gray-300 mb-6">${escape(place)}</p>`,
+        show.description && `<p class="text-lg text-gray-300 mb-8">${escape(show.description)}</p>`,
+        show.ticketLink && `<p><a href="${escape(show.ticketLink)}" class="underline">${escape(text.buyTickets)}</a></p>`,
+        jsonLd && `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</script>`,
+        '</article></main>',
+    ].filter(Boolean).join('')
+}
+
 async function metaFor(page, lang, origin) {
     const text = TEXT[lang]
     const pageUrl = (l) => `${origin}${localizePath(l, page)}`
@@ -106,12 +137,12 @@ async function metaFor(page, lang, origin) {
         imageIsDefault: true,
     }
 
-    if (page === '/') {
-        return { ...base, title: `${SITE} | Oasis Tribute`, description: text.homeDescription }
-    }
+    const generic = { ...base, title: `${SITE} | Oasis Tribute`, description: text.homeDescription }
+
+    if (page === '/') return generic
 
     if (page === '/prensa') {
-        const press = localizedDoc('press', await getDocument('press/current'), lang)
+        const press = localizedDoc('press', await getDocument('press/current').catch(() => null), lang)
         const photo = press?.photos?.[0]
         return {
             ...base,
@@ -123,9 +154,21 @@ async function metaFor(page, lang, origin) {
 
     const match = page.match(/^\/shows\/([^/]+)$/)
     if (match) {
-        const show = localizedDoc('shows', await getDocument(`shows/${encodeURIComponent(match[1])}`), lang)
-        if (!show) return null
+        let doc
+        try {
+            doc = await getDocument(`shows/${encodeURIComponent(match[1])}`)
+        } catch {
+            // Firestore no respondió: datos generales, con el canonical de esta misma página,
+            // y sin guardar en la CDN para que el próximo pedido lo vuelva a intentar
+            return { ...generic, noStore: true }
+        }
+        // El show no existe (se borró o el link está mal): 404 real, así Google lo saca del índice
+        if (!doc) return { ...generic, title: text.showNotFound, notFound: true }
+        const show = localizedDoc('shows', doc, lang)
         return {
+            body: showBody(show, lang, base.url, origin),
+            // El show completo (sin traducir: la página aplica el idioma), para que el navegador no lo vuelva a leer
+            data: { id: 'show-data', value: doc },
             ...base,
             title: `${show.title} · ${SITE}`,
             ogTitle: `${SITE}: ${show.title}`,
@@ -167,6 +210,7 @@ export function injectMeta(html, meta) {
     out = setTag(out, /<meta name="description"[^>]*>/, `<meta name="description" content="${description}" />`)
     out = setTag(out, /<meta name="language"[^>]*>/, `<meta name="language" content="${meta.lang}" />`)
     out = setTag(out, /<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${url}" />`)
+    if (meta.notFound) out = setTag(out, /<meta name="robots"[^>]*>/, '<meta name="robots" content="noindex" />')
     // La misma página en cada idioma; x-default (el español) para el resto
     out = out.replace(/\s*<link rel="alternate" hreflang="[^"]*"[^>]*>/g, '')
     out = out.replace('</head>', [
@@ -217,7 +261,12 @@ export default async (request, context) => {
     const response = await context.next()
     if (!meta || !(response.headers.get('content-type') || '').includes('text/html')) return response
 
-    const html = injectMeta(await response.text(), meta)
+    let html = injectMeta(await response.text(), meta)
+    if (meta.body) html = html.replace('<div id="root"></div>', `<div id="root">${meta.body}</div>`)
+    if (meta.data) {
+        const json = JSON.stringify(meta.data.value).replace(/</g, '\\u003c')
+        html = html.replace('</head>', `    <script id="${meta.data.id}" type="application/json">${json}</script>\n  </head>`)
+    }
     const headers = new Headers(response.headers)
     headers.delete('content-length')
     // El navegador siempre revalida (así un deploy nuevo se ve enseguida); la CDN guarda 5 minutos.
@@ -228,10 +277,10 @@ export default async (request, context) => {
     // Un bot que prefiere otro idioma no se redirige: esa copia no se guarda, porque una persona
     // con el mismo idioma sí tendría que redirigirse
     const preferred = preferredLang(request.headers.get('accept-language'))
-    headers.set('netlify-cdn-cache-control', !chosen && preferred && preferred !== lang
+    headers.set('netlify-cdn-cache-control', meta.noStore || (!chosen && preferred && preferred !== lang)
         ? 'no-store'
         : 'public, s-maxage=300, stale-while-revalidate=600')
-    return new Response(html, { status: response.status, headers })
+    return new Response(html, { status: meta.notFound ? 404 : response.status, headers })
 }
 
 export const config = {
