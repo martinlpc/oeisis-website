@@ -94,12 +94,26 @@ export function useShows({ upcomingOnly = false, realtime = true } = {}) {
     return { shows, loading, error, createShow, updateShow, deleteShow };
 }
 
+// El show que la edge function ya leyó y dejó en el HTML (<script id="show-data">).
+// Con eso la página no vuelve a leer Firestore al abrirse.
+function preloadedShow(id) {
+    try {
+        const show = JSON.parse(document.getElementById('show-data')?.textContent || 'null');
+        return show?.id === id ? show : null;
+    } catch {
+        return null;
+    }
+}
+
 // Un show por id (página del show). status: loading | ready | not-found | error
 export function useShow(id) {
     // Se guarda el id junto al resultado: si cambia el id, el resultado viejo no aplica y se ve "loading"
-    const [result, setResult] = useState({ id: null, show: null, status: 'loading' });
+    const [result, setResult] = useState(() => {
+        const show = preloadedShow(id);
+        return show ? { id, show, status: 'ready' } : { id: null, show: null, status: 'loading' };
+    });
 
-    useEffect(() => watchDoc(
+    useEffect(() => preloadedShow(id) ? undefined : watchDoc(
         ['shows', id],
         { realtime: false },
         show => setResult(show ? { id, show, status: 'ready' } : { id, show: null, status: 'not-found' }),
